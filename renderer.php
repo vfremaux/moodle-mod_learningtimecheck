@@ -2566,7 +2566,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '</div>';
 
                 // $deleteurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $thispage->get_param('id'), 'sesskey' => sesskey(), 'view' => 'report', 'what' => 'deleterule', 'ruleid' => $filterrule->id));
-                // makes url more contextual from where it is called
+                // Makes url more contextual from where it is called.
                 $deleteurl = clone($thispage);
                 $params = array('what' => 'deleterule', 'ruleid' => $filterrule->id);
                 $deleteurl->params($params);
@@ -2576,6 +2576,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
         }
 
+        // Will ajax load a new rule form
         $str .= '<a href="javascript:load_filter_rule_form(\''.$CFG->wwwroot.'\', \''.$thispage->get_param('id').'\', \''.$component.'\', \''.$thispage->get_param('view').'\', \''.$itemid.'\')"><img src="'.$OUTPUT->pix_url('add', 'learningtimecheck').'" /></a>';
         $str .= '</form>';
         $str .= '<div id="learningtimecheck-filter-new-rule" class="hidden"></div>';
@@ -2867,7 +2868,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         return $str;
     }
-    
+
     function summary($learningtimecheck, $cm) {
         global $DB;
         

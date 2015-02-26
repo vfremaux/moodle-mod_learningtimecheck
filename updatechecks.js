@@ -162,7 +162,7 @@ M.mod_learningtimecheck = {
         }
 
         var params = [];
-        for (var i=0; i < this.updatelist.length; i++) {
+        for (var i = 0; i < this.updatelist.length; i++) {
             var val = this.updatelist[i].state ? 1 : 0;
             params.push('items['+this.updatelist[i].itemid+']='+val);
         }

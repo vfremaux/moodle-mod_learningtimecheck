@@ -1360,7 +1360,6 @@ class learningtimecheck_class {
             return;
         }
 
-        print_object($newchecks);
         add_to_log($this->course->id, 'learningtimecheck', 'update checks', "report.php?id={$this->cm->id}&studentid={$this->userid}", $this->learningtimecheck->name, $this->cm->id);
 
         $updategrades = false;
@@ -2063,6 +2062,7 @@ class learningtimecheck_class {
      * returns options for comparison in report rules
      */
     static function get_ruleop_options() {
+        global $CFG;
 
         $options = array();
 

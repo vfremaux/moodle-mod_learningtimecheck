@@ -28,5 +28,5 @@ $module->version  = 2014011800;  // The current module version (Date: YYYYMMDDXX
 $module->requires = 2012062501;
 $module->cron     = 60;          // Period for cron to check this module (secs)
 $module->maturity = MATURITY_STABLE;
-$module->release  = '2.5.0 (Build: 2014011800)';
+$module->release  = '2.6.0 (Build: 2014011800)';
 $module->component = 'mod_learningtimecheck';
