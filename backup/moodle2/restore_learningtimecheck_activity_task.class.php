@@ -60,16 +60,16 @@ class restore_learningtimecheck_activity_task extends restore_activity_task {
         $rules = array();
 
         // List of learningtimechecks in course
-        $rules[] = new restore_decode_rule('learningtimecheckINDEX', '/mod/learningtimecheck/index.php?id=$1', 'course');
-        // learningtimecheck by cm->id and forum->id
-        $rules[] = new restore_decode_rule('learningtimecheckVIEWBYID', '/mod/learningtimecheck/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('learningtimecheckVIEWBYlearningtimecheck', '/mod/learningtimecheck/view.php?learningtimecheck=$1', 'learningtimecheck');
-        // learningtimecheck report by cm->id and forum->id
-        $rules[] = new restore_decode_rule('learningtimecheckREPORTBYID', '/mod/learningtimecheck/report.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('learningtimecheckREPORTBYlearningtimecheck', '/mod/learningtimecheck/report.php?learningtimecheck=$1', 'learningtimecheck');
-        // learningtimecheck edit by cm->id and forum->id
-        $rules[] = new restore_decode_rule('learningtimecheckEDITBYID', '/mod/learningtimecheck/edit.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('learningtimecheckEDITBYlearningtimecheck', '/mod/learningtimecheck/edit.php?learningtimecheck=$1', 'learningtimecheck');
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKINDEX', '/mod/learningtimecheck/index.php?id=$1', 'course');
+        // learningtimecheck by cm->id and instance->id
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKVIEWBYID', '/mod/learningtimecheck/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKVIEWBYINSTANCE', '/mod/learningtimecheck/view.php?learningtimecheck=$1', 'learningtimecheck');
+        // learningtimecheck report by cm->id and instance->id
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKREPORTBYID', '/mod/learningtimecheck/report.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKREPORTBYINSTANCE', '/mod/learningtimecheck/report.php?learningtimecheck=$1', 'learningtimecheck');
+        // learningtimecheck edit by cm->id and instance->id
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKEDITBYID', '/mod/learningtimecheck/edit.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('LEARNINGTIMECHECKEDITBYINSTANCE', '/mod/learningtimecheck/edit.php?learningtimecheck=$1', 'learningtimecheck');
 
         return $rules;
     }

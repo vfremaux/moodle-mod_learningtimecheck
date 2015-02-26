@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -21,60 +20,154 @@
  * @author  David Smith <moodle@davosmith.co.uk>
  * @package mod/learningtimecheck
  */
-
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-
-global $DB;
+require('../../config.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
+$learningtimecheckid = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
 
-$url = new moodle_url('/mod/learningtimecheck/view.php');
+$url = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $id, 'learningtimecheck' => $learningtimecheckid));
+$PAGE->set_url($url);
+$PAGE->requires->js('/mod/learningtimecheck/js/jquery.easyui.min.js');
+$PAGE->requires->js('/mod/learningtimecheck/js/locale/easyui-lang-'.current_language().'.js');
+$PAGE->requires->css('/mod/learningtimecheck/css/default/easyui.css');
+$PAGE->requires->css('/mod/learningtimecheck/css/icons.css');
+$PAGE->requires->js('/mod/learningtimecheck/js/jquery.report.js');
+
 if ($id) {
-    if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
-        error('Course Module ID was incorrect');
+    if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
+        print_error('invalidcoursemodule');
     }
 
-    if (! $course = $DB->get_record('course', array('id' => $cm->course) )) {
-        error('Course is misconfigured');
+    if (!$course = $DB->get_record('course', array('id' => $cm->course) )) {
+        print_error('coursemisconf');
     }
 
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
-        error('Course module is incorrect');
+    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
+        print_error('badlearningtimecheckid', 'learningtimecheck');
     }
     $url->param('id', $id);
 
 } else if ($learningtimecheckid) {
     if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
-        error('Course module is incorrect');
+        print_error('Course module is incorrect');
     }
     if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course) )) {
-        error('Course is misconfigured');
+        print_error('coursemisconf');
     }
     if (! $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
-        error('Course Module ID was incorrect');
+        print_error('Course Module ID was incorrect');
     }
     $url->param('learningtimecheck', $learningtimecheckid);
 
 } else {
-    error('You must specify a course_module ID or an instance ID');
+    print_error('You must specify a course_module ID or an instance ID');
 }
 
-$PAGE->set_url($url);
 require_login($course, true, $cm);
 
-if ($CFG->version < 2011120100) {
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$PAGE->set_title($course->fullname);
+$PAGE->set_heading(format_string($learningtimecheck->name));
+$PAGE->set_button($OUTPUT->update_module_button($cm->id, 'learningtimecheck'));
+
+$context = context_module::instance($cm->id);
+
+$userid = optional_param('studentid', 0, PARAM_INT);
+$action = optional_param('what', false, PARAM_TEXT);
+
+if (has_capability('mod/learningtimecheck:viewreports', $context)) {
+    // Teachers should rather default to the progress report in current case
+    $view = optional_param('view', 'report', PARAM_TEXT);
 } else {
-    $context = context_module::instance($cm->id);
+    $view = optional_param('view', 'view', PARAM_TEXT);
 }
-$userid = 0;
-if (has_capability('mod/learningtimecheck:updateown', $context)) {
+
+// Resolve view controllers.
+if ($view == 'preview') {
+
     $userid = $USER->id;
+    $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
+
+} elseif ($view == 'view') {
+
+    if (!has_capability('mod/learningtimecheck:updateother', $context)) {
+        $userid = $USER->id;
+    }
+
+    $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
+
+    if ($chk->canupdateown()) {
+        if ($action) {
+            include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
+        }
+    }
+} elseif ($view == 'report') {
+    $studentid = optional_param('studentid', false, PARAM_INT);
+    if ($studentid && has_capability('mod/learningtimecheck:viewmenteereports', $context) && !has_capability('mod/learningtimecheck:viewreports', $context)) {
+        // Check i am a mentor of this student.
+        if (!learningtimecheck::is_mentor($studentid)) {
+            $studentid = false;
+        }
+    } elseif (!has_capability('mod/learningtimecheck:updateother', $context)) {
+        $studentid = false;
+    }
+
+    $userid = $studentid;
+    $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
+
+    if (!empty($action)) {
+        include($CFG->dirroot.'/mod/learningtimecheck/report.controller.php');
+    }
 }
 
-$chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
+// Redirect to itemlist edition if empty learningtimecheck and have edtion capabilitites.
+if ((!$chk->items) && $chk->canedit()) {
+    redirect(new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $cm->id)) );
+}
 
-$chk->view();
+echo $OUTPUT->header();
+
+$renderer = $PAGE->get_renderer('learningtimecheck');
+$renderer->set_instance($chk);
+$renderer->view_tabs($view);
+
+add_to_log($course->id, 'learningtimecheck', 'view', "view.php?id={$cm->id}", $learningtimecheck->name, $cm->id);
+
+switch ($view) {
+    case 'view':
+        $seeother = ($USER->id != $userid);
+        if (!$seeother) {
+            echo $OUTPUT->heading(get_string('myprogress', 'learningtimecheck'));
+        }
+        $renderer->view_items($seeother, true);
+        break;
+
+    case 'preview':
+        echo $OUTPUT->heading(get_string('listpreview', 'learningtimecheck'));
+        $renderer->view_items();
+        break;
+
+    case 'report':
+        echo $OUTPUT->heading(get_string('report', 'learningtimecheck'));
+        $renderer->view_report();
+        break;
+}
+
+// End of page.
+echo '<center>';
+if ($course->format != 'singleactivity') {
+    if ($course->id > SITEID) {
+        echo $OUTPUT->single_button(new moodle_url('/course/view.php', array('id' => $course->id)), get_string('backtocourse', 'learningtimecheck'));
+    } else {
+        echo $OUTPUT->single_button($CFG->wwwroot, get_string('backtosite', 'learningtimecheck'));
+    }
+}
+echo '</center>';
+
+if ($course->format == 'page') {
+    require_once $CFG->dirroot.'/course/format/page/xlib.php';
+    // No "backtocourse" print as was already printed in page
+    page_print_page_format_navigation($cm->id, false);
+}
+
+echo $OUTPUT->footer();

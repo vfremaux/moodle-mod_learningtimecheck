@@ -71,7 +71,7 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
         // Apply offset to the deadline
         $data->duetime = $this->apply_date_offset($data->duetime);
 
-        // Sort out the rest of moduleids in the 'after_restore' function - after all the other activities have been restored.
+        // Process the moduleids in the 'after_restore' function - after all the other activities have been restored.
 
         $newid = $DB->insert_record('learningtimecheck_item', $data);
         $this->set_mapping('learningtimecheck_item', $oldid, $newid);
@@ -113,6 +113,22 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
 
         $newid = $DB->insert_record('learningtimecheck_comment', $data);
         $this->set_mapping('learningtimecheck_comment', $oldid, $newid);
+    }
+
+    // We shall have to remap all moduleid after full restore and be sure all course modules have been remapped.
+    protected function after_restore() {
+        global $DB;
+
+        if ($allchecks = $DB->get_records('learningtimecheck', array('course' => $this->get_courseid()))) {
+            foreach ($allchecks as $check) {
+                if ($allitems = $DB->get_records('learningtimecheck_item', array('learningtimecheck' => $check->id))) {
+                    foreach ($allitems as $item) {
+                        $item->moduleid = $this->get_mappingid('course_modules', array('id' => $item->moduleid));
+                        $DB->update_record('learningtimecheck_item', $item);
+                    }
+                }
+            }
+        }
     }
 
     protected function after_execute() {

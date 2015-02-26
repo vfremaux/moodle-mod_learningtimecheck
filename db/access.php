@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -31,7 +30,7 @@ $capabilities = array(
         'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
-    // Ability to view and update own learningtimecheck
+    // Ability to view and update own learningtimecheck.
     'mod/learningtimecheck:updateown' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
@@ -41,7 +40,7 @@ $capabilities = array(
         )
     ),
 
-    // Ability to alter the marks on another person's learningtimecheck
+    // Ability to alter the marks on another person's learningtimecheck.
     'mod/learningtimecheck:updateother' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_SPAM,
         'captype' => 'write',
@@ -53,7 +52,7 @@ $capabilities = array(
         )
     ),
 
-    // Ability to preview a learningtimecheck (to check it is OK)
+    // Ability to preview a learningtimecheck (to check it is OK). Usually denotes a teacher.
     'mod/learningtimecheck:preview' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,

@@ -67,10 +67,10 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
         $mform->addElement('select', 'useritemsallowed', get_string('useritemsallowed', 'learningtimecheck'), $ynoptions);
 
-        $teditoptions = array(  learningtimecheck_MARKING_STUDENT => get_string('teachernoteditcheck','learningtimecheck'),
-                                learningtimecheck_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
-                                learningtimecheck_MARKING_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
-        $mform->addElement('select', 'teacheredit', get_string('teacheredit', 'learningtimecheck'), $teditoptions);
+        $teditoptions = array(  LEARNINGTIMECHECK_MARKING_STUDENT => get_string('teachernoteditcheck','learningtimecheck'),
+                                LEARNINGTIMECHECK_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
+                                LEARNINGTIMECHECK_MARKING_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
+        $mform->addElement('select', 'teacheredit', get_string('marktypes', 'learningtimecheck'), $teditoptions);
 
         $mform->addElement('select', 'duedatesoncalendar', get_string('duedatesoncalendar', 'learningtimecheck'), $ynoptions);
         $mform->setDefault('duedatesoncalendar', 0);
@@ -87,36 +87,37 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->setAdvanced('teachercomments');
 
         $mform->addElement('text', 'maxgrade', get_string('maximumgrade'), array('size'=>'10'));
+        $mform->setType('maxgrade', PARAM_TEXT);
         $mform->setDefault('maxgrade', 100);
         $mform->setAdvanced('maxgrade');
 
-        $emailrecipients = array(   learningtimecheck_EMAIL_NO => get_string('no'),
-                                    learningtimecheck_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
-                                    learningtimecheck_EMAIL_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
-                                    learningtimecheck_EMAIL_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
+        $emailrecipients = array(   LEARNINGTIMECHECK_EMAIL_NO => get_string('no'),
+                                    LEARNINGTIMECHECK_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
+                                    LEARNINGTIMECHECK_EMAIL_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
+                                    LEARNINGTIMECHECK_EMAIL_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
         $mform->addElement('select', 'emailoncomplete', get_string('emailoncomplete', 'learningtimecheck'), $emailrecipients);
         $mform->setDefault('emailoncomplete', 0);
         $mform->addHelpButton('emailoncomplete', 'emailoncomplete', 'learningtimecheck');
 
-		if (!learningtimecheck_course_is_page_formatted()){
-        $autopopulateoptions = array (learningtimecheck_AUTOPOPULATE_NO => get_string('no'),
-                                      learningtimecheck_AUTOPOPULATE_SECTION => get_string('importfromsection','learningtimecheck'),
-                                      learningtimecheck_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
-		} else {
-        $autopopulateoptions = array (learningtimecheck_AUTOPOPULATE_NO => get_string('no'),
-                                      learningtimecheck_AUTOPOPULATE_CURRENT_PAGE => get_string('importfrompage','learningtimecheck'),
-                                      learningtimecheck_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs','learningtimecheck'),
-                                      learningtimecheck_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromsection','learningtimecheck'),
-                                      learningtimecheck_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
+        if (!($COURSE->format == 'page')) {
+            $autopopulateoptions = array (LEARNINGTIMECHECK_AUTOPOPULATE_NO => get_string('no'),
+                                          LEARNINGTIMECHECK_AUTOPOPULATE_SECTION => get_string('importfromsection','learningtimecheck'),
+                                          LEARNINGTIMECHECK_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
+        } else {
+            $autopopulateoptions = array (LEARNINGTIMECHECK_AUTOPOPULATE_NO => get_string('no'),
+                                          LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_PAGE => get_string('importfrompage','learningtimecheck'),
+                                          LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs','learningtimecheck'),
+                                          LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromtoppage','learningtimecheck'),
+                                          LEARNINGTIMECHECK_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
 		}
 
         $mform->addElement('select', 'autopopulate', get_string('autopopulate', 'learningtimecheck'), $autopopulateoptions);
         $mform->setDefault('autopopulate', 0);
         $mform->addHelpButton('autopopulate', 'autopopulate', 'learningtimecheck');
 
-        $autoupdate_options = array( learningtimecheck_AUTOUPDATE_NO => get_string('no'),
-                                     learningtimecheck_AUTOUPDATE_YES => get_string('yesnooverride', 'learningtimecheck'),
-                                     learningtimecheck_AUTOUPDATE_YES_OVERRIDE => get_string('yesoverride', 'learningtimecheck'));
+        $autoupdate_options = array( LEARNINGTIMECHECK_AUTOUPDATE_NO => get_string('no'),
+                                     LEARNINGTIMECHECK_AUTOUPDATE_YES => get_string('yesnooverride', 'learningtimecheck'),
+                                     LEARNINGTIMECHECK_AUTOUPDATE_YES_OVERRIDE => get_string('yesoverride', 'learningtimecheck'));
         $mform->addElement('select', 'autoupdate', get_string('autoupdate', 'learningtimecheck'), $autoupdate_options);
         $mform->setDefault('autoupdate', 1);
         $mform->disabledIf('autoupdate', 'autopopulate', 'eq', 0);

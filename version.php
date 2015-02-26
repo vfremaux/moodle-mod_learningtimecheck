@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $module->version  = 2014011800;  // The current module version (Date: YYYYMMDDXX)
+$module->requires = 2012062501;
 $module->cron     = 60;          // Period for cron to check this module (secs)
 $module->maturity = MATURITY_STABLE;
-$module->release  = '2.4 (Build: 2014011800)';
-$module->requires = 2012062501;
+$module->release  = '2.5.0 (Build: 2014011800)';
 $module->component = 'mod_learningtimecheck';

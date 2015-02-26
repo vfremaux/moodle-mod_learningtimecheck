@@ -14,9 +14,8 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="introformat" NEXT="timemodified"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated" NEXT="useritemsallowed"/>
         <FIELD NAME="useritemsallowed" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Whether or not users are allowed to add their own items to the learningtimecheck" PREVIOUS="timemodified" NEXT="teacheredit"/>
-        <FIELD NAME="teacheredit" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the marking will be done by: 0 - students only (default), 1 - teacher only; 2 - both teacher and student" PREVIOUS="useritemsallowed" NEXT="theme"/>
-        <FIELD NAME="theme" TYPE="char" LENGTH="100" NOTNULL="false" DEFAULT="default" SEQUENCE="false" COMMENT="The theme chosen to display the learningtimecheck to the users" PREVIOUS="teacheredit" NEXT="duedatesoncalendar"/>
-        <FIELD NAME="duedatesoncalendar" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Add due dates to the course calendar" PREVIOUS="theme" NEXT="teachercomments"/>
+        <FIELD NAME="teacheredit" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the marking will be done by: 0 - students only (default), 1 - teacher only; 2 - both teacher and student" PREVIOUS="useritemsallowed" NEXT="duedatesoncalendar"/>
+        <FIELD NAME="duedatesoncalendar" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Add due dates to the course calendar" PREVIOUS="teacheredit" NEXT="teachercomments"/>
         <FIELD NAME="teachercomments" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Are teachers allowed to add comments to a user's learningtimecheck items?" PREVIOUS="duedatesoncalendar" NEXT="maxgrade"/>
         <FIELD NAME="maxgrade" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="100" SEQUENCE="false" PREVIOUS="teachercomments" NEXT="autopopulate"/>
         <FIELD NAME="autopopulate" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Automatically fill in the learningtimecheck, based on the modules in the current course" PREVIOUS="maxgrade" NEXT="autoupdate"/>
@@ -44,8 +43,9 @@
         <FIELD NAME="itemoptional" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="indent" NEXT="duetime"/>
         <FIELD NAME="duetime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time when this item is due to be completed" PREVIOUS="itemoptional" NEXT="credittime"/>
         <FIELD NAME="credittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited when validated" PREVIOUS="duetime" NEXT="teachercredittime"/>
-        <FIELD NAME="teachercredittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited when validated" PREVIOUS="credittime" NEXT="enablecredit"/>
-        <FIELD NAME="enablecredit" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time estimated for teacher" PREVIOUS="teachercredittime" NEXT="isdeclarative"/>
+        <FIELD NAME="teachercredittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited for teacher per item" PREVIOUS="credittime" NEXT="teachercredittimeperuser"/>
+        <FIELD NAME="teachercredittimeperuser" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited per user for teacher on item" PREVIOUS="teachercredittime" NEXT="enablecredit"/>
+        <FIELD NAME="enablecredit" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time estimated for teacher" PREVIOUS="teachercredittimeperuser" NEXT="isdeclarative"/>
         <FIELD NAME="isdeclarative" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Is the item declarative for students or teacher" PREVIOUS="enablecredit" NEXT="eventid"/>
         <FIELD NAME="eventid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="id of the calendar event (if any) associated with this item" PREVIOUS="isdeclarative" NEXT="colour"/>
         <FIELD NAME="colour" TYPE="char" LENGTH="15" NOTNULL="true" DEFAULT="black" SEQUENCE="false" PREVIOUS="eventid" NEXT="moduleid"/>

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,7 +22,7 @@ $CFG->learningtimecheck_autoupdate_use_cron = true;
  * helpful information during the cron update. Do NOT use this if you
  * have made the core modifications outlined in core_modifications.txt
  */
-//define("DEBUG_learningtimecheck_AUTOUPDATE", 1);
+//define("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE", 1);
 
 function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $userid, $url, $learningtimechecks=null) {
     global $CFG, $DB;
@@ -95,7 +94,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
         || (($module == 'feedback') && ($action == 'submit'))
         ) {
 
-        if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+        if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
             mtrace("Possible update needed - courseid: $courseid, module: $module, action: $action, cmid: $cmid, userid: $userid, url: $url");
         }
 
@@ -113,7 +112,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                                                   array($courseid));
 
             if (empty($learningtimechecks)) {
-                if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+                if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
                     mtrace("No suitable learningtimechecks to update in course $courseid");
                 }
                 return 0;
@@ -132,7 +131,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                                                'completion',
                                                array('id'=>$cmid));
                 if ($cmcompletion) {
-                    if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+                    if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
                         mtrace("This course module has completion enabled - allow that to control any learningtimecheck items");
                     }
                     return 0;
@@ -152,7 +151,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
         // itemoptional - 0: required; 1: optional; 2: heading;
         // not loading defines from mod/learningtimecheck/locallib.php to reduce overhead
         if (empty($items)) {
-            if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+            if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
                 mtrace("No learningtimecheck items linked to this course module");
             }
             return 0;
@@ -176,13 +175,13 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                 $check->usertimestamp = time();
                 $check->teachertimestamp = 0;
                 $check->teachermark = 0;
-                // learningtimecheck_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead
+                // LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead
 
                 $check->id = $DB->insert_record('learningtimecheck_check', $check);
                 $updatecount++;
             }
         }
-        if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+        if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
             mtrace("$updatecount learningtimecheck items updated from this log entry");
         }
         if ($updatecount) {
@@ -204,7 +203,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
         $userid = $USER->id;
     }
 
-    if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+    if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
         mtrace("Completion status change for cmid: $cmid, userid: $userid, newstate: $newstate");
     }
 
@@ -216,7 +215,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
     // itemoptional - 0: required; 1: optional; 2: heading;
     // not loading defines from mod/learningtimecheck/locallib.php to reduce overhead
     if (empty($items)) {
-        if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+        if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
             mtrace("No learningtimecheck items linked to this course module");
         }
         return 0;
@@ -258,7 +257,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
             $check->usertimestamp = time();
             $check->teachertimestamp = 0;
             $check->teachermark = 0;
-            // learningtimecheck_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead
+            // LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead
 
             $check->id = $DB->insert_record('learningtimecheck_check', $check);
             $updatelearningtimechecks[] = $item->learningtimecheck;
@@ -275,7 +274,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
         }
     }
 
-    if (defined("DEBUG_learningtimecheck_AUTOUPDATE")) {
+    if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
         mtrace("Updated $updatecount learningtimecheck items from this completion status change");
     }
 

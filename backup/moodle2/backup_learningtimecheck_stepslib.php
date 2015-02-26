@@ -33,19 +33,21 @@ class backup_learningtimecheck_activity_structure_step extends backup_activity_s
 
         $learningtimecheck = new backup_nested_element('learningtimecheck', array('id'), array(
             'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'useritemsallowed',
-            'teacheredit', 'theme', 'duedatesoncalendar', 'teachercomments', 'maxgrade',
-            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks'));
+            'teacheredit', 'duedatesoncalendar', 'teachercomments', 'maxgrade',
+            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks', 'usetimecounterpart'));
 
         $items = new backup_nested_element('items');
 
         $item = new backup_nested_element('item', array('id'),
                                           array('userid', 'displaytext', 'position', 'indent',
-                                                'itemoptional', 'duetime', 'colour', 'moduleid', 'hidden'));
+                                                'itemoptional', 'duetime', 'credittime', 'teachercredittime', 
+                                                'teachercredittimeperuser', 'enablecredit', 'isdeclarative', 
+                                                'eventid', 'colour', 'moduleid', 'hidden', 'grouping'));
 
         $checks = new backup_nested_element('checks');
 
         $check = new backup_nested_element('check', array('id'), array(
-            'userid', 'usertimestamp', 'teachermark', 'teachertimestamp', 'teacherid'));
+            'userid', 'usertimestamp', 'declaredtime', 'teacherid', 'teachermark', 'teacherdeclaredtime', 'teachertimestamp'));
 
         $comments = new backup_nested_element('comments');
 
@@ -88,5 +90,4 @@ class backup_learningtimecheck_activity_structure_step extends backup_activity_s
         // Return the root element (forum), wrapped into standard activity structure
         return $this->prepare_activity_structure($learningtimecheck);
     }
-
 }

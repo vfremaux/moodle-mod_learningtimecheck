@@ -35,7 +35,7 @@ class backup_learningtimecheck_activity_task extends backup_activity_task {
      * Define (add) particular steps this activity can have
      */
     protected function define_my_steps() {
-        // Forum only has one structure step
+        // Learningtimecheck only has one structure step.
         $this->add_step(new backup_learningtimecheck_activity_structure_step('learningtimecheck structure', 'learningtimecheck.xml'));
     }
 
@@ -51,31 +51,31 @@ class backup_learningtimecheck_activity_task extends backup_activity_task {
 
         // Link to the list of learningtimechecks
         $search="/(".$base."\/mod\/learningtimecheck\/index.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckINDEX*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKINDEX*$2@$', $content);
 
         // Link to learningtimecheck view by moduleid
         $search="/(".$base."\/mod\/learningtimecheck\/view.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckVIEWBYID*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYID*$2@$', $content);
 
         // Link to learningtimecheck view by id
         $search="/(".$base."\/mod\/learningtimecheck\/view.php\?learningtimecheck\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckVIEWBYlearningtimecheck*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYINSTANCE*$2@$', $content);
 
         // Link to learningtimecheck report by moduleid
         $search="/(".$base."\/mod\/learningtimecheck\/report.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckREPORTBYID*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYID*$2@$', $content);
 
         // Link to learningtimecheck report by id
         $search="/(".$base."\/mod\/learningtimecheck\/report.php\?learningtimecheck\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckREPORTBYlearningtimecheck*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYINSTANCE*$2@$', $content);
 
         // Link to learningtimecheck edit by moduleid
         $search="/(".$base."\/mod\/learningtimecheck\/edit.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckEDITBYID*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKEDITBYID*$2@$', $content);
 
         // Link to learningtimecheck edit by id
         $search="/(".$base."\/mod\/learningtimecheck\/edit.php\?learningtimecheck\=)([0-9]+)/";
-        $content= preg_replace($search, '$@learningtimecheckEDITBYlearningtimecheck*$2@$', $content);
+        $content= preg_replace($search, '$@LEARNINGTIMECHECKEDITBYINSTANCE*$2@$', $content);
 
         return $content;
     }

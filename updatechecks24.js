@@ -97,12 +97,12 @@ M.mod_learningtimecheck = {
                     YD = YAHOO.util.Dom;
                     YA = YAHOO.util.Anim;
                     YE = YAHOO.util.Easing.easeOut;
-                    prall = YD.get('learningtimecheckprogressall');
-                    prreq = YD.get('learningtimecheckprogressrequired');
+                    prall = YD.get('learningtimecheck-progress-all');
+                    prreq = YD.get('learningtimecheck-progress-required');
 
                     allpercent = (this.optionalchecked + this.requiredchecked) * 100.0 / (this.optionalcount + this.requiredcount);
-                    inner = YD.getElementsByClassName('learningtimecheck_progress_inner', 'div', prall)[0];
-                    inneranim = YD.getElementsByClassName('learningtimecheck_progress_anim', 'div', prall)[0];
+                    inner = YD.getElementsByClassName('learningtimecheck-progress-inner', 'div', prall)[0];
+                    inneranim = YD.getElementsByClassName('learningtimecheck-progress-anim', 'div', prall)[0];
                     oldpercent = parseFloat(YD.getStyle(inner, 'width').replace("%", ""));
                     if (allpercent > oldpercent) {
                         YD.setStyle(inneranim, 'width', allpercent + '%');
@@ -112,13 +112,13 @@ M.mod_learningtimecheck = {
                         oldanimpercent = parseFloat(YD.getStyle(inneranim, 'width').replace("%", ""));
                         this.startanim(1, new YA(inneranim, { width: { from: oldanimpercent, to: allpercent, unit: '%' } }, 1, YE));
                     }
-                    disppercent = YD.getElementsByClassName('learningtimecheck_progress_percent', 'span', prall)[0];
+                    disppercent = YD.getElementsByClassName('learningtimecheck-progress-percent', 'span', prall)[0];
                     disppercent.innerHTML = '&nbsp;' + allpercent.toFixed(0) + '% ';
 
                     if (prreq) {
                         reqpercent = this.requiredchecked * 100.0 / this.requiredcount;
-                        inner = YD.getElementsByClassName('learningtimecheck_progress_inner', 'div', prreq)[0];
-                        inneranim = YD.getElementsByClassName('learningtimecheck_progress_anim', 'div', prreq)[0];
+                        inner = YD.getElementsByClassName('learningtimecheck-progress-inner', 'div', prreq)[0];
+                        inneranim = YD.getElementsByClassName('learningtimecheck-progress-anim', 'div', prreq)[0];
                         oldpercent = parseFloat(YD.getStyle(inner, 'width').replace("%", ""));
                         if (reqpercent > oldpercent) {
                             YD.setStyle(inneranim, 'width', reqpercent + '%');
@@ -129,7 +129,7 @@ M.mod_learningtimecheck = {
                             this.startanim(2, new YA(inneranim, { width: { from: oldanimpercent, to: reqpercent, unit: '%' } }, 1, YE));
                         }
 
-                        disppercent = YD.getElementsByClassName('learningtimecheck_progress_percent', 'span', prreq)[0];
+                        disppercent = YD.getElementsByClassName('learningtimecheck-progress-percent', 'span', prreq)[0];
                         disppercent.innerHTML = '&nbsp;' + reqpercent.toFixed(0) + '% ';
                     }
 

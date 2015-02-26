@@ -80,11 +80,7 @@ if ($course->format == 'weeks') {
     $table->align = array ('left', 'left');
 }
 
-if ($CFG->version < 2011120100) {
-    $context = get_context_instance(CONTEXT_COURSE, $course->id);
-} else {
-    $context = context_course::instance($course->id);
-}
+$context = context_course::instance($course->id);
 $canupdateown = has_capability('mod/learningtimecheck:updateown', $context);
 if ($canupdateown) {
     $table->head[] = $strprogress;
