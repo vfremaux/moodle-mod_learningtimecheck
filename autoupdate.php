@@ -24,7 +24,7 @@ $CFG->learningtimecheck_autoupdate_use_cron = true;
  */
 //define("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE", 1);
 
-function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $userid, $url, $learningtimechecks=null) {
+function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $userid, $url, $learningtimechecks = null) {
     global $CFG, $DB;
 
     if ($userid == 0) {

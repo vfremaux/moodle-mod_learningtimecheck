@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,44 +21,38 @@
  * @package mod/learningtimecheck
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
+require('../../config.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 global $DB;
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
-if ($CFG->version < 2011120100) {
-    $items = optional_param('items', false, PARAM_INT);
-} else {
-    $items = optional_param_array('items', false, PARAM_INT);
-}
+$items = optional_param_array('items', false, PARAM_INT);
 
 $url = new moodle_url('/mod/learningtimecheck/view.php');
 if ($id) {
     if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
-        error('Course Module ID was incorrect');
+        print_error('invalidcoursemodule');
     }
-
     if (! $course = $DB->get_record('course', array('id' => $cm->course) )) {
-        error('Course is misconfigured');
+        print_error('coursemisconf');
     }
-
     if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
-        error('Course module is incorrect');
+        print_error('Course module is incorrect');
     }
     $url->param('id', $id);
 
 } else if ($learningtimecheckid) {
     if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
-        error('Course module is incorrect');
+        print_error('Course module is incorrect');
     }
     if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course) )) {
-        error('Course is misconfigured');
+        print_error('coursemisconf');
     }
     if (! $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
-        error('Course Module ID was incorrect');
+        print_error('invalidcoursemodule');
     }
     $url->param('learningtimecheck', $learningtimecheckid);
 
@@ -72,10 +65,8 @@ require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 $userid = $USER->id;
-if (!has_capability('mod/learningtimecheck:updateown', $context)) {
-    echo 'Error: you do not have permission to update this learningtimecheck';
-    die();
-}
+require_capability('mod/learningtimecheck:updateown', $context);
+
 if (!confirm_sesskey()) {
     echo 'Error: invalid sesskey';
     die();

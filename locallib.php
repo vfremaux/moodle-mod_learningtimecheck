@@ -1360,7 +1360,11 @@ class learningtimecheck_class {
             return;
         }
 
-        add_to_log($this->course->id, 'learningtimecheck', 'update checks', "report.php?id={$this->cm->id}&studentid={$this->userid}", $this->learningtimecheck->name, $this->cm->id);
+        // add_to_log($this->course->id, 'learningtimecheck', 'update checks', "report.php?id={$this->cm->id}&studentid={$this->userid}", $this->learningtimecheck->name, $this->cm->id);
+        // Trigger instances list viewed event.
+        $event = \mod_learningtimecheck\event\course_module_checks_updated::create(array('context' => $context));
+        $event->add_record_snapshot('course', $course);
+        $event->trigger();
 
         $updategrades = false;
         $declaredtimes = optional_param_array('declaredtime', '', PARAM_INT);
@@ -1462,7 +1466,11 @@ class learningtimecheck_class {
                 print_error('erronosuchuser', 'learningtimecheck');
             }
             $info = $this->learningtimecheck->name.' ('.fullname($student, true).')';
-            add_to_log($this->course->id, 'learningtimecheck', 'update checks', "report.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+            // add_to_log($this->course->id, 'learningtimecheck', 'update checks', "report.php?id={$this->cm->id}&studentid={$this->userid}", $info, $this->cm->id);
+            // Trigger instances list viewed event.
+            $event = \mod_learningtimecheck\event\course_module_teachermarks_updated::create(array('context' => $context));
+            $event->add_record_snapshot('course', $course);
+            $event->trigger();
 
             $teachermarklocked = $this->learningtimecheck->lockteachermarks && !has_capability('mod/learningtimecheck:updatelocked', $this->context);
             $teacherdeclaredtimesperuser = optional_param_array('teacherdeclaredtimeperuser', '', PARAM_INT);

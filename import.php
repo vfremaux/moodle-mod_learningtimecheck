@@ -1,7 +1,7 @@
 <?php
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/importexportfields.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/importexportfields.php');
 require_once($CFG->libdir.'/formslib.php');
 
 define('STATE_WAITSTART', 0);
@@ -12,25 +12,24 @@ define('STATE_NORMAL', 3);
 $id = required_param('id', PARAM_INT); // course module id
 
 if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
-    error('Course Module ID was incorrect');
+    print_error('invalidcoursemodule');
 }
-
 if (! $course = $DB->get_record('course', array('id' => $cm->course))) {
-    error('Course is misconfigured');
+    print_error('coursemisconf');
 }
-
 if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance))) {
-    error('Course module is incorrect');
+    print_error('Course module is incorrect');
 }
 
 $url = new moodle_url('/mod/learningtimecheck/import.php', array('id' => $cm->id));
 $PAGE->set_url($url);
+
+// Security.
+
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-if (!has_capability('mod/learningtimecheck:edit', $context)) {
-    error('You do not have permission to import items to this learningtimecheck');
-}
+require_capability('mod/learningtimecheck:edit', $context);
 
 $returl = new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $cm->id));
 
@@ -59,14 +58,14 @@ function cleanrow($separator, $row) {
         switch ($state) {
         case STATE_WAITSTART:
             if ($char == ' ' || $char == ',') { } // Still in STATE_WAITSTART
-            else if ($char == '"') { $quotes = '"'; $state = STATE_INQUOTES; }
-            else if ($char == "'") { $quotes = "'"; $state = STATE_INQUOTES; }
+            elseif ($char == '"') { $quotes = '"'; $state = STATE_INQUOTES; }
+            elseif ($char == "'") { $quotes = "'"; $state = STATE_INQUOTES; }
             else { $state = STATE_NORMAL; }
             break;
         case STATE_INQUOTES:
             if ($char == $quotes) { $state = STATE_NORMAL; } // End of quotes
-            else if ($char == '\\') { $state = STATE_ESCAPE; continue 2; }  // Possible escaped quotes skip (for now)
-            else if ($char == $separator) { $cleanrow .= '[!SEPARATOR!]'; continue 2; } // Replace $separator and continue loop
+            elseif ($char == '\\') { $state = STATE_ESCAPE; continue 2; }  // Possible escaped quotes skip (for now)
+            elseif ($char == $separator) { $cleanrow .= '[!SEPARATOR!]'; continue 2; } // Replace $separator and continue loop
             break;
         case STATE_ESCAPE:
             // Retain escape char, unless escaping a quote character
@@ -219,4 +218,3 @@ if ($errormsg) {
 $form->display();
 
 echo $OUTPUT->footer();
-

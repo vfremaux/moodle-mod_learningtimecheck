@@ -22,13 +22,13 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
 
     if ($usecredit) {
         $creditclause = ' AND usetimecounterpart = 1 ';
-    } else if ($usecredit === false) {
+    } elseif ($usecredit === false) {
         $creditclause = ' AND usetimecounterpart = 0 ';
     } else {
         $creditclause = '';
     }
 
-    if ($learningtimechecks = $DB->get_records_select('learningtimecheck', " course = ? $creditclause ", array($courseid))){
+    if ($learningtimechecks = $DB->get_records_select('learningtimecheck', " course = ? $creditclause ", array($courseid))) {
         return $learningtimechecks;
     }
     return array();
@@ -44,12 +44,12 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
 function learningtimecheck_get_credittimes($learningtimecheckid = 0, $cmid = 0, $userid = 0) {
     global $CFG, $DB;
 
-    $learningtimecheckclause = ($learningtimecheckid) ? " AND ci.learningtimecheck = $learningtimecheckid " : '' ;
-    $cmclause = ($cmid) ? " AND cm.id = $cmid " : '' ;
-    $userclause = ($userid) ? " AND cc.userid = $userid " : '' ;
+    $learningtimecheckclause = ($learningtimecheckid) ? " AND ci.learningtimecheck = $learningtimecheckid " : '';
+    $cmclause = ($cmid) ? " AND cm.id = $cmid " : '';
+    $userclause = ($userid) ? " AND cc.userid = $userid " : '';
     $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => "$learningtimecheckid"));
     $teachermarkclause = '';
-    if ($learningtimecheck->teacheredit > LEARNINGTIMECHECK_MARKING_STUDENT){
+    if ($learningtimecheck->teacheredit > LEARNINGTIMECHECK_MARKING_STUDENT) {
         $teachermarkclause = " AND teachermark = 1 ";
     }
 
@@ -181,9 +181,9 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
                 $teachermarkedclause
                 $cmclause
         ";
-        
+
         // echo "Student : $sql <br/>";
-        
+
         return $DB->get_records_sql($sql);
     }
 }

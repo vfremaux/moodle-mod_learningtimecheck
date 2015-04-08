@@ -68,7 +68,19 @@ if (!$chk->canedit()) {
 
 add_to_log($course->id, "learningtimecheck", "edit", "edit.php?id={$cm->id}", $learningtimecheck->name, $cm->id);
 
-include($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
+// Trigger module viewed event.
+$eventparams = array(
+    'objectid' => $learningtimecheck->id,
+    'context' => $context,
+);
+
+$event = \mod_learningtimecheck\event\course_module_edited::create($eventparams);
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->add_record_snapshot('learningtimecheck', $learningtimecheck);
+$event->trigger();
+
+$chk->process_edit_actions();
 
 if ($learningtimecheck->autopopulate) {
     // Needs to be done again, just in case the edit actions have changed something

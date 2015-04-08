@@ -373,7 +373,20 @@ function learningtimecheck_update_grades($learningtimecheck, $userid=0) {
                     }
                 }
             }
-            add_to_log($learningtimecheck->course, 'learningtimecheck', 'complete', "view.php?id={$cm->id}", $learningtimecheck->name, $cm->id, $grade->userid);
+            // add_to_log($learningtimecheck->course, 'learningtimecheck', 'complete', "view.php?id={$cm->id}", $learningtimecheck->name, $cm->id, $grade->userid);
+
+            // Trigger module viewed event.
+            $eventparams = array(
+                'objectid' => $learningtimecheck->id,
+                'context' => $context,
+            );
+            
+            $event = \mod_learningtimecheck\event\course_module_completed::create($eventparams);
+            $event->add_record_snapshot('course_modules', $cm);
+            $event->add_record_snapshot('course', $course);
+            $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
+            $event->trigger();
+
         }
         $ci = new completion_info($course);
         if ($cm->completion == COMPLETION_TRACKING_AUTOMATIC) {

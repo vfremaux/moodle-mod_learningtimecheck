@@ -32,11 +32,12 @@ if ($id) {
     if (! $learningtimecheck = $DB->get_record("learningtimecheck", array("id" => $cm->instance))) {
         print_error('invalidlearningtimecheckid', 'learningtimecheck');
     }
+
     // move require_course_login here to use forced language for course
     // fix for MDL-6926
     require_course_login($course, true, $cm);
-    $strforums = get_string("modulenameplural", "learningtimecheck");
-    $strforum = get_string("modulename", "learningtimecheck");
+    $strforums = get_string('modulenameplural', 'learningtimecheck');
+    $strforum = get_string('modulename', 'learningtimecheck');
 } else if ($f) {
 
     if (! $learningtimecheck = $DB->get_record("learningtimecheck", array("id" => $learningtimecheckid))) {
@@ -52,8 +53,8 @@ if ($id) {
     // move require_course_login here to use forced language for course
     // fix for MDL-6926
     require_course_login($course, true, $cm);
-    $strlearningtimechecks = get_string("modulenameplural", "learningtimecheck");
-    $strlearningtimecheck = get_string("modulename", "learningtimecheck");
+    $strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
+    $strlearningtimecheck = get_string('modulename', 'learningtimecheck');
 } else {
     print_error('missingparameter');
 }

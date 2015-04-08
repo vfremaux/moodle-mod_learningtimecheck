@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version  = 2014011800;  // The current module version (Date: YYYYMMDDXX)
-$module->requires = 2012062501;
+$module->version  = 2015020400;  // The current module version (Date: YYYYMMDDXX)
+$module->requires = 2012062500;
 $module->cron     = 60;          // Period for cron to check this module (secs)
 $module->maturity = MATURITY_STABLE;
-$module->release  = '2.6.0 (Build: 2014011800)';
+$module->release  = '2.7.0 (Build: 2015020400)';
 $module->component = 'mod_learningtimecheck';

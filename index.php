@@ -38,28 +38,32 @@ $PAGE->set_url('/mod/learningtimecheck/index.php', array('id'=>$course->id));
 require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 
-add_to_log($course->id, 'learningtimecheck', 'view all', "index.php?id=$course->id", '');
+// add_to_log($course->id, 'learningtimecheck', 'view all', "index.php?id=$course->id", '');
+
+// Trigger instances list viewed event.
+$event = \mod_learningtimecheck\event\course_module_instance_list_viewed::create(array('context' => $context));
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 /// Get all required stringsnewmodule
 
 $strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
 $strlearningtimecheck  = get_string('modulename', 'learningtimecheck');
 
-
-/// Print the header
+// Print the header.
 
 $PAGE->navbar->add($strlearningtimechecks);
 $PAGE->set_title($strlearningtimechecks);
 echo $OUTPUT->header();
 
-/// Get all the appropriate data
+// Get all the appropriate data.
 
 if (! $learningtimechecks = get_all_instances_in_course('learningtimecheck', $course)) {
     notice('There are no instances of learningtimecheck', "../../course/view.php?id=$course->id");
     die;
 }
 
-/// Print the list of instances (your module will probably extend this)
+// Print the list of instances (your module will probably extend this).
 
 $timenow  = time();
 $strname  = get_string('name');
@@ -88,10 +92,10 @@ if ($canupdateown) {
 
 foreach ($learningtimechecks as $learningtimecheck) {
     if (!$learningtimecheck->visible) {
-        //Show dimmed if the mod is hidden
+        // Show dimmed if the mod is hidden.
         $link = '<a class="dimmed" href="view.php?id='.$learningtimecheck->coursemodule.'">'.format_string($learningtimecheck->name).'</a>';
     } else {
-        //Show normal if the mod is visible
+        // Show normal if the mod is visible.
         $link = '<a href="view.php?id='.$learningtimecheck->coursemodule.'">'.format_string($learningtimecheck->name).'</a>';
     }
 
@@ -112,6 +116,6 @@ foreach ($learningtimechecks as $learningtimecheck) {
 echo $OUTPUT->heading($strlearningtimechecks);
 echo html_writer::table($table);
 
-/// Finish the page
+// Finish the page.
 
 echo $OUTPUT->footer();

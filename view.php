@@ -131,7 +131,17 @@ $renderer = $PAGE->get_renderer('learningtimecheck');
 $renderer->set_instance($chk);
 $renderer->view_tabs($view);
 
-add_to_log($course->id, 'learningtimecheck', 'view', "view.php?id={$cm->id}", $learningtimecheck->name, $cm->id);
+// Trigger module viewed event.
+$eventparams = array(
+    'objectid' => $learningtimecheck->id,
+    'context' => $context,
+);
+
+$event = \mod_learningtimecheck\event\course_module_viewed::create($eventparams);
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->add_record_snapshot('learningtimecheck', $learningtimecheck);
+$event->trigger();
 
 switch ($view) {
     case 'view':

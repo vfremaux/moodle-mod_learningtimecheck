@@ -26,34 +26,33 @@ if ($id) {
     if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
         print_error('invalidcoursemodule');
     }
-    if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+    if (! $course = $DB->get_record('course', array('id' => $cm->course))) {
         print_error('coursemisconf');
     }
-    if (! $learningtimecheck = $DB->get_record("learningtimecheck", array("id" => $cm->instance))) {
+    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance))) {
         print_error('invalidlearningtimecheckid', 'learningtimecheck');
     }
     // move require_course_login here to use forced language for course
     // fix for MDL-6926
     require_course_login($course, true, $cm);
-    $strforums = get_string("modulenameplural", "learningtimecheck");
-    $strforum = get_string("modulename", "learningtimecheck");
-} else if ($f) {
-
-    if (! $learningtimecheck = $DB->get_record("learningtimecheck", array("id" => $learningtimecheckid))) {
+    $strforums = get_string('modulenameplural', 'learningtimecheck');
+    $strforum = get_string('modulename', 'learningtimecheck');
+} elseif ($f) {
+    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid))) {
         print_error('invalidlearningtimecheckid', 'learningtimecheck');
     }
-    if (! $course = $DB->get_record("course", array("id" => $learningtimecheck->course))) {
+    if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course))) {
         print_error('coursemisconf');
     }
 
-    if (!$cm = get_coursemodule_from_instance("learningtimecheck", $chcklist->id, $course->id)) {
+    if (!$cm = get_coursemodule_from_instance('learningtimecheck', $chcklist->id, $course->id)) {
         print_error('missingparameter');
     }
     // move require_course_login here to use forced language for course
     // fix for MDL-6926
     require_course_login($course, true, $cm);
-    $strlearningtimechecks = get_string("modulenameplural", "learningtimecheck");
-    $strlearningtimecheck = get_string("modulename", "learningtimecheck");
+    $strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
+    $strlearningtimecheck = get_string('modulename', 'learningtimecheck');
 } else {
     print_error('missingparameter');
 }

@@ -52,7 +52,8 @@ if (strpos($CFG->wwwroot, 'https://') === 0) { //https sites - watch out for IE!
     @header('Cache-Control: max-age=10');
     @header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
     @header('Pragma: ');
-} else { //normal http - prevent caching at all cost
+} else {
+    //normal http - prevent caching at all cost
     @header('Cache-Control: private, must-revalidate, pre-check=0, post-check=0, max-age=0');
     @header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
     @header('Pragma: no-cache');
@@ -64,7 +65,7 @@ header("Content-Type: application/download\n");
 $downloadfilename = clean_filename("{$course->shortname} $strlearningtimecheck {$learningtimecheck->name}");
 header("Content-Disposition: attachment; filename=\"$downloadfilename.csv\"");
 
-// Output the headings
+// Output the headings.
 echo implode($separator, $fields)."\n";
 
 foreach ($items as $item) {
