@@ -123,7 +123,7 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
             foreach ($allchecks as $check) {
                 if ($allitems = $DB->get_records('learningtimecheck_item', array('learningtimecheck' => $check->id))) {
                     foreach ($allitems as $item) {
-                        $item->moduleid = $this->get_mappingid('course_modules', array('id' => $item->moduleid));
+                        $item->moduleid = $this->get_mappingid('course_modules', $item->moduleid);
                         $DB->update_record('learningtimecheck_item', $item);
                     }
                 }
