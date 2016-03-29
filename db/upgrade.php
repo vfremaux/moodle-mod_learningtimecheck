@@ -271,6 +271,44 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2012092002, 'learningtimecheck');
     }
 
+    if ($oldversion < 2015041900) {
+
+        // Remove field duedatesoncalendar from learningtimecheck.
+        // Due times are not any more relevant as being driven by course completion.
+
+        $table = new xmldb_table('learningtimecheck');
+        $field = new xmldb_field('duedatesoncalendar', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, '0');
+
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        $table = new xmldb_table('learningtimecheck_item');
+        $field = new xmldb_field('duetime', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0');
+
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        /// learningtimecheck savepoint reached
+        upgrade_mod_savepoint($result, 2015041900, 'learningtimecheck');
+    }
+
+    if ($oldversion < 2015100800) {
+
+        // Remove field duedatesoncalendar from learningtimecheck.
+        // Due times are not any more relevant as being driven by course completion.
+
+        $table = new xmldb_table('learningtimecheck');
+        $field = new xmldb_field('lastcompiledtime', XMLDB_TYPE_INTEGER, '11', XMLDB_UNSIGNED, null, null, '0', 'usetimecounterpart');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        /// learningtimecheck savepoint reached
+        upgrade_mod_savepoint($result, 2015100800, 'learningtimecheck');
+    }
 
     return $result;
 

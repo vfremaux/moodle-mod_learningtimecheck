@@ -15,10 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @version Moodle 2.7
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ */
+
+/**
  * Exports the item list of a Learningtimecheck instance as a CSV file.
  * regardless to real users results or marking.
  */
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/importexportfields.php');
 
 $id = required_param('id', PARAM_INT); // course module id
@@ -61,9 +70,9 @@ if (strpos($CFG->wwwroot, 'https://') === 0) { //https sites - watch out for IE!
 
 $strlearningtimecheck = get_string('learningtimecheck', 'learningtimecheck');
 
-header("Content-Type: application/download\n");
+header('Content-Type: application/download');
 $downloadfilename = clean_filename("{$course->shortname} $strlearningtimecheck {$learningtimecheck->name}");
-header("Content-Disposition: attachment; filename=\"$downloadfilename.csv\"");
+header("Content-Disposition: attachment; filename=\"$downloadfilename.csv\"\n");
 
 // Output the headings.
 echo implode($separator, $fields)."\n";

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,6 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Define all the backup steps that will be used by the backup_forum_activity_task
@@ -33,14 +34,14 @@ class backup_learningtimecheck_activity_structure_step extends backup_activity_s
 
         $learningtimecheck = new backup_nested_element('learningtimecheck', array('id'), array(
             'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'useritemsallowed',
-            'teacheredit', 'duedatesoncalendar', 'teachercomments', 'maxgrade',
-            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks', 'usetimecounterpart'));
+            'teacheredit', 'teachercomments', 'maxgrade',
+            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks', 'usetimecounterpart', 'lastcompiledtime'));
 
         $items = new backup_nested_element('items');
 
         $item = new backup_nested_element('item', array('id'),
                                           array('userid', 'displaytext', 'position', 'indent',
-                                                'itemoptional', 'duetime', 'credittime', 'teachercredittime', 
+                                                'itemoptional', 'credittime', 'teachercredittime', 
                                                 'teachercredittimeperuser', 'enablecredit', 'isdeclarative', 
                                                 'eventid', 'colour', 'moduleid', 'hidden', 'grouping'));
 

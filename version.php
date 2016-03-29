@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version  = 2015020400;  // The current module version (Date: YYYYMMDDXX)
-$module->requires = 2012062500;
-$module->cron     = 60;          // Period for cron to check this module (secs)
-$module->maturity = MATURITY_STABLE;
-$module->release  = '2.7.0 (Build: 2015020400)';
-$module->component = 'mod_learningtimecheck';
+$plugin->version  = 2015100800;  // The current module version (Date: YYYYMMDDXX)
+$plugin->requires = 2014050800;
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release  = '2.7.0 (Build: 2015100800)';
+$plugin->component = 'mod_learningtimecheck';
+$plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');

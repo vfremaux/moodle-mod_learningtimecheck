@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,29 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This page lists all the instances of learningtimecheck in a particular course
- *
- * @author  David Smith <moodle@davosmith.co.uk>
- * @package mod/learningtimecheck
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @version Moodle 2.7
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-
-global $DB;
+require('../../config.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 $id = required_param('id', PARAM_INT);   // course
 
 if (! $course = $DB->get_record('course', array('id' => $id) )) {
-    error('Course ID is incorrect');
+    print_error('coursemisconf');
 }
 
-$PAGE->set_url('/mod/learningtimecheck/index.php', array('id'=>$course->id));
-require_course_login($course);
-$PAGE->set_pagelayout('incourse');
+$context = context_course::instance($course->id);
 
-// add_to_log($course->id, 'learningtimecheck', 'view all', "index.php?id=$course->id", '');
+$PAGE->set_url('/mod/learningtimecheck/index.php', array('id'=>$course->id));
+
+// Security.
+
+require_course_login($course);
+
+$PAGE->set_pagelayout('incourse');
 
 // Trigger instances list viewed event.
 $event = \mod_learningtimecheck\event\course_module_instance_list_viewed::create(array('context' => $context));
@@ -54,12 +57,13 @@ $strlearningtimecheck  = get_string('modulename', 'learningtimecheck');
 
 $PAGE->navbar->add($strlearningtimechecks);
 $PAGE->set_title($strlearningtimechecks);
+
 echo $OUTPUT->header();
 
 // Get all the appropriate data.
 
 if (! $learningtimechecks = get_all_instances_in_course('learningtimecheck', $course)) {
-    notice('There are no instances of learningtimecheck', "../../course/view.php?id=$course->id");
+    echo $OUTPUT->notification(get_string('noinstances', 'learningtimecheck'), new moodle_url('/course/view.php', array('id' => $course->id)));
     die;
 }
 
@@ -93,10 +97,12 @@ if ($canupdateown) {
 foreach ($learningtimechecks as $learningtimecheck) {
     if (!$learningtimecheck->visible) {
         // Show dimmed if the mod is hidden.
-        $link = '<a class="dimmed" href="view.php?id='.$learningtimecheck->coursemodule.'">'.format_string($learningtimecheck->name).'</a>';
+        $modurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $learningtimecheck->coursemodule));
+        $link = '<a class="dimmed" href="'.$modurl.'">'.format_string($learningtimecheck->name).'</a>';
     } else {
         // Show normal if the mod is visible.
-        $link = '<a href="view.php?id='.$learningtimecheck->coursemodule.'">'.format_string($learningtimecheck->name).'</a>';
+        $modurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $learningtimecheck->coursemodule));
+        $link = '<a href="'.$modurl.'">'.format_string($learningtimecheck->name).'</a>';
     }
 
 

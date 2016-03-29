@@ -15,6 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @version Moodle 2.7
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ */
+
+/*
  * Library of functions and constants for module learningtimecheck
  * This file should have two well differenced parts:
  *   - All the core Moodle functions, neeeded to allow
@@ -41,10 +50,13 @@ define("LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED", 0);
 define("LEARNINGTIMECHECK_MARKING_STUDENT", 0);
 define("LEARNINGTIMECHECK_MARKING_TEACHER", 1);
 define("LEARNINGTIMECHECK_MARKING_BOTH", 2);
+define("LEARNINGTIMECHECK_MARKING_EITHER", 3);
+
+define("LEARNINGTIMECHECK_AUTOUPDATE_CRON_NO", 0);
+define("LEARNINGTIMECHECK_AUTOUPDATE_CRON_YES", 2);
 
 define("LEARNINGTIMECHECK_AUTOUPDATE_NO", 0);
 define("LEARNINGTIMECHECK_AUTOUPDATE_YES", 2);
-define("LEARNINGTIMECHECK_AUTOUPDATE_YES_OVERRIDE", 1);
 
 define("LEARNINGTIMECHECK_AUTOPOPULATE_NO", 0);
 define("LEARNINGTIMECHECK_AUTOPOPULATE_SECTION", 2);
@@ -64,7 +76,6 @@ function learningtimecheck_supports($feature) {
     case FEATURE_GROUPINGS:               return true;
     case FEATURE_GROUPMEMBERSONLY:        return true;
     case FEATURE_MOD_INTRO:               return true;
-    case FEATURE_GRADE_HAS_GRADE:         return true;
     case FEATURE_COMPLETION_HAS_RULES:    return true;
     case FEATURE_BACKUP_MOODLE2:          return true;
     case FEATURE_SHOW_DESCRIPTION:        return true;
@@ -123,12 +134,11 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $course = $DB->get_record('course', array('id' => $learningtimecheck->course) );
     $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
     $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
-    $chk->setallevents();
 
     learningtimecheck_grade_item_update($learningtimecheck);
     if ($newmax != $oldmax) {
         learningtimecheck_update_grades($learningtimecheck);
-    } else if ($newcompletion != $oldcompletion) {
+    } elseif ($newcompletion != $oldcompletion) {
         // This will already be updated if learningtimecheck_update_grades() is called
         $ci = new completion_info($course);
         $context = context_module::instance($cm->id);
@@ -138,6 +148,7 @@ function learningtimecheck_update_instance($learningtimecheck) {
         }
     }
     if ($newautoupdate && !$oldautoupdate) {
+        // This may need time.
         $chk->update_all_autoupdate_checks();
     }
 
@@ -160,20 +171,9 @@ function learningtimecheck_delete_instance($id) {
         return false;
     }
 
-    // Remove all calendar events.
-    if ($learningtimecheck->duedatesoncalendar) {
-        $learningtimecheck->duedatesoncalendar = false;
-        $course = $DB->get_record('course', array('id' => $learningtimecheck->course));
-        $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
-        if ($cm) { // Should not be false, but check, just in case...
-            $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
-            $chk->setallevents();
-        }
-    }
-
     $result = true;
 
-    $items = $DB->get_records('learningtimecheck_item', array('learningtimecheck'=>$learningtimecheck->id), '', 'id');
+    $items = $DB->get_records('learningtimecheck_item', array('learningtimecheck' => $learningtimecheck->id), '', 'id');
     if (!empty($items)) {
         $items = array_keys($items);
         $result = $DB->delete_records_list('learningtimecheck_check', 'item', $items);
@@ -200,15 +200,14 @@ function learningtimecheck_update_all_grades() {
  * the grading strategy is based on mandatory items, calculating :
  * checked / total * maxgrade
  */
-function learningtimecheck_update_grades($learningtimecheck, $userid=0) {
+function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
     global $CFG, $DB;
 
-    $items = $DB->get_records('learningtimecheck_item',
-                              array('learningtimecheck' => $learningtimecheck->id,
-                                    'userid' => 0,
-                                    'itemoptional' => LEARNINGTIMECHECK_OPTIONAL_NO,
-                                    'hidden' => LEARNINGTIMECHECK_HIDDEN_NO ),
-                              '', 'id, grouping');
+    $params = array('learningtimecheck' => $learningtimecheck->id,
+                    'userid' => 0,
+                    'itemoptional' => LEARNINGTIMECHECK_OPTIONAL_NO,
+                    'hidden' => LEARNINGTIMECHECK_HIDDEN_NO );
+    $items = $DB->get_records('learningtimecheck_item', $params, '', 'id, grouping');
     if (!$items) {
         return;
     }
@@ -239,10 +238,10 @@ function learningtimecheck_update_grades($learningtimecheck, $userid=0) {
 
     if ($checkgroupings) {
         if ($userid) {
-            $users = $DB->get_records('user', array('id' => $userid), null, 'id, firstname, lastname');
+            $users = $DB->get_records('user', array('id' => $userid), null, 'id,'.get_all_user_name_fields(true, ''));
         } else {
             $context = context_module::instance($cm->id);
-            if (!$users = get_users_by_capability($context, 'mod/learningtimecheck:updateown', 'u.id, u.firstname, u.lastname', '', '', '', '', '', false)) {
+            if (!$users = get_users_by_capability($context, 'mod/learningtimecheck:updateown', 'u.id,'.get_all_user_name_fields(true, 'u'), '', '', '', '', '', false)) {
                 return;
             }
         }
@@ -319,12 +318,25 @@ function learningtimecheck_update_grades($learningtimecheck, $userid=0) {
         list($usql, $uparams) = $DB->get_in_or_equal($users);
         list($isql, $iparams) = $DB->get_in_or_equal(array_keys($items));
 
-        $sql = 'SELECT u.id AS userid, (SUM(CASE WHEN '.$where.' THEN 1 ELSE 0 END) * ? / ? ) AS rawgrade'.$date;
-        $sql .= ' , u.firstname, u.lastname ';
-        $sql .= ' FROM {user} u LEFT JOIN {learningtimecheck_check} c ON u.id = c.userid';
-        $sql .= " WHERE u.id $usql";
-        $sql .= " AND c.item $isql";
-        $sql .= ' GROUP BY u.id, u.firstname, u.lastname';
+        $sql = '
+            SELECT 
+                u.id AS userid, 
+                '.get_all_user_name_fields(true, 'u').',
+                (SUM(CASE WHEN '.$where.' THEN 1 ELSE 0 END) * ? / ? ) AS rawgrade'.$date.'
+            FROM 
+                {user} u
+            LEFT JOIN 
+                {learningtimecheck_check} c 
+            ON 
+                u.id = c.userid
+            WHERE 
+                u.id '.$usql.' AND
+                c.item '.$isql.'
+            GROUP BY
+                u.id,
+                u.firstname,
+                u.lastname
+        ';
 
         $params = array_merge($uparams, $iparams);
         $params = array_merge(array($learningtimecheck->maxgrade, $total), $params);
@@ -373,8 +385,8 @@ function learningtimecheck_update_grades($learningtimecheck, $userid=0) {
                     }
                 }
             }
-            // add_to_log($learningtimecheck->course, 'learningtimecheck', 'complete', "view.php?id={$cm->id}", $learningtimecheck->name, $cm->id, $grade->userid);
 
+            $context = context_module::instance($cm->id);
             // Trigger module viewed event.
             $eventparams = array(
                 'objectid' => $learningtimecheck->id,
@@ -384,7 +396,6 @@ function learningtimecheck_update_grades($learningtimecheck, $userid=0) {
             $event = \mod_learningtimecheck\event\course_module_completed::create($eventparams);
             $event->add_record_snapshot('course_modules', $cm);
             $event->add_record_snapshot('course', $course);
-            $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
             $event->trigger();
 
         }
@@ -520,8 +531,14 @@ function learningtimecheck_print_recent_activity($course, $isteacher, $timestart
 }
 
 
+/**
+ * Called by the block course_overview
+ * @todo something is weird in there... needs deep debug
+ */
 function learningtimecheck_print_overview($courses, &$htmlarray) {
     global $USER, $CFG, $DB;
+
+    return;
 
     $config = get_config('learningtimecheck');
 
@@ -561,29 +578,24 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
         // (and manual items cannot be hidden / have groupings)
         if ($show_all) { // Show all items whether or not they are checked off (as this user is unable to check them off)
             $date_items = $DB->get_records_select('learningtimecheck_item',
-                                                  'learningtimecheck = ? AND duetime > 0',
-                                                  array($learningtimecheck->id),
-                                                  'duetime');
+                                                  'learningtimecheck = ?',
+                                                  array($learningtimecheck->id)
+           );
         } else { // Show only items that have not been checked off
             $date_items = $DB->get_records_sql('SELECT i.* FROM {learningtimecheck_item} i JOIN {learningtimecheck_check} c ON c.item = i.id '.
-                                          'WHERE i.learningtimecheck = ? AND i.duetime > 0 AND c.userid = ? AND usertimestamp = 0 '.
-                                          'ORDER BY i.duetime', array($learningtimecheck->id, $USER->id));
+                                          'WHERE i.learningtimecheck = ? AND c.userid = ? AND usertimestamp = 0 ', array($learningtimecheck->id, $USER->id));
         }
 
         $viewurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $learningtimecheck->coursemodule));
         $str = '<div class="learningtimecheck overview"><div class="name">'.$strlearningtimecheck.': '.
             '<a title="'.$strlearningtimecheck.'" href="'.$viewurl.'">'.
             $learningtimecheck->name.'</a></div>';
-        $str .= '<div class="info">'.$progressbar.'</div>';
+        $str .= '<div class="info">';
+        $str .= '<div class="ltc-progress-bar">'.$progressbar.'</div>';
         foreach ($date_items as $item) {
-            $str .= '<div class="info">'.$item->displaytext.': ';
-            if ($item->duetime > time()) {
-                $str .= '<span class="itemdue">';
-            } else {
-                $str .= '<span class="itemoverdue">';
-            }
-            $str .= date('j M Y', $item->duetime).'</span></div>';
+            $str .= '<div class="ltc-items">'.$item->displaytext.'</div>';
         }
+        $str .= '</div>';
         $str .= '</div>';
         if (empty($htmlarray[$learningtimecheck->course]['learningtimecheck'])) {
             $htmlarray[$learningtimecheck->course]['learningtimecheck'] = $str;
@@ -601,25 +613,37 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
  * @return boolean
  * @todo Finish documenting this function
  **/
-function learningtimecheck_cron () {
+function learningtimecheck_cron_task () {
     global $CFG, $DB;
 
-    $lastcron = $DB->get_field('modules', 'lastcron', array('name' => 'learningtimecheck'));
+    mtrace("Starting learningtimecheck task");
+
+    $config = get_config('learningtimecheck');
+
+    $lastcron = 0 + @$config->lastcompiled;
+    /*
     if (!$lastcron) {
         // First time run - learningtimechecks will take care of any updates before now
         return true;
     }
+    */
 
     require_once($CFG->dirroot.'/mod/learningtimecheck/autoupdate.php');
-    if (!$CFG->learningtimecheck_autoupdate_use_cron) {
+    if (!$config->autoupdateusecron) {
         mtrace("learningtimecheck cron updates disabled");
         return true;
     }
 
-    $lastlogtime = $lastcron - 5; // Subtract 5 seconds just in case a log slipped through during the last cron update
+    if ($lastcron) {
+        $lastlogtime = $lastcron - 5; // Subtract 5 seconds just in case a log slipped through during the last cron update
+    } else {
+        $lastlogtime = 0;
+    }
+
+    mtrace("Compiling from ".userdate($lastlogtime));
 
     // Find all autoupdating learningtimechecks
-    $learningtimechecks = $DB->get_records_select('learningtimecheck', 'autopopulate > 0 AND autoupdate > 0');
+    $learningtimechecks = $DB->get_records_select('learningtimecheck', 'autopopulate > 0 OR autoupdate > 0');
     if (!$learningtimechecks) {
         // No learningtimechecks to update
         mtrace("No automatic update learningtimechecks found");
@@ -641,23 +665,60 @@ function learningtimecheck_cron () {
         mtrace("Looking for updates in courses: $courseids");
     }
 
-    // Process all logs since the last cron update
+    $logmanager = get_log_manager();
+    $readers = $logmanager->get_readers('\core\log\sql_select_reader');
+    $reader = reset($readers);
+
+    if (empty($reader)) {
+        return false; // No log reader found.
+    }
+
     $logupdate = 0;
     $totalcount = 0;
-    $logs = get_logs("l.time >= ? AND l.course IN ($courseids) AND cmid > 0", array($lastlogtime), 'l.time ASC', '', '', $totalcount);
+
+    mtrace("checking logs ");
+    if ($reader instanceof \logstore_standard\log\store) {
+        $sql = "
+            SELECT
+                l.id,
+                l.courseid as course,
+                l.action,
+                l.objectid as cmid,
+                l.timecreated as time,
+                l.userid as userid,
+                '' as url,
+                l.component as module
+            FROM
+                {logstore_standard_log} l
+            WHERE
+                timecreated >= ? AND
+                courseid IN ($courseids) AND
+                objectid > 0 AND
+                component LIKE 'mod%'
+        ";
+        $logs = $DB->get_records_sql($sql, array($lastlogtime));
+    } elseif ($reader instanceof \logstore_legacy\log\store) {
+        echo "Getting old logs";
+        $logs = get_logs("l.time >= ? AND l.course IN ($courseids) AND cmid > 0", array($lastlogtime), 'l.time ASC', '', '', $totalcount);
+    } else {
+        set_config('lastcompiled', time() - 30, 'learningtimecheck');
+        return;
+    }
+
+    // Process all logs since the last cron update
     if ($logs) {
         if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
             mtrace("Found ".count($logs)." log updates to check");
         }
         foreach ($logs as $log) {
-            $logupdate += learningtimecheck_autoupdate($log->course, $log->module, $log->action, $log->cmid, $log->userid, $log->url, $courses[$log->course]);
+            $logupdate += learningtimecheck_autoupdate($log->course, $log->module, $log->action, $log->time, $log->cmid, $log->userid, $log->url, $courses[$log->course]);
         }
     }
 
     if ($logupdate) {
-        mtrace(" Updated $logupdate checkmark(s) from log changes");
+        mtrace("\n\tUpdated $logupdate checkmark(s) from log changes");
     } else {
-        mtrace(" No checkmarks need updating from log changes");
+        mtrace("\n\tNo checkmarks need updating from log changes");
     }
 
     // Process all the completion changes since the last cron update
@@ -665,20 +726,22 @@ function learningtimecheck_cron () {
     $completionupdate = 0;
     list($msql, $mparam) = $DB->get_in_or_equal(array_keys($courses));
     $sql = "
-        SELECT 
-            c.id, 
-            c.coursemoduleid, 
-            c.userid, 
-            c.completionstate 
-        FROM 
+        SELECT
+            c.id,
+            c.coursemoduleid,
+            c.userid,
+            c.completionstate,
+            c.timemodified
+        FROM
             {course_modules_completion} c
-        JOIN 
-            {course_modules} m 
-        ON 
+        JOIN
+            {course_modules} m
+        ON
             c.coursemoduleid = m.id
-        WHERE 
-            c.timemodified > ? AND 
-            m.course $msql ";
+        WHERE
+            c.timemodified > ? AND
+            m.course $msql
+    ";
     $params = array_merge(array($lastlogtime), $mparam);
     $completions = $DB->get_records_sql($sql, $params);
     if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
@@ -687,14 +750,17 @@ function learningtimecheck_cron () {
     foreach ($completions as $completion) {
         $completionupdate += learningtimecheck_completion_autoupdate($completion->coursemoduleid,
                                                              $completion->userid,
-                                                             $completion->completionstate);
+                                                             $completion->completionstate,
+                                                             $completion->timemodified);
     }
 
     if ($completionupdate) {
-        mtrace(" Updated $completionupdate checkmark(s) from completion changes");
+        mtrace("\tUpdated $completionupdate checkmark(s) from completion changes");
     } else {
-        mtrace(" No checkmarks need updating from completion changes");
+        mtrace("\tNo checkmarks need updating from completion changes");
     }
+
+    set_config('lastcompiled', time() - 30, 'learningtimecheck');
 
     return true;
 }
@@ -713,17 +779,17 @@ function learningtimecheck_get_participants($learningtimecheckid) {
     global $DB;
 
     $sql = "
-        SELECT DISTINCT 
-            u.id, 
-            u.id 
-        FROM 
-            {user} u, 
-            {learningtimecheck_item} i, 
+        SELECT DISTINCT
+            u.id,
+            u.id
+        FROM
+            {user} u,
+            {learningtimecheck_item} i,
             {learningtimecheck_check} c
-        WHERE 
-            i.learningtimecheck = ? AND 
-            ((c.item = i.id AND 
-            c.userid = u.id) OR 
+        WHERE
+            i.learningtimecheck = ? AND
+            ((c.item = i.id AND
+            c.userid = u.id) OR
             (i.userid = u.id))
     ";
     $return = $DB->get_records_sql($sql, array($learningtimecheckid));
@@ -830,19 +896,11 @@ function learningtimecheck_refresh_events($courseid = 0) {
     global $DB;
 
     if ($courseid) {
-        $learningtimechecks = $DB->get_records('learningtimecheck', array('course'=> $courseid) );
+        $learningtimechecks = $DB->get_records('learningtimecheck', array('course' => $courseid) );
         $course = $DB->get_record('course', array('id' => $courseid) );
     } else {
         $learningtimechecks = $DB->get_records('learningtimecheck');
         $course = null;
-    }
-
-    foreach ($learningtimechecks as $learningtimecheck) {
-        if ($learningtimecheck->duedatesoncalendar) {
-            $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $learningtimecheck->course);
-            $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
-            $chk->setallevents();
-        }
     }
 
     return true;
@@ -851,11 +909,11 @@ function learningtimecheck_refresh_events($courseid = 0) {
 function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
     global $DB;
 
-    if (!($learningtimecheck=$DB->get_record('learningtimecheck', array('id'=>$cm->instance)))) {
+    if (!($learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance)))) {
         throw new Exception("Can't find learningtimecheck {$cm->instance}");
     }
 
-    $result=$type; // Default return value
+    $result = $type; // Default return value
 
     if ($learningtimecheck->completionpercent) {
         list($ticked, $total) = learningtimecheck_class::get_user_progress($cm->instance, $userid);
@@ -870,3 +928,44 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
     return $result;
 }
 
+/**
+ * Serves the files included in a learningtimecheck. Implements needed access control ;-)
+ * At the moment, no specific areas to serve.
+ * * @param object $course
+ * @param object $cm
+ * @param object $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @return bool false if file not found, does not return if found - justsend the file
+ */
+ /*
+function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+    global $CFG, $DB;
+
+    require_login($course);
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    $allfileareas = array();
+
+    if (!in_array($filearea, $allfileareas)) {
+        return false;
+    }
+
+    $itemid = (int)array_shift($args);
+
+    $fs = get_file_storage();
+
+    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, "sortorder, itemid, filepath, filename", false)) {
+        $file = array_pop($files);
+
+        // Finally send the file.
+        send_stored_file($file, 0, 0, $forcedownload);
+    }
+
+    return false;
+}
+*/

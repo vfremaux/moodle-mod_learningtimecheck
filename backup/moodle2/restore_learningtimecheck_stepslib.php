@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,6 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die();
 
 class restore_learningtimecheck_activity_structure_step extends restore_activity_structure_step {
 
@@ -55,7 +56,6 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
         $oldid = $data->id;
 
         $data->learningtimecheck = $this->get_new_parentid('learningtimecheck');
-        $data->duetime = $this->apply_date_offset($data->duetime);
         if ($data->userid > 0) {
             $data->userid = $this->get_mappingid('user', $data->userid);
         }
@@ -67,9 +67,6 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
             $data->itemoptional = 2;
             $data->hidden = 1;
         }
-
-        // Apply offset to the deadline
-        $data->duetime = $this->apply_date_offset($data->duetime);
 
         // Process the moduleids in the 'after_restore' function - after all the other activities have been restored.
 
@@ -115,24 +112,21 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
         $this->set_mapping('learningtimecheck_comment', $oldid, $newid);
     }
 
-    // We shall have to remap all moduleid after full restore and be sure all course modules have been remapped.
-    protected function after_restore() {
+    protected function after_execute() {
         global $DB;
 
-        if ($allchecks = $DB->get_records('learningtimecheck', array('course' => $this->get_courseid()))) {
-            foreach ($allchecks as $check) {
-                if ($allitems = $DB->get_records('learningtimecheck_item', array('learningtimecheck' => $check->id))) {
-                    foreach ($allitems as $item) {
-                        $item->moduleid = $this->get_mappingid('course_modules', $item->moduleid);
-                        $DB->update_record('learningtimecheck_item', $item);
+        // We need post remap the coursemoduleids  pointed by the items
+        $courseid = $this->get_courseid();
+        if ($ltcs = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
+            foreach ($ltcs as $ltc) {
+                if ($items = $DB->get_records('learningtimecheck_item', array('learningtimecheck' => $ltc->id))) {
+                    foreach ($items as $it) {
+                        $it->moduleid = $this->get_mappingid('coursemodule', $it->moduleid);
+                        $DB->update_record('learningtimecheck_item', $it);
                     }
                 }
             }
         }
-    }
-
-    protected function after_execute() {
-        global $DB;
 
         // Add learningtimecheck related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_learningtimecheck', 'intro', null);

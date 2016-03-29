@@ -22,8 +22,9 @@
         <FIELD NAME="autoupdate" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Automatically update items that are linked to course modules (tick them off when items are complete)" PREVIOUS="autopopulate" NEXT="completionpercent"/>
         <FIELD NAME="completionpercent" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Percentage of items that need to be checked off before the learningtimecheck is regarded as complete" PREVIOUS="autoupdate" NEXT="emailoncomplete"/>
         <FIELD NAME="emailoncomplete" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not to email teachers when a learningtimecheck is completed" PREVIOUS="completionpercent" NEXT="lockteachermarks"/>
-        <FIELD NAME="lockteachermarks" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, then teachers will be unable to change marks after saving a 'yes'" PREVIOUS="emailoncomplete" NEXT="usetimecounterpart" />
-		<FIELD NAME="usetimecounterpart" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="If true, we use credit times" PREVIOUS="lockteachermarks" />
+        <FIELD NAME="lockteachermarks" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, then teachers will be unable to change marks after saving a 'yes'" PREVIOUS="emailoncomplete" NEXT="usetimecounterpart"/>
+        <FIELD NAME="usetimecounterpart" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, we use credit times" PREVIOUS="lockteachermarks" NEXT="lastcompiledtime" />
+        <FIELD NAME="lastcompiledtime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, we use credit times" PREVIOUS="usetimecounterpart"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -40,14 +41,13 @@
         <FIELD NAME="displaytext" TYPE="text" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="position"/>
         <FIELD NAME="position" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="displaytext" NEXT="indent"/>
         <FIELD NAME="indent" TYPE="int" LENGTH="8" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="position" NEXT="itemoptional"/>
-        <FIELD NAME="itemoptional" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="indent" NEXT="duetime"/>
-        <FIELD NAME="duetime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time when this item is due to be completed" PREVIOUS="itemoptional" NEXT="credittime"/>
-        <FIELD NAME="credittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited when validated" PREVIOUS="duetime" NEXT="teachercredittime"/>
-        <FIELD NAME="teachercredittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited for teacher per item" PREVIOUS="credittime" NEXT="teachercredittimeperuser"/>
-        <FIELD NAME="teachercredittimeperuser" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time credited per user for teacher on item" PREVIOUS="teachercredittime" NEXT="enablecredit"/>
-        <FIELD NAME="enablecredit" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Date/time estimated for teacher" PREVIOUS="teachercredittimeperuser" NEXT="isdeclarative"/>
-        <FIELD NAME="isdeclarative" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Is the item declarative for students or teacher" PREVIOUS="enablecredit" NEXT="eventid"/>
-        <FIELD NAME="eventid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="id of the calendar event (if any) associated with this item" PREVIOUS="isdeclarative" NEXT="colour"/>
+        <FIELD NAME="itemoptional" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="indent" NEXT="credittime"/>
+        <FIELD NAME="credittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date/time credited when validated" PREVIOUS="itemoptional" NEXT="teachercredittime"/>
+        <FIELD NAME="teachercredittime" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date/time credited for teacher per item" PREVIOUS="credittime" NEXT="teachercredittimeperuser"/>
+        <FIELD NAME="teachercredittimeperuser" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date/time credited per user for teacher on item" PREVIOUS="teachercredittime" NEXT="enablecredit"/>
+        <FIELD NAME="enablecredit" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Date/time estimated for teacher" PREVIOUS="teachercredittimeperuser" NEXT="isdeclarative"/>
+        <FIELD NAME="isdeclarative" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Is the item declarative for students or teacher" PREVIOUS="enablecredit" NEXT="eventid"/>
+        <FIELD NAME="eventid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="id of the calendar event (if any) associated with this item" PREVIOUS="isdeclarative" NEXT="colour"/>
         <FIELD NAME="colour" TYPE="char" LENGTH="15" NOTNULL="true" DEFAULT="black" SEQUENCE="false" PREVIOUS="eventid" NEXT="moduleid"/>
         <FIELD NAME="moduleid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="id of the course module (if any) associated with this item" PREVIOUS="colour" NEXT="hidden"/>
         <FIELD NAME="hidden" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the item should be hidden from students" PREVIOUS="moduleid" NEXT="grouping"/>
@@ -67,19 +67,20 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="item"/>
         <FIELD NAME="item" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user that checked this item" PREVIOUS="item" NEXT="usertimestamp"/>
-        <FIELD NAME="usertimestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="declaredtime"/>
-        <FIELD NAME="declaredtime" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="usertimestamp" NEXT="teacherid"/>
-        <FIELD NAME="teacherid" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="declaredtime" NEXT="teachermark"/>
-        <FIELD NAME="teachermark" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="teacherid" NEXT="teacherdeclaredtime"/>
-        <FIELD NAME="teacherdeclaredtime" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="teachermark" NEXT="teachertimestamp"/>
-        <FIELD NAME="teachertimestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="teacherdeclaredtime"/>
+        <FIELD NAME="usertimestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="declaredtime"/>
+        <FIELD NAME="declaredtime" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="usertimestamp" NEXT="teacherid"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="declaredtime" NEXT="teachermark"/>
+        <FIELD NAME="teachermark" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="teacherid" NEXT="teacherdeclaredtime"/>
+        <FIELD NAME="teacherdeclaredtime" TYPE="int" LENGTH="11" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="teachermark" NEXT="teachertimestamp"/>
+        <FIELD NAME="teachertimestamp" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="teacherdeclaredtime"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="item" UNIQUE="false" FIELDS="item" NEXT="userid"/>
-        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" PREVIOUS="item"/>
+        <INDEX NAME="ix_item" UNIQUE="false" FIELDS="item" NEXT="ix_userid"/>
+        <INDEX NAME="ix_userid" UNIQUE="false" FIELDS="userid" PREVIOUS="ix_item" NEXT="ix_teacherid"/>
+        <INDEX NAME="ix_teacherid" UNIQUE="false" FIELDS="teacherid" PREVIOUS="ix_userid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="learningtimecheck_comment" COMMENT="A comment, added by a teacher, to an item on a user's learningtimecheck" PREVIOUS="learningtimecheck_check">

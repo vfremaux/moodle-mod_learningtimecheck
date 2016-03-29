@@ -15,17 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This page prints a list of all student's results
- *
- * @author  David Smith <moodle@davosmith.co.uk>
- * @package mod/learningtimecheck
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once(dirname(__FILE__).'/locallib.php');
-
-global $DB;
+require_once('../../config.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
@@ -95,7 +94,7 @@ if ($studentid && $chk->only_view_mentee_reports()) {
     $studentid = false;
 }
 
-$chk->view_header();
+echo $OUTPUT->header();
 
 echo $OUTPUT->heading(format_string($learningtimecheck->name));
 
@@ -107,13 +106,16 @@ $renderer->view_tabs('report');
 if ($studentid) {
     $renderer->view_items(true);
 } else {
-    add_to_log($course->id, 'learningtimecheck', 'report', 'report.php?id='.$cm->id, $learningtimecheck->name, $cm->id);
+    $event = \mod_learningtimecheck\event\course_module_viewed_report::create($eventparams);
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
+    $event->trigger();
     $renderer->view_report();
 }
 
-if (learningtimecheck_course_is_page_formatted()) {
+if ($COURSE->format == 'page') {
     require_once $CFG->dirroot.'/course/format/page/xlib.php';
     page_print_page_format_navigation($cm);
 }
 
-$chk->view_footer();
+echo $OUTPUT->footer();

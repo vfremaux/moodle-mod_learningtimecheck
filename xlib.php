@@ -187,3 +187,23 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
         return $DB->get_records_sql($sql);
     }
 }
+
+/**
+ * Get concerned checklists for a user or a course
+ */
+function learningtimecheck_get_checklists($uid, $courseid = 0) {
+    global $DB;
+    
+    if ($courseid) {
+        if ($records = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
+            foreach($records as $r) {
+                $cm = get_coursemodule_from_instance('learningtimecheck', $r->id);
+                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r);
+            }
+            return $checklists;
+        }
+    } else {
+        // TODO
+        // returns all learningtimechecks concerned by the user
+    }
+}

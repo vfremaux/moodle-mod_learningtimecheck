@@ -99,6 +99,7 @@ $capabilities = array(
               'manager' => CAP_ALLOW
           )
       ),
+
     // Ability to view reports related to their 'mentees' only
     'mod/learningtimecheck:viewmenteereports' => array(
         'riskbitmask' => RISK_PERSONAL,
@@ -137,5 +138,16 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
         )
-    )
+    ),
+
+    // Ability to view reports related to their 'mentees' only
+    'mod/learningtimecheck:forceintrainingsessions' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW,
+        )  // Not assigned by default
+    ),
+
 );

@@ -15,6 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ *
  * This file defines the main learningtimecheck configuration form
  * It uses the standard core Moodle (>1.8) formslib. For
  * more info about them, please visit:
@@ -47,12 +53,14 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         global $COURSE, $CFG;
         $mform =& $this->_form;
 
+        $config = get_config('learningtimecheck');
+
 //-------------------------------------------------------------------------------
     /// Adding the "general" fieldset, where all the common settings are showed
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
     /// Adding the standard "name" field
-        $mform->addElement('text', 'name', get_string('modulename', 'learningtimecheck'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('modulename', 'learningtimecheck'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -66,13 +74,12 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
         $mform->addElement('select', 'useritemsallowed', get_string('useritemsallowed', 'learningtimecheck'), $ynoptions);
 
-        $teditoptions = array(  LEARNINGTIMECHECK_MARKING_STUDENT => get_string('teachernoteditcheck','learningtimecheck'),
-                                LEARNINGTIMECHECK_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
-                                LEARNINGTIMECHECK_MARKING_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
+        $teditoptions = array(LEARNINGTIMECHECK_MARKING_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
+                              LEARNINGTIMECHECK_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
+                              LEARNINGTIMECHECK_MARKING_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'),
+                              LEARNINGTIMECHECK_MARKING_EITHER => get_string('eithercheck', 'learningtimecheck'),
+                              );
         $mform->addElement('select', 'teacheredit', get_string('marktypes', 'learningtimecheck'), $teditoptions);
-
-        $mform->addElement('select', 'duedatesoncalendar', get_string('duedatesoncalendar', 'learningtimecheck'), $ynoptions);
-        $mform->setDefault('duedatesoncalendar', 0);
 
         // These settings are all disabled, as they are not currently implemented
 
@@ -85,15 +92,16 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->setDefault('teachercomments', 1);
         $mform->setAdvanced('teachercomments');
 
-        $mform->addElement('text', 'maxgrade', get_string('maximumgrade'), array('size'=>'10'));
+        $mform->addElement('text', 'maxgrade', get_string('maximumgrade'), array('size' => '10'));
         $mform->setType('maxgrade', PARAM_TEXT);
         $mform->setDefault('maxgrade', 100);
         $mform->setAdvanced('maxgrade');
 
-        $emailrecipients = array(   LEARNINGTIMECHECK_EMAIL_NO => get_string('no'),
-                                    LEARNINGTIMECHECK_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
-                                    LEARNINGTIMECHECK_EMAIL_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
-                                    LEARNINGTIMECHECK_EMAIL_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
+        $emailrecipients = array(LEARNINGTIMECHECK_EMAIL_NO => get_string('no'),
+                                 LEARNINGTIMECHECK_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
+                                 LEARNINGTIMECHECK_EMAIL_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
+                                 LEARNINGTIMECHECK_EMAIL_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
+
         $mform->addElement('select', 'emailoncomplete', get_string('emailoncomplete', 'learningtimecheck'), $emailrecipients);
         $mform->setDefault('emailoncomplete', 0);
         $mform->addHelpButton('emailoncomplete', 'emailoncomplete', 'learningtimecheck');
@@ -108,17 +116,18 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
                                           LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs','learningtimecheck'),
                                           LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromtoppage','learningtimecheck'),
                                           LEARNINGTIMECHECK_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
-		}
+        }
 
         $mform->addElement('select', 'autopopulate', get_string('autopopulate', 'learningtimecheck'), $autopopulateoptions);
-        $mform->setDefault('autopopulate', 0);
+        $mform->setDefault('autopopulate', 0 + @$config->initialautocapture);
         $mform->addHelpButton('autopopulate', 'autopopulate', 'learningtimecheck');
 
-        $autoupdate_options = array( LEARNINGTIMECHECK_AUTOUPDATE_NO => get_string('no'),
-                                     LEARNINGTIMECHECK_AUTOUPDATE_YES => get_string('yesnooverride', 'learningtimecheck'),
-                                     LEARNINGTIMECHECK_AUTOUPDATE_YES_OVERRIDE => get_string('yesoverride', 'learningtimecheck'));
+        $autoupdate_options = array(LEARNINGTIMECHECK_AUTOUPDATE_NO => get_string('no'),
+                                    LEARNINGTIMECHECK_AUTOUPDATE_YES => get_string('yesnooverride', 'learningtimecheck'),
+        );
+
         $mform->addElement('select', 'autoupdate', get_string('autoupdate', 'learningtimecheck'), $autoupdate_options);
-        $mform->setDefault('autoupdate', 1);
+        $mform->setDefault('autoupdate', @$config->autoupdateusecron);
         $mform->disabledIf('autoupdate', 'autopopulate', 'eq', 0);
         $mform->addHelpButton('autoupdate', 'autoupdate', 'learningtimecheck');
         $mform->addElement('static', 'autoupdatenote', '', get_string('autoupdatenote', 'learningtimecheck'));
@@ -129,7 +138,9 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->addHelpButton('lockteachermarks', 'lockteachermarks', 'learningtimecheck');
 
         $mform->addElement('select', 'usetimecounterpart', get_string('usetimecounterpart', 'learningtimecheck'), $ynoptions);
-        $mform->setDefault('usetimecounterpart', 0);
+        $mform->setDefault('usetimecounterpart', 0 + @$config->initialcredittimeon);
+
+        $mform->addElement('date_time_selector', 'lastcompiledtime', get_string('lastcompiledtime', 'learningtimecheck'));
 
 //-------------------------------------------------------------------------------
         // add standard elements, common to all modules
@@ -147,28 +158,27 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
-        $default_values['completionpercentenabled']=
-            !empty($default_values['completionpercent']) ? 1 : 0;
+        $default_values['completionpercentenabled'] = !empty($default_values['completionpercent']) ? 1 : 0;
         if (empty($default_values['completionpercent'])) {
-            $default_values['completionpercent']=100;
+            $default_values['completionpercent'] = 100;
         }
     }
 
     function add_completion_rules() {
         $mform =& $this->_form;
 
-        $group=array();
+        $group = array();
         $group[] =& $mform->createElement('checkbox', 'completionpercentenabled', '', get_string('completionpercent','learningtimecheck'));
-        $group[] =& $mform->createElement('text', 'completionpercent', '', array('size'=>3));
+        $group[] =& $mform->createElement('text', 'completionpercent', '', array('size' => 3));
         $mform->setType('completionpercent',PARAM_INT);
         $mform->addGroup($group, 'completionpercentgroup', get_string('completionpercentgroup','learningtimecheck'), array(' '), false);
-        $mform->disabledIf('completionpercent','completionpercentenabled','notchecked');
+        $mform->disabledIf('completionpercent', 'completionpercentenabled', 'notchecked');
 
         return array('completionpercentgroup');
     }
 
     function completion_rule_enabled($data) {
-        return (!empty($data['completionpercentenabled']) && $data['completionpercent']!=0);
+        return (!empty($data['completionpercentenabled']) && $data['completionpercent'] != 0);
     }
 
     function get_data() {
@@ -177,7 +187,7 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
             return false;
         }
         // Turn off completion settings if the checkboxes aren't ticked
-        $autocompletion = !empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
+        $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
         if (empty($data->completionpercentenabled) || !$autocompletion) {
             $data->completionpercent = 0;
         }

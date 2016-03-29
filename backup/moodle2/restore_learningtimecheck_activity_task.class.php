@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -74,6 +73,25 @@ class restore_learningtimecheck_activity_task extends restore_activity_task {
         return $rules;
     }
 
+    static public function define_restore_log_rules() {
+        $rules = array();
+
+        $rules[] = new restore_log_rule('learningtimecheck', 'view', 'view.php?id={course_module}', '{learningtimecheck}');
+        $rules[] = new restore_log_rule('learningtimecheck', 'report', 'view.php?id={course_module}', '{learningtimecheck}');
+        $rules[] = new restore_log_rule('learningtimecheck', 'complete', 'view.php?id={course_module}', '{learningtimecheck}');
+        $rules[] = new restore_log_rule('learningtimecheck', 'edit', 'edit.php?id={course_module}', '{learningtimecheck}');
+
+        return $rules;
+    }
+
+    static public function define_restore_log_rules_for_course() {
+        $rules = array();
+
+        $rules[] = new restore_log_rule('learningtimecheck', 'view all', 'index.php?id={course}', null);
+
+        return $rules;
+    }
+
     public function after_restore() {
         global $DB;
 
@@ -81,10 +99,10 @@ class restore_learningtimecheck_activity_task extends restore_activity_task {
         $items = $DB->get_records_select('learningtimecheck_item', 'learningtimecheck = ? AND moduleid > 0 AND itemoptional <> 2', array($this->get_activityid()));
 
         foreach ($items as $item) {
-            $moduleid = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'course_module', $item->moduleid);
-            if ($moduleid) {
+            $modulemapping = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'course_module', $item->moduleid);
+            if ($modulemapping) {
                 // Match up the moduleid to the restored activity module.
-                $DB->set_field('learningtimecheck_item', 'moduleid', $moduleid->newitemid, array('id' => $item->id));
+                $DB->set_field('learningtimecheck_item', 'moduleid', $modulemapping->newitemid, array('id' => $item->id));
             } else {
                 // Does not match up to a restored activity module => delete the item + associated user data.
                 $DB->delete_records('learningtimecheck_check', array('item' => $item->id));

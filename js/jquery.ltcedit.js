@@ -17,3 +17,22 @@ function cancel_add_item_form(itemid) {
     $(additempodid).html('');
     $(rowadditempodid).addClass('hidden');
 }
+
+// force mandatory check on when choosing a credittime
+function set_mandatory(selectobjid, checkobjid) {
+    if ($('#'+selectobjid).val() > 0) {
+        $('#'+checkobjid).attr('checked', true);
+    } else {
+        $('#'+checkobjid).attr('checked', null);
+    }
+}
+
+function checktimecreditlist(itemid, selector) {
+    if (selector.options[selector.selectedIndex].value == 1 || selector.options[selector.selectedIndex].value == 3) {
+        $('#ltc-time-settings-'+itemid).addClass('isdeclarative');
+        // $('#creditselect'+itemid).attr('disabled', 'disabled');
+    } else {
+        $('#ltc-time-settings-'+itemid).removeClass('isdeclarative');
+        // $('#creditselect'+itemid).attr('disabled', null);
+    }
+}

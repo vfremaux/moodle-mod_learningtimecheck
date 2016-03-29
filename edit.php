@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,7 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+/**
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @version Moodle 2.7
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ */
+
+require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
@@ -53,6 +61,8 @@ if ($id) {
     print_error('You must specify a course_module ID or an instance ID');
 }
 
+$context = context_module::instance($cm->id);
+
 $PAGE->set_url($url);
 require_login($course, true, $cm);
 
@@ -66,7 +76,9 @@ if (!$chk->canedit()) {
     redirect(new moodle_url('/mod/learningtimecheck/view.php', array('id' => $cm->id)) );
 }
 
-add_to_log($course->id, "learningtimecheck", "edit", "edit.php?id={$cm->id}", $learningtimecheck->name, $cm->id);
+// add_to_log($course->id, "learningtimecheck", "edit", "edit.php?id={$cm->id}", $learningtimecheck->name, $cm->id);
+
+$context = context_module::instance($cm->id);
 
 // Trigger module viewed event.
 $eventparams = array(
@@ -80,7 +92,7 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
 $event->trigger();
 
-$chk->process_edit_actions();
+include($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
 
 if ($learningtimecheck->autopopulate) {
     // Needs to be done again, just in case the edit actions have changed something
@@ -90,6 +102,8 @@ if ($learningtimecheck->autopopulate) {
 $PAGE->set_title(format_string($learningtimecheck->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('edit', 'learningtimecheck'));
+$PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
+$PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 
 echo $OUTPUT->header();
 
@@ -105,8 +119,9 @@ $renderer->view_edit_items();
 
 // Print a little information only if trainingsession reports are installed.
 if (!empty($learningtimecheck->usetimecounterpart)) {
-    if (is_dir($CFG->dirroot.'/report/trainingsessions')) {
-        echo $OUTPUT->box(get_string('enablecreditdesc', 'learningtimecheck'));
+    if (is_dir($CFG->dirroot.'/report/trainingsessions') &&
+        has_capability('mod/learningtimecheck:forceintrainingsessions', $context, $USER->id, false)) {
+        echo $OUTPUT->box(get_string('enablecredit_desc', 'learningtimecheck'));
     }
 }
 

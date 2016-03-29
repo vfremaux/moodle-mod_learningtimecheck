@@ -16,7 +16,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$CFG->learningtimecheck_autoupdate_use_cron = true;
+/**
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author Valery Fremaux
+ * @version Moodle 2.7
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ */
+
+require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
 
 /* Remove the '//' at the start of the next line to output lots of
  * helpful information during the cron update. Do NOT use this if you
@@ -24,8 +32,120 @@ $CFG->learningtimecheck_autoupdate_use_cron = true;
  */
 //define("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE", 1);
 
+// Wraps Post 2.6 log events to legacy events 
+function learningtimecheck_standardlog_autoupdate($courseid, $component, $target, $action, $cmid, $userid, $url, $learningtimechecks) {
+    $module = str_replace('mod_', '', $component);
+    switch ($module) {
+        case 'quiz':
+            $action = ($action == 'submitted') ? 'close attempt' : null;
+            break;
+
+        case 'forum':
+            $action = ($action == 'created' && ($target == 'post' || $target == 'discussion')) ? 'add post' : null;
+            break;
+
+        case 'resource':
+            $action = ($action == 'created' && ($target == 'post')) ? 'view' : null;
+            break;
+
+        case 'page':
+            $action = ($action == 'viewed') ? 'view' : null;
+            break;
+
+        case 'url':
+            $action = ($action == 'viewed') ? 'view' : null;
+            break;
+
+        case 'hotpot':
+            $action = ($action == 'submitted' && $target == 'attempt') ? 'submit' : null;
+            break;
+
+        case 'wiki':
+            $action = ($action == 'created' && $target == 'page') ? 'edit' : null;
+            break;
+
+        case 'learningtimecheck':
+            $action = ($action == 'completed') ? 'complete' : null;
+            break;
+
+        case 'choice':
+            $action = ($action == 'submitted' && $target == 'answer') ? 'choose' : null;
+            break;
+
+        case 'lams':
+            $action = ($action == 'submitted' && $target == 'answer') ? 'view' : null;
+            break;
+
+        case 'scorm':
+            $action = ($action == 'submitted' && $target == 'answer') ? 'view' : null;
+            break;
+
+        case 'assignment':
+            // Assignment should be definitely disabled over 2.7
+            $action = null;
+            break;
+
+        case 'assign':
+            $action = ($action == 'submitted' && $target == 'assessable') ? 'submit' : null;
+            break;
+
+        case 'journal':
+            $action = ($action == 'submitted' && $target == 'assessable') ? 'add entry' : null;
+            break;
+
+        case 'lesson':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'end' : null;
+            break;
+
+        case 'realtimequiz':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
+            break;
+
+        case 'workshop':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
+            break;
+
+        case 'glossary':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'add entry' : null;
+            break;
+
+        case 'data':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'add' : null;
+            break;
+
+        case 'chat':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'talk' : null;
+            break;
+
+        case 'feedback':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
+            break;
+
+        case 'magtest':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
+            break;
+
+        case 'questionnaire':
+            $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
+            break;
+
+        case 'scheduler':
+            $action = ($action == 'added' && $target == 'booking') ? 'submit' : null;
+            break;
+
+        case 'flashcard':
+            $action = ($action == 'played') ? 'submit' : null;
+            break;
+    }
+    if ($action) {
+        learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $userid, $url, $learningtimechecks);
+    }
+}
+
 function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $userid, $url, $learningtimechecks = null) {
     global $CFG, $DB;
+
+    $config = get_config('learningtimecheck');
 
     if ($userid == 0) {
         return 0;
@@ -77,13 +197,16 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
         || (($module == 'forum') && (($action == 'add post')||($action == 'add discussion')))
         || (($module == 'resource') && ($action == 'view'))
         || (($module == 'page') && ($action == 'view'))
+        || (($module == 'url') && ($action == 'view'))
         || (($module == 'hotpot') && ($action == 'submit'))
         || (($module == 'wiki') && ($action == 'edit'))
         || (($module == 'learningtimecheck') && ($action == 'complete'))
         || (($module == 'choice') && ($action == 'choose'))
         || (($module == 'lams') && ($action == 'view'))
         || (($module == 'scorm') && ($action == 'view'))
+        || (($module == 'mplayer') && ($action == 'view'))
         || (($module == 'assignment') && ($action == 'upload'))
+        || (($module == 'assign') && ($action == 'submit'))
         || (($module == 'journal') && ($action == 'add entry'))
         || (($module == 'lesson') && ($action == 'end'))
         || (($module == 'realtimequiz') && ($action == 'submit'))
@@ -92,6 +215,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
         || (($module == 'data') && ($action == 'add'))
         || (($module == 'chat') && ($action == 'talk'))
         || (($module == 'feedback') && ($action == 'submit'))
+        || (($module == 'magtest') && ($action == 'submit'))
         ) {
 
         if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
@@ -120,16 +244,16 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
             }
         }
 
-        if (isset($CFG->enablecompletion) && $CFG->enablecompletion) {
+        if (!empty($CFG->enablecompletion)) {
             // Completion is enabled on this site, so we need to check if this module
             // can do completion (and then wait for that to indicate the module is complete)
             $coursecompletion = $DB->get_field('course',
                                                'enablecompletion',
-                                               array('id'=>$courseid));
+                                               array('id' => $courseid));
             if ($coursecompletion) {
                 $cmcompletion = $DB->get_field('course_modules',
                                                'completion',
-                                               array('id'=>$cmid));
+                                               array('id' => $cmid));
                 if ($cmcompletion) {
                     if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
                         mtrace("This course module has completion enabled - allow that to control any learningtimecheck items");
@@ -144,9 +268,23 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
         list($csql, $cparams) = $DB->get_in_or_equal(array_keys($learningtimechecks));
         $params = array_merge(array($userid, $cmid), $cparams);
 
-        $sql = "SELECT i.id itemid, c.id checkid, c.usertimestamp FROM {learningtimecheck_item} i ";
-        $sql .= "LEFT JOIN {learningtimecheck_check} c ON (c.item = i.id AND c.userid = ?) ";
-        $sql .= "WHERE i.moduleid = ? AND i.learningtimecheck $csql AND i.itemoptional < 2";
+        $sql = "
+            SELECT
+                i.id itemid,
+                i.learningtimecheck,
+                c.id checkid,
+                c.usertimestamp
+            FROM
+                {learningtimecheck_item} i
+            LEFT JOIN
+                {learningtimecheck_check} c
+            ON
+                (c.item = i.id AND c.userid = ?)
+            WHERE
+                i.moduleid = ? AND
+                i.learningtimecheck $csql AND
+                i.itemoptional < 2
+        ";
         $items = $DB->get_records_sql($sql, $params);
         // itemoptional - 0: required; 1: optional; 2: heading;
         // not loading defines from mod/learningtimecheck/locallib.php to reduce overhead
@@ -157,32 +295,51 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
             return 0;
         }
 
+        $reportconfig = get_config('report_learningtimecheck');
+
         $updatecount = 0;
+        $createcount = 0;
         foreach ($items as $item) {
+
+            if (!array_key_exists($item->learningtimecheck, $LTCCONTEXT)) {
+                // Make a local cache of reusable contexts 
+                $cm = get_coursemodule_from_instance('learningtimecheck', $item->learningtimecheck);
+                $context = context_module::instance($cm->id);
+                $LTCCONTEXT[$item->learningtimecheck] = $context;
+            }
+
             if ($item->checkid) {
                 if ($item->usertimestamp) {
                     continue;
                 }
                 $check = new stdClass;
                 $check->id = $item->checkid;
-                $check->usertimestamp = time();
-                $DB->update_record('learningtimecheck_check', $check);
-                $updatecount++;
+                $check->userid = $userid;
+                $check->usertimestamp = $logtime;
+                if (report_learningtimecheck_is_valid($check, $reportconfig, $LTCCONTEXT[$item->learningtimecheck]) || !$config->applyfiltering) {
+                    // Checks eventual working day and workingtime rules.
+                    $DB->update_record('learningtimecheck_check', $check);
+                    $updatecount++;
+                }
             } else {
                 $check = new stdClass;
                 $check->item = $item->itemid;
                 $check->userid = $userid;
-                $check->usertimestamp = time();
+                $check->usertimestamp = $logtime;
                 $check->teachertimestamp = 0;
                 $check->teachermark = 0;
                 // LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead
 
-                $check->id = $DB->insert_record('learningtimecheck_check', $check);
-                $updatecount++;
+                if (report_learningtimecheck_is_valid($check, $reportconfig, $LTCCONTEXT[$item->learningtimecheck]) || !$config->applyfiltering) {
+                    // Checks eventual working day and workingtime rules.
+                    $check->id = $DB->insert_record('learningtimecheck_check', $check);
+                    $createcount++;
+                }
             }
         }
         if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
             mtrace("$updatecount learningtimecheck items updated from this log entry");
+            mtrace("$createcount learningtimecheck items created from this log entry");
         }
         if ($updatecount) {
             require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
@@ -196,8 +353,18 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
     return 0;
 }
 
-function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
+/**
+ * Marks checks based on completion achievement
+ * @param int $cmid the course module ID being completed
+ * @param int $userid the user completion owner's id
+ * @param int $newstate the state of completion
+ * @param int $completiontime the time completion state was modified (i.e. completion state registered)
+ */
+function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $completiontime) {
     global $DB, $CFG, $USER;
+    static $LTCCONTEXT = array();
+
+    $config = get_config('learningtimecheck');
 
     if ($userid == 0) {
         $userid = $USER->id;
@@ -207,10 +374,27 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
         mtrace("Completion status change for cmid: $cmid, userid: $userid, newstate: $newstate");
     }
 
-    $sql = "SELECT i.id itemid, c.id checkid, c.usertimestamp, i.learningtimecheck FROM {learningtimecheck_item} i ";
-    $sql .= "JOIN {learningtimecheck} cl ON i.learningtimecheck = cl.id ";
-    $sql .= "LEFT JOIN {learningtimecheck_check} c ON (c.item = i.id AND c.userid = ?) ";
-    $sql .= "WHERE cl.autoupdate > 0 AND i.moduleid = ? AND i.itemoptional < 2 ";
+    $sql = "
+        SELECT
+            c.id checkid,
+            i.id itemid,
+            c.usertimestamp,
+            i.learningtimecheck
+        FROM
+            {learningtimecheck_item} i
+        JOIN
+            {learningtimecheck} cl
+        ON
+            i.learningtimecheck = cl.id
+        LEFT JOIN
+            {learningtimecheck_check} c
+        ON
+            (c.item = i.id AND c.userid = ?)
+        WHERE
+            cl.autoupdate > 0 AND
+            i.moduleid = ? AND
+            i.itemoptional < 2
+    ";
     $items = $DB->get_records_sql($sql, array($userid, $cmid));
     // itemoptional - 0: required; 1: optional; 2: heading;
     // not loading defines from mod/learningtimecheck/locallib.php to reduce overhead
@@ -221,22 +405,42 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
         return 0;
     }
 
+    $reportconfig = get_config('report_learningtimecheck');
+
     $newstate = ($newstate == COMPLETION_COMPLETE || $newstate == COMPLETION_COMPLETE_PASS); // Not complete if failed
     $updatecount = 0;
+    $createcount = 0;
     $updatelearningtimechecks = array();
+
     foreach ($items as $item) {
+
+        if (!array_key_exists($item->learningtimecheck, $LTCCONTEXT)) {
+            // Make a local cache of reusable contexts 
+            $cm = get_coursemodule_from_instance('learningtimecheck', $item->learningtimecheck);
+            $context = context_module::instance($cm->id);
+            $LTCCONTEXT[$item->learningtimecheck] = $context;
+        }
+
         if ($item->checkid) {
             if ($newstate) {
+                // New completion is available that is a positive completion trigger.
+                // Update the check if neeed.
                 if ($item->usertimestamp) {
+                    // Already checked before.
                     continue;
                 }
                 $check = new stdClass;
                 $check->id = $item->checkid;
-                $check->usertimestamp = time();
-                $DB->update_record('learningtimecheck_check', $check);
-                $updatelearningtimechecks[] = $item->learningtimecheck;
-                $updatecount++;
+                $check->userid = $userid;
+                $check->usertimestamp = $completiontime;
+                if (report_learningtimecheck_is_valid($check, $reportconfig, $LTCCONTEXT[$item->learningtimecheck]) || !$config->applyfiltering) {
+                    $DB->update_record('learningtimecheck_check', $check);
+                    $updatelearningtimechecks[] = $item->learningtimecheck;
+                    $updatecount++;
+                }
             } else {
+                // Completion has been unmarked for any reason, so checklist should also 
+                // reflect this, whatever the time is valid or not.
                 if (!$item->usertimestamp) {
                     continue;
                 }
@@ -259,11 +463,14 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
             $check->teachermark = 0;
             // LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead
 
-            $check->id = $DB->insert_record('learningtimecheck_check', $check);
-            $updatelearningtimechecks[] = $item->learningtimecheck;
-            $updatecount++;
+            if (report_learningtimecheck_is_valid($check, $reportconfig, $LTCCONTEXT[$item->learningtimecheck]) || !$config->applyfiltering) {
+                $check->id = $DB->insert_record('learningtimecheck_check', $check);
+                $updatelearningtimechecks[] = $item->learningtimecheck;
+                $createcount++;
+            }
         }
     }
+
     if (!empty($updatelearningtimechecks)) {
         $updatelearningtimechecks = array_unique($updatelearningtimechecks);
         list($csql, $cparams) = $DB->get_in_or_equal($updatelearningtimechecks);
@@ -276,6 +483,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate) {
 
     if (defined("DEBUG_LEARNINGTIMECHECK_AUTOUPDATE")) {
         mtrace("Updated $updatecount learningtimecheck items from this completion status change");
+        mtrace("Created $createcount learningtimecheck items from this completion status change");
     }
 
     return $updatecount;

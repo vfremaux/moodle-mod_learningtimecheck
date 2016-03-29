@@ -15,10 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This page prints a particular instance of learningtimecheck
- *
- * @author  David Smith <moodle@davosmith.co.uk>
- * @package mod/learningtimecheck
+ * @package mod_learningtimecheck
+ * @category mod
+ * @author  David Smith <moodle@davosmith.co.uk> as checklist
+ * @author Valery Fremaux
+ * @version Moodle 2.7
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
@@ -28,11 +30,13 @@ $learningtimecheckid = optional_param('learningtimecheck', 0, PARAM_INT);  // le
 
 $url = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $id, 'learningtimecheck' => $learningtimecheckid));
 $PAGE->set_url($url);
+$PAGE->requires->jquery();
 $PAGE->requires->js('/mod/learningtimecheck/js/jquery.easyui.min.js');
 $PAGE->requires->js('/mod/learningtimecheck/js/locale/easyui-lang-'.current_language().'.js');
 $PAGE->requires->css('/mod/learningtimecheck/css/default/easyui.css');
 $PAGE->requires->css('/mod/learningtimecheck/css/icons.css');
 $PAGE->requires->js('/mod/learningtimecheck/js/jquery.report.js');
+$PAGE->requires->js('/mod/learningtimecheck/teacherupdatechecks.js');
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
@@ -120,7 +124,7 @@ if ($view == 'preview') {
     }
 }
 
-// Redirect to itemlist edition if empty learningtimecheck and have edtion capabilitites.
+// Redirect to itemlist edition if empty learningtimecheck and have edtion capabilities.
 if ((!$chk->items) && $chk->canedit()) {
     redirect(new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $cm->id)) );
 }
@@ -139,7 +143,6 @@ $eventparams = array(
 
 $event = \mod_learningtimecheck\event\course_module_viewed::create($eventparams);
 $event->add_record_snapshot('course_modules', $cm);
-$event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
 $event->trigger();
 
@@ -154,7 +157,7 @@ switch ($view) {
 
     case 'preview':
         echo $OUTPUT->heading(get_string('listpreview', 'learningtimecheck'));
-        $renderer->view_items();
+        $renderer->view_items(false, false);
         break;
 
     case 'report':

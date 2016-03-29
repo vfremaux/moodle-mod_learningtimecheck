@@ -25,8 +25,6 @@ require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-global $DB;
-
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
 $items = optional_param_array('items', false, PARAM_INT);
@@ -61,6 +59,9 @@ if ($id) {
 }
 
 $PAGE->set_url($url);
+
+// Security.
+
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
