@@ -1,5 +1,5 @@
 <?php
-// This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,18 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Code fragment to define the version of learningtimecheck
- * This fragment is called by moodle_needs_upgrading() and /admin/index.php
+ * mod_learningtimecheck course module instance list viewed event.
  *
- * @author  Davo Smith <moodle@davosmith.co.uk>
- * @package mod/learningtimecheck
+ * @package    mod_learningtimecheck
+ * @copyright  2015 Valery Fremaux
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_learningtimecheck\event;
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2015100800;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2015050500;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release  = '2.9.0 (Build: 2015100800)';
-$plugin->component = 'mod_learningtimecheck';
-$plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
+/**
+ * mod_certificate course module instance list event class.
+ *
+ * @package    mod_learningtimecheck
+ * @since      Moodle 2.7
+ * @copyright  2015 Valery Fremaux
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
+}
+
