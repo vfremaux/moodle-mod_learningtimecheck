@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version  = 2016033100;  // The current module version (Date: YYYYMMDDXX)
-$plugin->requires = 2015111000;
+$plugin->requires = 2016052300;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release  = '3.0.0 (Build: 2016033100)';
+$plugin->release  = '3.1.0 (Build: 2016033100)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');

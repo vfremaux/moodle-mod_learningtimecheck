@@ -139,8 +139,6 @@ class learningtimecheck_class {
     function get_items() {
         global $DB, $CFG, $COURSE;
 
-        $modinfo = get_fast_modinfo($COURSE);
-
         // Load all shared learningtimecheck items
         $sql = 'learningtimecheck = ? ';
         $sql .= ' AND userid = 0';
