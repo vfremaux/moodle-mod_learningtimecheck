@@ -149,15 +149,21 @@ class learningtimecheck_class {
         // Experimental : Filter out module bound items the user should not see
         // filtered out modules are moved to an ignored list for other process filtering
         // we just store cmid reference (auto_populate inhibition)
+
+        $modinfo = get_fast_modinfo($COURSE->id, $this->userid);
+
         foreach ($this->items as $iid => $item) {
 
             if (!$item->moduleid) continue;
 
             if ($item->itemoptional == LEARNINGTIMECHECK_OPTIONAL_HEADING) continue;
 
-            $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
+            try {
+                $cm = $modinfo->get_cm($item->moduleid);
+            } catch(Exception $e) {};
+            // $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
 
-            if (!$cm) {
+            if (empty($cm)) {
                 // Deleted course modules. 
                 // TODO : Cleanup the item list accordingly.
                 continue;
@@ -169,7 +175,7 @@ class learningtimecheck_class {
             }
 
             // check agains group constraints
-            if (!groups_course_module_visible($cm, $userid = null)) {
+            if (!$cm->uservisible) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }
