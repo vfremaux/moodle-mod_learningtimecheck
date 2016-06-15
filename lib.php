@@ -969,3 +969,23 @@ function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, 
     return false;
 }
 */
+
+/**
+ * This function allows the tool_dbcleaner to register integrity checks
+ */
+function learningtimecheck_dbcleaner_add_keys() {
+    global $DB;
+
+    $ltcmoduleid = $DB->get_field('modules', 'id', array('name' => 'learningtimecheck'));
+
+    $keys = array(
+        array('learningtimecheck', 'course', 'course', 'id', ''),
+        array('learningtimecheck', 'id', 'course_modules', 'instance', ' module = '.$ltcmoduleid.' '),
+        array('learningtimecheck_item', 'learningtimecheck', 'learningtimecheck', 'id', ''),
+        array('learningtimecheck_item', 'userid', 'user', 'id', ''),
+        array('learningtimecheck_check', 'item', 'learningtimecheck_item', 'id', ''),
+        array('learningtimecheck_check', 'userid', 'user', 'id', ''),
+    );
+
+    return $keys;
+}
