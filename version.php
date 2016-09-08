@@ -30,3 +30,6 @@ $plugin->maturity = MATURITY_STABLE;
 $plugin->release  = '2.7.0 (Build: 2015100800)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
+
+// Non Moodle attributes
+$plugin->codeincrement = '2.7.0001';

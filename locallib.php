@@ -1374,7 +1374,7 @@ class learningtimecheck_class {
 
                 $newval = in_array($item->id, $newchecks);
 
-                if ($newval != $item->checked) {
+                if ($newval != @$item->checked) {
                     $updategrades = true;
                     $item->checked = $newval;
 
@@ -1715,9 +1715,11 @@ class learningtimecheck_class {
     function update_all_autoupdate_checks() {
         global $DB;
 
+        /*
         if (!$this->learningtimecheck->autoupdate) {
             return;
         }
+        */
 
         $now = time();
 

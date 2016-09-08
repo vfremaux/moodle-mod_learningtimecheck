@@ -303,7 +303,7 @@ que là où est implantée la liste.</p>
 $string['autoupdate_help'] = '
 <p>Cette fonctionnalité marque automatiquement des activités présentes dans la liste de marquage lorsque certaines actions y sont faites.</p>
 <p>"Compléter" une activité peut dépendre du type d\'activité - la voir pour une ressource, soumettre un fichier pour un devoir, poster un premier message dans un forum, ou rejoindre la première fois un chat, etc.</p>
-<p>Si vous souhaitez des détails sur l\'événement qui "complète" une activité particulière, demandez à votre administrateur de regarder le fichier "mod/learningtimecheck/autoupdate.php"</p>
+<p>Si vous souhaitez des détails sur l\'événement qui "complète" une activité particulière, demandez à votre administrateur de regarder le fichier "mod/learningtimecheck/autoupdatelib.php"</p>
 <p><strong>Note :</strong> La mise à jour des marques automatique dépend du passage de la tâche régulière de mise à jour de Moodle. Il est possible que cette mise à jour puisse prendre plusieurs minutes, selon le réglage de la fréquence de cette tâche. L\'administrateur peut effectuer quelques modifications non standard de Moodle pour rendre cette mise à jour immédiate.</p>
 ';
 
