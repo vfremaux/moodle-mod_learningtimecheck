@@ -22,7 +22,6 @@
  */
 
 namespace mod_learningtimecheck\task;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Scheduled task to compile completion based checks.

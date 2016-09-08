@@ -169,7 +169,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $comments = $this->instance->learningtimecheck->teachercomments;
         $editcomments = false;
-        $thispage = new moodle_url('/mod/learningtimecheck/view.php', array('view' => 'view', 'id' => $this->instance->cm->id) );
+        $thispage = new moodle_url('/mod/learningtimecheck/view.php', array('view' => 'view', 'id' => $this->instance->cm->id));
         $context = context_module::instance($this->instance->cm->id);
 
         $teachermarklocked = false;
@@ -239,7 +239,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $showteachermark = false;
         $showcheckbox = true;
-        $studentcanaddown = ($this->instance->canupdateown()) && (!has_capability('mod/learningtimecheck:updateother', $context, $USER->id, true));
+        $isteacher = has_capability('mod/learningtimecheck:updateother', $context);
+        $studentcanaddown = ($this->instance->canupdateown()) && (!$isteacher);
         if ($studentcanaddown || $viewother || $userreport) {
             echo $this->progressbar();
             $showteachermark = ($this->instance->learningtimecheck->teacheredit == LEARNINGTIMECHECK_MARKING_TEACHER) || ($this->instance->learningtimecheck->teacheredit == LEARNINGTIMECHECK_MARKING_BOTH) || ($this->instance->learningtimecheck->teacheredit == LEARNINGTIMECHECK_MARKING_EITHER);
@@ -251,7 +252,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $checkgroupings = $this->instance->learningtimecheck->autopopulate && ($this->instance->groupings !== false);
 
         $canupdateown = $this->instance->canupdateown();
-        $updateform = ($showcheckbox && $canupdateown && !$viewother && $userreport) || ($viewother && ($showteachermark || $editcomments));
+        $updateform = ($showcheckbox && $canupdateown && !$viewother && $userreport) || ($isteacher && ($showteachermark || $editcomments));
+        $updateform = true;
 
         if (!$this->instance->items) {
             print_string('noitems', 'learningtimecheck');
@@ -280,7 +282,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 echo '<form action="'.$thispage->out_omit_querystring().'" method="post">';
                 echo html_writer::input_hidden_params($thispage);
                 echo learningtimecheck_add_paged_params();
-                echo '<input type="hidden" name="what" value="'.($viewother ? 'teacherupdatechecks' : 'updatechecks').'" />';
+                echo '<input type="hidden" name="what" value="'.($isteacher ? 'teacherupdatechecks' : 'updatechecks').'" />';
                 echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
             }
 
@@ -623,9 +625,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     echo '&nbsp;<input type="submit" name="save" value="'.$savechecksstr.'" />';
                     echo '&nbsp;<input type="submit" name="savenext" value="'.get_string('saveandnext').'" />';
                     echo '&nbsp;<input type="submit" name="viewnext" value="'.get_string('next').'" />';
-                } else {
-                    echo '<input id="learningtimechecksavechecks" type="submit" name="submit" value="'.$savechecksstr.'" />';
                 }
+                echo '<input id="learningtimechecksavechecks" type="submit" name="submit" value="'.$savechecksstr.'" />';
                 echo '</form>';
             }
 
@@ -809,16 +810,16 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      */
     function view_own_report() {
         global $CFG, $USER, $DB, $OUTPUT;
-        
+
         echo "Deprecated. This function should be not used";
         return;
 
         if (!$this->instance) {
             throw new CodingException('Misuse of an uninitialized renderer. Please review the code');
         }
-        
+
         $str = '';
-        
+
         $this->instance->update_complete_scores();
 
         $reportsettings = $this->instance->get_report_settings();
@@ -934,7 +935,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $i++;
         }
         $str .= '</tr></table>';
-        
+
         return $str;
     }
 
@@ -990,9 +991,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if ($check->hidden) {
                     continue;
                 }
-    
+
                 if ($check->itemoptional == LEARNINGTIMECHECK_OPTIONAL_HEADING) {
-                    $checkstates[] = array(false, false, true, $check->id);
+                    $checkstates[] = array(false, false, true, $check->id, false);
                 } else {
                     if ($check->usertimestamp > 0) {
                         $checkstates[] = array($check->teachermark, true, false, $check->id, false);
@@ -1002,7 +1003,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 }
             }
         }
-        
+
         $str .= '<br/>';
 
         if ($this->instance->learningtimecheck->autopopulate == LEARNINGTIMECHECK_AUTOPOPULATE_COURSE){
@@ -1758,7 +1759,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
 
             if ($item->itemoptional != LEARNINGTIMECHECK_OPTIONAL_HEADING || $reportsettings->showheaders) {
-                $table->head[] = $icon.' '.s($item->displaytext);
+                $itemurl = new moodle_url('/mod/'.$mod->modname.'/view.php', array('id' => $item->moduleid));
+                $table->head[] = '<a href="'.$itemurl.'">'.$icon.'</a> '.s($item->displaytext);
             } else {
                 $table->head[] = '<div title="'.s($item->displaytext).'"><img src="'.$OUTPUT->pix_url('t/switch_plus').'"/></div>';
             }
@@ -2071,11 +2073,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             if ($item->hidden != LEARNINGTIMECHECK_HIDDEN_BYMODULE) {
                 // Here user still has control over hidden status
                 if ($item->hidden == LEARNINGTIMECHECK_HIDDEN_MANUAL) {
-                    $title = '"'.get_string('show').'"';
+                    $title = '"'.get_string('itemenable', 'learningtimecheck').'"';
                     $img = '<img src="'.$OUTPUT->pix_url('/t/show').'" alt='.$title.' title='.$title.' />';
                     $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'showitem')).'">'.$img.'</a>';
                 } else {
-                    $title = '"'.get_string('hide').'"';
+                    $title = '"'.get_string('itemdisable', 'learningtimecheck').'"';
                     $img = '<img src="'.$OUTPUT->pix_url('/t/hide').'" alt='.$title.' title='.$title.' />';
                     $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'hideitem')).'">'.$img.'</a>';
                 }
@@ -2804,7 +2806,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $levelclass .= ' lastcol';
             }
             $str .= '<th style="vertical-align:top; align: center; width:'.$size.'" class="header c'.$key.$levelclass.'" scope="col">';
-            $str .= $heading.'</th>';
+            $str .= $heading;
+            $str .= '</th>';
         }
         $str .= '</tr>';
 

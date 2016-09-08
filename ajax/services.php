@@ -24,7 +24,7 @@
  */
 
 require('../../../config.php');
-require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
+require($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 // Security.
 
