@@ -92,6 +92,10 @@ if ($view == 'preview') {
     $userid = $USER->id;
     $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
 
+    if ($action) {
+        include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
+    }
+
 } elseif ($view == 'view') {
 
     if (!has_capability('mod/learningtimecheck:updateother', $context)) {

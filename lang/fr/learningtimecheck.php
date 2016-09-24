@@ -65,11 +65,15 @@ $string['completiongradehelp'] = 'Les notes d\'accomplissement des objectifs son
 $string['completionpercent'] = 'Pourcentage d\'éléments marqués attendu';
 $string['completionpercentgroup'] = 'Nécessite un marquage';
 $string['configallowmodulelinks'] = 'Permettre aux éléments de marquage d\'être liés à des activités de Moodle (peut ralentir l\'affichage des listes)';
+$string['configusestatscoupling'] = 'Couplage avec les Rapports de session';
+$string['configallowoverrideusestats'] = 'permettre la surcharge des Rapports de session';
+$string['configallowoverrideusestats_desc'] = 'Si activé, il est possible de déclarer certains items pour que leur crédit temps remplace la valeur "mesurée" dans les rapports de session de formation.';
 $string['configautoupdateusecron'] = 'Utiliser les tâches programmées pour la mise à jour automatique';
 $string['configautoupdateusecron_desc'] = 'Si activé, la mise à jour automatique des marques est réalisée par les taches planifiées de Moodle, avec un certain retard. Si vous pouvez supporter ce délai, 
 cela évite que les marques soient calculées pendant que vous naviguez dans les interfaces de la liste de temps pédagogique, ce qui peut rallentir celles-ci notablement.';
 $string['configapplyfiltering'] = 'Appliquer le filtrage';
 $string['configapplyfiltering_desc'] = 'Si activé, le fitlrage de jours et heures ouvrées des rapports de temps d\'apprentissage s\'appliquent aux marques générées par la liste. Sinon, le module de temps d\'apprentissage n\'est pas affecté par le filtrage (Sans ipact sur les rapports de session qui continuent à subir le fltrage.).';
+$string['configcsvformat'] = 'Format CSV';
 $string['configcsvencoding'] = 'Encodage';
 $string['configcsvencoding_desc'] = 'Encodage du fichier CSV';
 $string['configcsvfieldseparator'] = 'Séparateur de champ';
@@ -86,6 +90,7 @@ $string['configintegrateusestats'] = 'Intégrer les mesures réelles d\'activit�
 $string['configintegrateusestats_desc'] = 'Si activé les d\'activité "au réel" seront intégrées aux rapports';
 $string['configlearningtimecheckautoupdate'] = 'Bénéficier de cette fonctionnalité demande la quelques modifications locales du noyau de Moodle, lisez le document mod/learningtimecheck/README.txt pour plus de détails ou consultez un intégrateur.';
 $string['configlearningtimecheckautoupdateusecron'] = 'Les accomplissements seront automatiquement marqués sur la base d\'événements des traces';
+$string['configmy'] = 'Affichage dans les vues d\'ensemble de cours';
 $string['configshowcompletemymoodle'] = 'Montrer les listes d\'avancement complétées sur les pages personnalisées';
 $string['configshowcompletemymoodle_desc'] = 'Si cette option est activée, alors les listes complétée ne seront pas visible dans les pages personnalisées';
 $string['configshowmymoodle'] = 'Montrer les listes d\'avancement sur les pages personnalisées';
@@ -249,7 +254,7 @@ $string['useritemsdeleted'] = 'Eléments étudiants supprimés';
 $string['usetimecounterpart'] = 'Activer les temps forfaitaires standard&nbsp;:';
 $string['validate'] = 'Valider';
 $string['view'] = 'Voir la liste';
-$string['view_pageitem_withoutlinks'] = 'Vue en blocs (étudiants) sans liens';
+$string['view_pageitem_withoutlinks'] = 'Vue en pavés (étudiants) sans liens';
 $string['view_pageitem_progress'] = 'Vue en barre de progression personnelle pour les étudiants';
 $string['viewall'] = 'Voir tous les étudiants';
 $string['viewallcancel'] = 'Annuler';
@@ -262,7 +267,8 @@ $string['save'] = 'Enregistrer';
 $string['filtering'] = 'Filtrage sur les utilisateurs';
 $string['errornodate'] = 'Erreur : un filtre doit avoir une date';
 $string['errornologop'] = 'Erreur : un filtre doit avoir un opérateur logique';
-
+$string['itemenable'] = 'Prendre en compte';
+$string['itemdisable'] = 'Ignorer cet élément';
 
 $string['and'] = 'ET';
 $string['or'] = 'OU';
@@ -296,7 +302,7 @@ $string['autopopulate_help'] = '
 <p>Vous pouvez choisir d\'intégrer la totalité des modules d\'activité du cours ou seulement ceux de la même section
 que là où est implantée la liste.</p>
 <p>Une fois synchronisée avec le cours, la liste subira tous les changements qui sont faits dans le cours ou la section, quelles que soient vos actions dans le panneau d\'édition des éléments de liste.</p>
-<p>Certaines activités pourront être masquées, en cliquant l\'icone "Cacher" à droite de la définition de l\'élément.</p>
+<p>Certaines activités pourront être ignorées dans le contrat pédagogique, en cliquant l\'icone "Oeil" à droite de la définition de l\'élément.</p>
 <p>Pour retirer les activités d\'une liste de marquage, vous devez remettre cette option à "Non", puis aller sur le panneau d\'édition des éléments de liste et cliquer sur le bouton "Enlever les activités du cours".</p>
 ';
 

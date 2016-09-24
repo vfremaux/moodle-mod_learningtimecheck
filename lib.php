@@ -125,16 +125,13 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $learningtimecheck->timemodified = time();
     $learningtimecheck->id = $learningtimecheck->instance;
 
-    $newmax = $learningtimecheck->maxgrade;
-    $oldmax = $DB->get_field('learningtimecheck', 'maxgrade', array('id' => $learningtimecheck->id));
+    $learningtimecheck->maxgrade = 0;
 
     $newcompletion = $learningtimecheck->completionpercent;
     $oldcompletion = $DB->get_field('learningtimecheck', 'completionpercent', array('id' => $learningtimecheck->id));
 
-    /*
-    $newautoupdate = $learningtimecheck->autoupdate;
-    $oldautoupdate = $DB->get_field('learningtimecheck', 'autoupdate', array('id' => $learningtimecheck->id));
-    */
+    // Ensure we will resync all mark states from the beginning
+    $learningtimecheck->lastcompiledtime = 0;
 
     $DB->update_record('learningtimecheck', $learningtimecheck);
 
@@ -143,11 +140,7 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
     $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
 
-    learningtimecheck_grade_item_update($learningtimecheck);
-    if ($newmax != $oldmax) {
-        learningtimecheck_update_grades($learningtimecheck);
-    } elseif ($newcompletion != $oldcompletion) {
-        // This will already be updated if learningtimecheck_update_grades() is called
+    if ($newcompletion != $oldcompletion) {
         $ci = new completion_info($course);
         $context = context_module::instance($cm->id);
         $users = get_users_by_capability($context, 'mod/learningtimecheck:updateown', 'u.id', '', '', '', '', '', false);
@@ -401,7 +394,7 @@ function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
                 'objectid' => $learningtimecheck->id,
                 'context' => $context,
             );
-            
+
             $event = \mod_learningtimecheck\event\course_module_completed::create($eventparams);
             $event->add_record_snapshot('course_modules', $cm);
             $event->add_record_snapshot('course', $course);
@@ -421,12 +414,14 @@ function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
 function learningtimecheck_grade_item_delete($learningtimecheck) {
     global $CFG;
 
+    /*
     require_once($CFG->libdir.'/gradelib.php');
     if (!isset($learningtimecheck->courseid)) {
         $learningtimecheck->courseid = $learningtimecheck->course;
     }
 
     return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck', $learningtimecheck->id, 0, null, array('deleted' => 1));
+    */
 }
 
 function learningtimecheck_grade_item_update($learningtimecheck, $grades=null) {
@@ -680,7 +675,7 @@ function learningtimecheck_cron_task () {
     }
 
     $logmanager = get_log_manager();
-    $readers = $logmanager->get_readers('\core\log\sql_select_reader');
+    $readers = $logmanager->get_readers(learningtimecheck_class::get_reader_source());
     $reader = reset($readers);
 
     if (empty($reader)) {
