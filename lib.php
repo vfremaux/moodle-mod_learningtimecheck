@@ -394,7 +394,7 @@ function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
                 'objectid' => $learningtimecheck->id,
                 'context' => $context,
             );
-
+            
             $event = \mod_learningtimecheck\event\course_module_completed::create($eventparams);
             $event->add_record_snapshot('course_modules', $cm);
             $event->add_record_snapshot('course', $course);
@@ -414,14 +414,12 @@ function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
 function learningtimecheck_grade_item_delete($learningtimecheck) {
     global $CFG;
 
-    /*
     require_once($CFG->libdir.'/gradelib.php');
     if (!isset($learningtimecheck->courseid)) {
         $learningtimecheck->courseid = $learningtimecheck->course;
     }
 
     return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck', $learningtimecheck->id, 0, null, array('deleted' => 1));
-    */
 }
 
 function learningtimecheck_grade_item_update($learningtimecheck, $grades=null) {
@@ -675,7 +673,7 @@ function learningtimecheck_cron_task () {
     }
 
     $logmanager = get_log_manager();
-    $readers = $logmanager->get_readers(learningtimecheck_class::get_reader_source());
+    $readers = $logmanager->get_readers('\core\log\sql_select_reader');
     $reader = reset($readers);
 
     if (empty($reader)) {

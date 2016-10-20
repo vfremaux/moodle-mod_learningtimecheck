@@ -82,37 +82,31 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $tabs[0][] = new tabobject('edit', new moodle_url('/mod/learningtimecheck/edit.php', $params), get_string('editchecks', 'learningtimecheck'));
         }
 
-        $canviewcc = $this->instance->canviewcoursecalibrationreport();
-        $canviewtb = $this->instance->canviewtutorboard();
-        $canviewr = $this->instance->canviewreports();
+        unset($params['view']);
+        $tabs[0][] = new tabobject('reports', new moodle_url('/mod/learningtimecheck/coursecalibrationreport.php', $params), get_string('allreports', 'learningtimecheck'));
 
-        if ($canviewcc || $canviewtb || $canviewr) {
-            unset($params['view']);
-            $tabs[0][] = new tabobject('reports', new moodle_url('/mod/learningtimecheck/coursecalibrationreport.php', $params), get_string('allreports', 'learningtimecheck'));
+        if (in_array($currenttab, array('reports', 'tutorboard', 'calibrationreport'))) {
 
-            if (in_array($currenttab, array('reports', 'tutorboard', 'calibrationreport'))) {
+            if ($this->instance->canviewcoursecalibrationreport()) {
+                unset($params['view']);
+                $tabs[1][] = new tabobject('calibrationreport', new moodle_url('/mod/learningtimecheck/coursecalibrationreport.php', $params), get_string('coursecalibrationreport', 'learningtimecheck'));
+            }
     
-                if ($canviewcc) {
-                    unset($params['view']);
-                    $tabs[1][] = new tabobject('calibrationreport', new moodle_url('/mod/learningtimecheck/coursecalibrationreport.php', $params), get_string('coursecalibrationreport', 'learningtimecheck'));
+            if ($this->instance->canviewtutorboard()) {
+                unset($params['view']);
+                $tabs[1][] = new tabobject('tutorboard', new moodle_url('/mod/learningtimecheck/coursetutorboard.php',$params), get_string('tutorboard', 'learningtimecheck'));
+            }
+    
+            $coursecontext = context_course::instance($COURSE->id);
+            if (has_capability('report/learningtimecheck:view', $coursecontext)) {
+                if ($this->instance->canviewreports()) {
+                    $globalparams = array('id' => $COURSE->id);
+                } else {
+                    $globalparams = array('id' => $COURSE->id,
+                                    'itemid' => $USER->id,
+                                    'view' => 'user');
                 }
-        
-                if ($canviewtb) {
-                    unset($params['view']);
-                    $tabs[1][] = new tabobject('tutorboard', new moodle_url('/mod/learningtimecheck/coursetutorboard.php',$params), get_string('tutorboard', 'learningtimecheck'));
-                }
-        
-                $coursecontext = context_course::instance($COURSE->id);
-                if (has_capability('report/learningtimecheck:view', $coursecontext)) {
-                    if ($canviewr) {
-                        $globalparams = array('id' => $COURSE->id);
-                    } else {
-                        $globalparams = array('id' => $COURSE->id,
-                                        'itemid' => $USER->id,
-                                        'view' => 'user');
-                    }
-                    $tabs[1][] = new tabobject('globalreports', new moodle_url('/report/learningtimecheck/index.php', $globalparams), get_string('reports', 'learningtimecheck'));
-                }
+                $tabs[1][] = new tabobject('globalreports', new moodle_url('/report/learningtimecheck/index.php', $globalparams), get_string('reports', 'learningtimecheck'));
             }
         }
 
@@ -286,9 +280,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 }
 
                 echo '<form action="'.$thispage->out_omit_querystring().'" method="post">';
-                $realview = optional_param('view', '', PARAM_TEXT);
-                echo '<input type="hidden" name="view" value="'.$realview.'">';
-                echo '<input type="hidden" name="id" value="'.$thispage->get_param('id').'">';
+                echo html_writer::input_hidden_params($thispage);
                 echo learningtimecheck_add_paged_params();
                 echo '<input type="hidden" name="what" value="'.($isteacher ? 'teacherupdatechecks' : 'updatechecks').'" />';
                 echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
@@ -1164,7 +1156,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 echo '<input type="hidden" name="items[]" value="'.$item->id.'" /> ';
                 echo '</td>';
 
-                // Item heading.
                 // echo '<label for='.$itemname.$optional.'>'.s($item->displaytext).'</label>&nbsp;';
                 if ($item->itemoptional == LEARNINGTIMECHECK_OPTIONAL_HEADING) {
                     echo '<td class="'.$hideclass.' heading">';
@@ -1187,7 +1178,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 echo '</td>';
 
                 echo '</tr>';
- 
                 echo '<tr class="'.$hideclass.'" valign="top">';
 
                 echo '<td id="ltc-due-signal-'.$item->id.'">';
@@ -1950,10 +1940,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * @param bool $titles
      * @param bool $canforcetrainingsessions if set, will add the checkbox allowing transfer to trainingsession reports
      */
-    function timesettings_form(&$item, $titles = 0, $usercanforcetrainingsessions = false, $couplecredittomandatoryoption = false) {
+    function timesettings_form(&$item, $titles = 0, $canforcetrainingsessions = false, $couplecredittomandatoryoption = false) {
         global $CFG;
-
-        $config = get_config('learningtimecheck');
 
         $str = '';
 
@@ -1989,12 +1977,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $str .= html_writer::select(learningtimecheck_get_credit_times(), "credittime[$item->id]", @$item->credittime, array('' => 'choosedots'), $attributes);
 
-        // Credit time can be forced to report in training sessions time report. 
         if (is_dir($CFG->dirroot.'/report/trainingsessions')) {
-            if ($usercanforcetrainingsessions || $config->allowoverrideusestats) {
+            if ($canforcetrainingsessions) {
                 // Disable this option if training sessions report is not installed.
                 $checked = (@$item->enablecredit) ? ' checked="checked" ' : '';
-                $str .= '<br/><input type="checkbox" name="enablecredit['.$item->id.']" value="1" '.$checked.' /> <span <lass="smalltext">'.get_string('enablecredit', 'learningtimecheck').'</span>';
+                $str .= '<br/>'."<input type=\"checkbox\" name=\"enablecredit[$item->id]\" value=\"1\" $checked /> <span <lass=\"smalltext\">".get_string('enablecredit', 'learningtimecheck').'</span>';
             }
         }
 

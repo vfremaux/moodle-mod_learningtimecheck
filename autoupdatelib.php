@@ -341,8 +341,6 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
             mtrace("$updatecount learningtimecheck items updated from this log entry");
             mtrace("$createcount learningtimecheck items created from this log entry");
         }
-        /*
-        // No more grades
         if ($updatecount) {
             require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
             foreach ($learningtimechecks as $learningtimecheck) {
@@ -350,7 +348,6 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
             }
             return $updatecount;
         }
-        */
     }
 
     return 0;
