@@ -26,7 +26,6 @@ defined('MOODLE_INTERNAL') || die();
  * implements a hook for the page_module block to add
  * the link allowing editing the expertnote for experts
  */
-require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 function learningtimecheck_set_instance(&$block) {
     global $USER, $CFG, $COURSE, $PAGE, $OUTPUT;
@@ -60,7 +59,6 @@ function learningtimecheck_set_instance(&$block) {
         $str .= '<center>';
         $str .= $OUTPUT->single_button(new moodle_url('/mod/learningtimecheck/view.php', array('id' => $block->cm->id, 'page' => $page->id)), $completeviewstr);
         $str .= '</center>';
-
         $str .= '<br/>';
     }
 

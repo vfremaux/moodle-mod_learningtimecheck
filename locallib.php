@@ -149,15 +149,21 @@ class learningtimecheck_class {
         // Experimental : Filter out module bound items the user should not see
         // filtered out modules are moved to an ignored list for other process filtering
         // we just store cmid reference (auto_populate inhibition)
+
+        $modinfo = get_fast_modinfo($COURSE->id, $this->userid);
+
         foreach ($this->items as $iid => $item) {
 
             if (!$item->moduleid) continue;
 
             if ($item->itemoptional == LEARNINGTIMECHECK_OPTIONAL_HEADING) continue;
 
-            $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
+            try {
+                $cm = $modinfo->get_cm($item->moduleid);
+            } catch(Exception $e) {};
+            // $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
 
-            if (!$cm) {
+            if (empty($cm)) {
                 // Deleted course modules. 
                 // TODO : Cleanup the item list accordingly.
                 continue;
@@ -169,7 +175,7 @@ class learningtimecheck_class {
             }
 
             // check agains group constraints
-            if (!groups_course_module_visible($cm, $userid = null)) {
+            if (!$cm->uservisible) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }
@@ -1374,7 +1380,7 @@ class learningtimecheck_class {
 
                 $newval = in_array($item->id, $newchecks);
 
-                if ($newval != @$item->checked) {
+                if ($newval != $item->checked) {
                     $updategrades = true;
                     $item->checked = $newval;
 
@@ -1715,15 +1721,13 @@ class learningtimecheck_class {
     function update_all_autoupdate_checks() {
         global $DB;
 
-        /*
         if (!$this->learningtimecheck->autoupdate) {
             return;
         }
-        */
 
         $now = time();
 
-        $users = get_users_by_capability($this->context, 'mod/learningtimecheck:updateown', 'u.id, u.username', '', '', '', '', '', false);
+        $users = get_users_by_capability($this->context, 'mod/learningtimecheck:updateown', 'u.id', '', '', '', '', '', false);
         if (!$users) {
             return;
         }
@@ -1759,189 +1763,179 @@ class learningtimecheck_class {
         $context = context_module::instance($this->cm->id);
 
         $items = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
-        if ($items) {
-            if (function_exists('debug_trace')) {
-                // debug_trace("Track ".count($items)." in LTC {$this->learningtimecheck->id}");
-            }
-            foreach ($items as $itemid => $item) {
-                if ($using_completion && $item->completion) {
-                    $fakecm = new stdClass;
-                    $fakecm->id = $item->cmid;
-    
-                    foreach ($users as $user) {
-                        $comp_data = $completion->get_data($fakecm, false, $user->id);
-                        if ($comp_data->completionstate == COMPLETION_COMPLETE || $comp_data->completionstate == COMPLETION_COMPLETE_PASS) {
-                            $check = $DB->get_record('learningtimecheck_check', array('item' => $item->itemid, 'userid' => $user->id));
-                            if ($check) {
-                                if ($check->usertimestamp) {
-                                    continue;
-                                }
-                                if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
-                                    $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified ;
-                                    $DB->update_record('learningtimecheck_check', $check);
-                                }
-                            } else {
-                                $check = new stdClass;
-                                $check->item = $item->itemid;
-                                $check->userid = $user->id;
-                                $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified ;
-                                $check->teachertimestamp = 0;
-                                $check->teachermark = LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED;
+        foreach ($items as $itemid => $item) {
+            if ($using_completion && $item->completion) {
+                $fakecm = new stdClass;
+                $fakecm->id = $item->cmid;
 
-                                if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
-                                    $check->id = $DB->insert_record('learningtimecheck_check', $check);
-                                } else {
-                                    // debug_trace("Check {$check->id} invalidated {$user->username} in LTC {$this->learningtimecheck->id}");
-                                }
+                foreach ($users as $user) {
+                    $comp_data = $completion->get_data($fakecm, false, $user->id);
+                    if ($comp_data->completionstate == COMPLETION_COMPLETE || $comp_data->completionstate == COMPLETION_COMPLETE_PASS) {
+                        $check = $DB->get_record('learningtimecheck_check', array('item' => $item->itemid, 'userid' => $user->id));
+                        if ($check) {
+                            if ($check->usertimestamp) {
+                                continue;
+                            }
+                            if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                                $check->usertimestamp = 0 + @$comp_data->timecompleted;
+                                $DB->update_record('learningtimecheck_check', $check);
                             }
                         } else {
-                            // debug_trace("No completion on {$fakecm->id} for {$user->username} in LTC {$this->learningtimecheck->id}");
-                        }
-                    }
-
-                    continue;
-                }
-
-                // For each item that has no completion try resolve by log
-                $logaction = '';
-                $logaction2 = false;
+                            $check = new stdClass;
+                            $check->item = $item->itemid;
+                            $check->userid = $user->id;
+                            $check->usertimestamp = 0 + @$comp_data->timecompleted;
+                            $check->teachertimestamp = 0;
+                            $check->teachermark = LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED;
     
-                switch($item->mod_name) {
-                case 'survey':
-                    $logaction = 'submit';
-                    break;
-                case 'quiz':
-                    $logaction = 'close attempt';
-                    break;
-                case 'forum':
-                    $logaction = 'add post';
-                    $logaction2 = 'add discussion';
-                    break;
-                case 'resource':
-                    $logaction = 'view';
-                    break;
-                case 'hotpot':
-                    $logaction = 'submit';
-                    break;
-                case 'wiki':
-                    $logaction = 'edit';
-                    break;
-                case 'learningtimecheck':
-                    $logaction = 'complete';
-                    break;
-                case 'choice':
-                    $logaction = 'choose';
-                    break;
-                case 'lams':
-                    $logaction = 'view';
-                    break;
-                case 'scorm':
-                    $logaction = 'view';
-                    break;
-                case 'assignment':
-                    $logaction = 'upload';
-                    break;
-                case 'journal':
-                    $logaction = 'add entry';
-                    break;
-                case 'lesson':
-                    $logaction = 'end';
-                    break;
-                case 'realtimequiz':
-                    $logaction = 'submit';
-                    break;
-                case 'workshop':
-                    $logaction = 'submit';
-                    break;
-                case 'glossary':
-                    $logaction = 'add entry';
-                    break;
-                case 'data':
-                    $logaction = 'add';
-                    break;
-                case 'chat':
-                    $logaction = 'talk';
-                    break;
-                case 'page':
-                    $logaction = 'view';
-                    break;
-                case 'url':
-                    $logaction = 'url';
-                    break;
-                case 'feedback':
-                    $logaction = 'submit';
-                    break;
-                default:
-                    continue 2;
-                    break;
-                }
-
-                $logmanager = get_log_manager();
-                $readers = $logmanager->get_readers('\core\log\sql_select_reader');
-                $reader = reset($readers);
-
-                if (empty($reader)) {
-                    continue; // No log reader found.
-                }
-
-                $logupdate = 0;
-                $totalcount = 0;
-
-                if ($reader instanceof \logstore_standard\log\store) {
-                    $courseparm = 'courseid';
-                    $select = "timecreated >= ? AND courseid = {$item->course} AND objectid > 0 AND component = 'mod_{$item->mod_name}' ";
-                    $log_entries = $DB->get_records_select('logstore_standard_log', $select, array($item->lastcompiled));
-                } elseif($reader instanceof \logstore_legacy\log\store) {
-                    $params = array($item->lastcompiled, $logaction);
-                    if (!empty($logaction2)) {
-                        $action2clause = ' OR l.action = ? ';
-                        $params[] = $logaction2;
-                    }
-                    $log_entries = get_logs("l.time >= ? AND (l.action = ? $action2clause) AND cmid > 0", $params, 'l.time ASC', '', '', $totalcount);
-                } else {
-                    continue;
-                }
-
-                if (!$log_entries) {
-                    // Mark the compiletime.
-                    $DB->set_field('learningtimecheck', 'lastcompiledtime', $now, array('id' => $this->learningtimecheck->id));
-                    continue;
-                }
-
-                foreach ($log_entries as $entry) {
-                    //echo "User: {$entry->userid} has completed '{$item->mod_name}' with cmid {$item->cmid}, so updating learningtimecheck item {$item->itemid}<br />\n";
-
-                    $check = $DB->get_record('learningtimecheck_check', array('item' => $item->itemid, 'userid' => $entry->userid));
-                    if ($check) {
-                        if ($check->usertimestamp) {
-                            continue;
-                        }
-                        $check->usertimestamp = 0 + @$entry->time;
-                        if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
-                            $DB->update_record('learningtimecheck_check', $check);
-                        }
-                    } else {
-                        $check = new stdClass;
-                        $check->item = $item->itemid;
-                        $check->userid = $entry->userid;
-                        $check->usertimestamp = 0 + @$entry->time;
-                        $check->teachertimestamp = 0;
-                        $check->teachermark = LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED;
-
-                        if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
-                            $check->id = $DB->insert_record('learningtimecheck_check', $check);
+                            if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                                $check->id = $DB->insert_record('learningtimecheck_check', $check);
+                            }
                         }
                     }
                 }
 
+                continue;
+            }
+
+            // For each item that has no completion try resolve by log
+            $logaction = '';
+            $logaction2 = false;
+
+            switch($item->mod_name) {
+            case 'survey':
+                $logaction = 'submit';
+                break;
+            case 'quiz':
+                $logaction = 'close attempt';
+                break;
+            case 'forum':
+                $logaction = 'add post';
+                $logaction2 = 'add discussion';
+                break;
+            case 'resource':
+                $logaction = 'view';
+                break;
+            case 'hotpot':
+                $logaction = 'submit';
+                break;
+            case 'wiki':
+                $logaction = 'edit';
+                break;
+            case 'learningtimecheck':
+                $logaction = 'complete';
+                break;
+            case 'choice':
+                $logaction = 'choose';
+                break;
+            case 'lams':
+                $logaction = 'view';
+                break;
+            case 'scorm':
+                $logaction = 'view';
+                break;
+            case 'assignment':
+                $logaction = 'upload';
+                break;
+            case 'journal':
+                $logaction = 'add entry';
+                break;
+            case 'lesson':
+                $logaction = 'end';
+                break;
+            case 'realtimequiz':
+                $logaction = 'submit';
+                break;
+            case 'workshop':
+                $logaction = 'submit';
+                break;
+            case 'glossary':
+                $logaction = 'add entry';
+                break;
+            case 'data':
+                $logaction = 'add';
+                break;
+            case 'chat':
+                $logaction = 'talk';
+                break;
+            case 'page':
+                $logaction = 'view';
+                break;
+            case 'url':
+                $logaction = 'url';
+                break;
+            case 'feedback':
+                $logaction = 'submit';
+                break;
+            default:
+                continue 2;
+                break;
+            }
+
+            $logmanager = get_log_manager();
+            $readers = $logmanager->get_readers('\core\log\sql_select_reader');
+            $reader = reset($readers);
+
+            if (empty($reader)) {
+                continue; // No log reader found.
+            }
+
+            $logupdate = 0;
+            $totalcount = 0;
+
+            if ($reader instanceof \logstore_standard\log\store) {
+                $courseparm = 'courseid';
+                $select = "timecreated >= ? AND courseid = {$item->course} AND objectid > 0 AND component = 'mod_{$item->mod_name}' ";
+                $log_entries = $DB->get_records_select('logstore_standard_log', $select, array($item->lastcompiled));
+            } elseif($reader instanceof \logstore_legacy\log\store) {
+                $params = array($item->lastcompiled, $logaction);
+                if (!empty($logaction2)) {
+                    $action2clause = ' OR l.action = ? ';
+                    $params[] = $logaction2;
+                }
+                $log_entries = get_logs("l.time >= ? AND (l.action = ? $action2clause) AND cmid > 0", $params, 'l.time ASC', '', '', $totalcount);
+            } else {
+                continue;
+            }
+
+            if (!$log_entries) {
                 // Mark the compiletime.
                 $DB->set_field('learningtimecheck', 'lastcompiledtime', $now, array('id' => $this->learningtimecheck->id));
+                continue;
             }
-        } else {
-            if (function_exists('debug_trace')) {
-                debug_trace("No items to track in LTC {$this->learningtimecheck->id}");
+
+            foreach ($log_entries as $entry) {
+                //echo "User: {$entry->userid} has completed '{$item->mod_name}' with cmid {$item->cmid}, so updating learningtimecheck item {$item->itemid}<br />\n";
+
+                $check = $DB->get_record('learningtimecheck_check', array('item' => $item->itemid, 'userid' => $entry->userid));
+                if ($check) {
+                    if ($check->usertimestamp) {
+                        continue;
+                    }
+                    $check->usertimestamp = 0 + @$entry->time;
+                    if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                        $DB->update_record('learningtimecheck_check', $check);
+                    }
+                } else {
+                    $check = new stdClass;
+                    $check->item = $item->itemid;
+                    $check->userid = $entry->userid;
+                    $check->usertimestamp = 0 + @$entry->time;
+                    $check->teachertimestamp = 0;
+                    $check->teachermark = LEARNINGTIMECHECK_TEACHERMARK_UNDECIDED;
+
+                    if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                        $check->id = $DB->insert_record('learningtimecheck_check', $check);
+                    }
+                }
             }
+
+            // Mark the compiletime.
+            $DB->set_field('learningtimecheck', 'lastcompiledtime', $now, array('id' => $this->learningtimecheck->id));
         }
+
+        // Always update the grades
+        learningtimecheck_update_grades($this->learningtimecheck);
     }
 
     /**

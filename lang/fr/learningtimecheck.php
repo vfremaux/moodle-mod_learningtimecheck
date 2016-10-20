@@ -249,7 +249,7 @@ $string['useritemsdeleted'] = 'Eléments étudiants supprimés';
 $string['usetimecounterpart'] = 'Activer les temps forfaitaires standard&nbsp;:';
 $string['validate'] = 'Valider';
 $string['view'] = 'Voir la liste';
-$string['view_pageitem_withoutlinks'] = 'Vue en pavés (étudiants) sans liens';
+$string['view_pageitem_withoutlinks'] = 'Vue en blocs (étudiants) sans liens';
 $string['view_pageitem_progress'] = 'Vue en barre de progression personnelle pour les étudiants';
 $string['viewall'] = 'Voir tous les étudiants';
 $string['viewallcancel'] = 'Annuler';
@@ -262,8 +262,7 @@ $string['save'] = 'Enregistrer';
 $string['filtering'] = 'Filtrage sur les utilisateurs';
 $string['errornodate'] = 'Erreur : un filtre doit avoir une date';
 $string['errornologop'] = 'Erreur : un filtre doit avoir un opérateur logique';
-$string['itemenable'] = 'Prendre en compte';
-$string['itemdisable'] = 'Ignorer cet élément';
+
 
 $string['and'] = 'ET';
 $string['or'] = 'OU';
@@ -297,14 +296,14 @@ $string['autopopulate_help'] = '
 <p>Vous pouvez choisir d\'intégrer la totalité des modules d\'activité du cours ou seulement ceux de la même section
 que là où est implantée la liste.</p>
 <p>Une fois synchronisée avec le cours, la liste subira tous les changements qui sont faits dans le cours ou la section, quelles que soient vos actions dans le panneau d\'édition des éléments de liste.</p>
-<p>Certaines activités pourront être ignorées dans le contrat pédagogique, en cliquant l\'icone "Oeil" à droite de la définition de l\'élément.</p>
+<p>Certaines activités pourront être masquées, en cliquant l\'icone "Cacher" à droite de la définition de l\'élément.</p>
 <p>Pour retirer les activités d\'une liste de marquage, vous devez remettre cette option à "Non", puis aller sur le panneau d\'édition des éléments de liste et cliquer sur le bouton "Enlever les activités du cours".</p>
 ';
 
 $string['autoupdate_help'] = '
 <p>Cette fonctionnalité marque automatiquement des activités présentes dans la liste de marquage lorsque certaines actions y sont faites.</p>
 <p>"Compléter" une activité peut dépendre du type d\'activité - la voir pour une ressource, soumettre un fichier pour un devoir, poster un premier message dans un forum, ou rejoindre la première fois un chat, etc.</p>
-<p>Si vous souhaitez des détails sur l\'événement qui "complète" une activité particulière, demandez à votre administrateur de regarder le fichier "mod/learningtimecheck/autoupdatelib.php"</p>
+<p>Si vous souhaitez des détails sur l\'événement qui "complète" une activité particulière, demandez à votre administrateur de regarder le fichier "mod/learningtimecheck/autoupdate.php"</p>
 <p><strong>Note :</strong> La mise à jour des marques automatique dépend du passage de la tâche régulière de mise à jour de Moodle. Il est possible que cette mise à jour puisse prendre plusieurs minutes, selon le réglage de la fréquence de cette tâche. L\'administrateur peut effectuer quelques modifications non standard de Moodle pour rendre cette mise à jour immédiate.</p>
 ';
 

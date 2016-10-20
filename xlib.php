@@ -66,8 +66,7 @@ function learningtimecheck_get_credittimes($learningtimecheckid = 0, $cmid = 0, 
         JOIN
             {learningtimecheck_item} ci
         ON
-            ci.id = cc.item AND
-            ci.userid = cc.userid
+            ci.id = cc.item
             $learningtimecheckclause
             $userclause
         LEFT JOIN
@@ -166,8 +165,7 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
             JOIN
                 {learningtimecheck_item} ci
             ON
-                ci.id = cc.item AND
-                ci.userid = cc.userid
+                ci.id = cc.item
                 $userclause
                 $learningtimecheckclause
             LEFT JOIN

@@ -310,19 +310,6 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
         upgrade_mod_savepoint($result, 2015100800, 'learningtimecheck');
     }
 
-    if ($oldversion < 2016090700) {
-        // Remove all grade itams that ar related to ltc.
-        $instances = $DB->get_records('learningtimecheck');
-
-        if ($instances) {
-            require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
-            foreach ($instances as $ltc) {
-                learningtimecheck_grade_item_delete($ltc);
-            }
-        }
-        upgrade_mod_savepoint($result, 2016090700, 'learningtimecheck');
-    }
-
     return $result;
 
 }

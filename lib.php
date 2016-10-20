@@ -76,7 +76,6 @@ function learningtimecheck_supports($feature) {
     case FEATURE_GROUPINGS:               return true;
     case FEATURE_GROUPMEMBERSONLY:        return true;
     case FEATURE_MOD_INTRO:               return true;
-    case FEATURE_GRADE_HAS_GRADE:         return false;
     case FEATURE_COMPLETION_HAS_RULES:    return true;
     case FEATURE_BACKUP_MOODLE2:          return true;
     case FEATURE_SHOW_DESCRIPTION:        return true;
@@ -98,12 +97,7 @@ function learningtimecheck_add_instance($learningtimecheck) {
     global $DB;
 
     $learningtimecheck->timecreated = time();
-    $learningtimecheck->maxgrade = 0; // Obsolete field
     $learningtimecheck->id = $DB->insert_record('learningtimecheck', $learningtimecheck);
-
-    // Hard fixed values
-    $learningtimecheck->autoupdate = LEARNINGTIMECHECK_AUTOUPDATE_CRON_YES;
-    $learningtimecheck->useritemsallowed = 0;
 
     learningtimecheck_grade_item_update($learningtimecheck);
 
@@ -125,13 +119,14 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $learningtimecheck->timemodified = time();
     $learningtimecheck->id = $learningtimecheck->instance;
 
-    $learningtimecheck->maxgrade = 0;
+    $newmax = $learningtimecheck->maxgrade;
+    $oldmax = $DB->get_field('learningtimecheck', 'maxgrade', array('id' => $learningtimecheck->id));
 
     $newcompletion = $learningtimecheck->completionpercent;
     $oldcompletion = $DB->get_field('learningtimecheck', 'completionpercent', array('id' => $learningtimecheck->id));
 
-    // Ensure we will resync all mark states from the beginning
-    $learningtimecheck->lastcompiledtime = 0;
+    $newautoupdate = $learningtimecheck->autoupdate;
+    $oldautoupdate = $DB->get_field('learningtimecheck', 'autoupdate', array('id' => $learningtimecheck->id));
 
     $DB->update_record('learningtimecheck', $learningtimecheck);
 
@@ -140,7 +135,11 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
     $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
 
-    if ($newcompletion != $oldcompletion) {
+    learningtimecheck_grade_item_update($learningtimecheck);
+    if ($newmax != $oldmax) {
+        learningtimecheck_update_grades($learningtimecheck);
+    } elseif ($newcompletion != $oldcompletion) {
+        // This will already be updated if learningtimecheck_update_grades() is called
         $ci = new completion_info($course);
         $context = context_module::instance($cm->id);
         $users = get_users_by_capability($context, 'mod/learningtimecheck:updateown', 'u.id', '', '', '', '', '', false);
@@ -148,8 +147,10 @@ function learningtimecheck_update_instance($learningtimecheck) {
             $ci->update_state($cm, COMPLETION_UNKNOWN, $user->id);
         }
     }
-
-    $chk->update_all_autoupdate_checks();
+    if ($newautoupdate && !$oldautoupdate) {
+        // This may need time.
+        $chk->update_all_autoupdate_checks();
+    }
 
     return true;
 }
@@ -189,12 +190,10 @@ function learningtimecheck_delete_instance($id) {
 function learningtimecheck_update_all_grades() {
     global $DB;
 
-    /*
     $learningtimechecks = $DB->get_records('learningtimecheck');
     foreach ($learningtimechecks as $learningtimecheck) {
         learningtimecheck_update_grades($learningtimecheck);
     }
-    */
 }
 
 /**
@@ -204,7 +203,6 @@ function learningtimecheck_update_all_grades() {
 function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
     global $CFG, $DB;
 
-    /*
     $params = array('learningtimecheck' => $learningtimecheck->id,
                     'userid' => 0,
                     'itemoptional' => LEARNINGTIMECHECK_OPTIONAL_NO,
@@ -408,24 +406,20 @@ function learningtimecheck_update_grades($learningtimecheck, $userid = 0) {
     }
 
     learningtimecheck_grade_item_update($learningtimecheck, $grades);
-    */
 }
 
 function learningtimecheck_grade_item_delete($learningtimecheck) {
     global $CFG;
-
     require_once($CFG->libdir.'/gradelib.php');
     if (!isset($learningtimecheck->courseid)) {
         $learningtimecheck->courseid = $learningtimecheck->course;
     }
 
-    return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck', $learningtimecheck->id, 0, null, array('deleted' => 1));
+    return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck', $learningtimecheck->id, 0, null, array('deleted'=>1));
 }
 
 function learningtimecheck_grade_item_update($learningtimecheck, $grades=null) {
     global $CFG;
-
-    /*
     if (!function_exists('grade_update')) { //workaround for buggy PHP versions
         require_once($CFG->libdir.'/gradelib.php');
     }
@@ -445,7 +439,6 @@ function learningtimecheck_grade_item_update($learningtimecheck, $grades=null) {
     }
 
     return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck', $learningtimecheck->id, 0, $grades, $params);
-    */
 }
 
 
@@ -635,7 +628,7 @@ function learningtimecheck_cron_task () {
     }
     */
 
-    include_once($CFG->dirroot.'/mod/learningtimecheck/autoupdatelib.php');
+    require_once($CFG->dirroot.'/mod/learningtimecheck/autoupdate.php');
     if (!$config->autoupdateusecron) {
         mtrace("learningtimecheck cron updates disabled");
         return true;

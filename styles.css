@@ -370,10 +370,6 @@ table.learningtimecheck-timesettings{
     display:table;
 }
 
-table.learningtimecheck-timesettings select {
-    width:initial;
-}
-
 table.learningtimecheck-timesettings .c2,
 table.learningtimecheck-timesettings .c3 {
     background-color:#e5e5e5 !important;

@@ -65,18 +65,14 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $this->add_intro_editor(true, get_string('learningtimecheckintro', 'learningtimecheck'));
+        $this->standard_intro_elements(get_string('learningtimecheckintro', 'learningtimecheck'));
 
 //-------------------------------------------------------------------------------
 
         $mform->addElement('header', 'learningtimechecksettings', get_string('learningtimechecksettings', 'learningtimecheck'));
 
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
-
-        /*
-        // This is not a tested options. Cause issues when reordering.
         $mform->addElement('select', 'useritemsallowed', get_string('useritemsallowed', 'learningtimecheck'), $ynoptions);
-        */
 
         $teditoptions = array(LEARNINGTIMECHECK_MARKING_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
                               LEARNINGTIMECHECK_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
@@ -96,13 +92,10 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->setDefault('teachercomments', 1);
         $mform->setAdvanced('teachercomments');
 
-        /*
-        // No more grade concern in LTC
         $mform->addElement('text', 'maxgrade', get_string('maximumgrade'), array('size' => '10'));
         $mform->setType('maxgrade', PARAM_TEXT);
         $mform->setDefault('maxgrade', 100);
         $mform->setAdvanced('maxgrade');
-        */
 
         $emailrecipients = array(LEARNINGTIMECHECK_EMAIL_NO => get_string('no'),
                                  LEARNINGTIMECHECK_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
@@ -129,18 +122,15 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->setDefault('autopopulate', 0 + @$config->initialautocapture);
         $mform->addHelpButton('autopopulate', 'autopopulate', 'learningtimecheck');
 
-        /*
-         * Should now always be true by cron as being optimisezed for permformances
         $autoupdate_options = array(LEARNINGTIMECHECK_AUTOUPDATE_NO => get_string('no'),
                                     LEARNINGTIMECHECK_AUTOUPDATE_YES => get_string('yesnooverride', 'learningtimecheck'),
         );
+
         $mform->addElement('select', 'autoupdate', get_string('autoupdate', 'learningtimecheck'), $autoupdate_options);
         $mform->setDefault('autoupdate', @$config->autoupdateusecron);
         $mform->disabledIf('autoupdate', 'autopopulate', 'eq', 0);
         $mform->addHelpButton('autoupdate', 'autoupdate', 'learningtimecheck');
         $mform->addElement('static', 'autoupdatenote', '', get_string('autoupdatenote', 'learningtimecheck'));
-        */
-
 
         $mform->addElement('selectyesno', 'lockteachermarks', get_string('lockteachermarks', 'learningtimecheck'));
         $mform->setDefault('lockteachermarks', 0);
@@ -151,7 +141,6 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->setDefault('usetimecounterpart', 0 + @$config->initialcredittimeon);
 
         $mform->addElement('date_time_selector', 'lastcompiledtime', get_string('lastcompiledtime', 'learningtimecheck'));
-        $mform->setAdvanced('lastcompiledtime');
 
 //-------------------------------------------------------------------------------
         // add standard elements, common to all modules

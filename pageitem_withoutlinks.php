@@ -48,6 +48,13 @@ function learningtimecheck_withoutlinks_set_instance(&$block) {
         $renderer = $PAGE->get_renderer('learningtimecheck');
         $renderer->set_instance($chk);
         $str .= $renderer->view_own_report_blocks(true);
+
+        if ($block->moduleinstance->usetimecounterpart) {
+            $completeviewstr = get_string('fullviewdeclare', 'learningtimecheck');
+        } else {
+            $completeviewstr = get_string('fullview', 'learningtimecheck');
+        }
+        $page = course_page::get_current_page($COURSE->id, false);
     }
 
     $block->content->text = $str;

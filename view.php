@@ -100,8 +100,10 @@ if ($view == 'preview') {
 
     $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
 
-    if ($action) {
-        include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
+    if ($chk->canupdateown()) {
+        if ($action) {
+            include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
+        }
     }
 } elseif ($view == 'report') {
     $studentid = optional_param('studentid', false, PARAM_INT);

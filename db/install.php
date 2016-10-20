@@ -23,12 +23,6 @@
 function xmldb_learningtimecheck_install() {
     global $DB;
 
-    // Initialise global compilation horizon date at one day before installation if never installed before.
-    $config = get_config('learningtimecheck');
-    if (empty($config->lastcompiled)) {
-        set_config('lastcompiled', time() - HOURSECS, 'learningtimecheck');
-    }
-
 /// Install logging support
 /*    update_log_display_entry('learningtimecheck', 'view', 'learningtimecheck', 'name');
     update_log_display_entry('learningtimecheck', 'edit', 'learningtimecheck', 'name');

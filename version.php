@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Version details
  *
- * @package    mod_learningtimecheck
- * @category   mod
- * @author     Valery Fremaux (valery.fremaux@gmail.com)
- * @copyright  2014 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_learningtimecheck
+ * @category    mod
+ * @author      Valery Fremaux (valery.fremaux@gmeil.com)
+ * @copyright   2011 onwards Valery Fremaux (valery.fremaux@gmeil.com)
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2016090700;  // The current module version (Date: YYYYMMDDXX).
-$plugin->requires = 2014110400;
+$plugin->version  = 2015100800;  // The current module version (Date: YYYYMMDDXX)
+$plugin->requires = 2015050500;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release  = '2.8.0 (Build: 2016090700)';
+$plugin->release  = '2.9.0 (Build: 2015100800)';
 $plugin->component = 'mod_learningtimecheck';
-$plugin->dependencies = array('report_learningtimecheck' => '2015071300', 'local_vflibs' => '2015053000');
+$plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
-// Non Moodle attributes
-$plugin->codeincrement = '2.8.0002';
+// Non moodle attributes.
+$plugin->codeincrement = '2.9.0000';
