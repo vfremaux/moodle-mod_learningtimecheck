@@ -16,10 +16,15 @@
 
 /**
  * Capability definitions for the learningtimecheck module
+ *
+ * @package     mod_learningtimecheck
+ * @category    mod
+ * @author      Valery Fremaux (valery.fremaux@gmail.com)
  */
+defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
-    // Check if user is able to add a learningtimecheck module (M2.3+ only)
+    // Check if user is able to add a learningtimecheck module (M2.3+ only).
     'mod/learningtimecheck:addinstance' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -63,8 +68,10 @@ $capabilities = array(
         )
     ),
 
-    // Ability to check up on the progress of all users through
-    // their learningtimechecks
+    /*
+     * Ability to check up on the progress of all users through
+     * their learningtimechecks
+     */
     'mod/learningtimecheck:viewreports' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -76,8 +83,10 @@ $capabilities = array(
         )
     ),
 
-      // Ability to watch the course calibration report
-      // summating all learningtimechecks in the course
+      /*
+       * Ability to watch the course calibration report
+       * summating all learningtimechecks in the course
+       */
       'mod/learningtimecheck:viewcoursecalibrationreport' => array(
           'riskbitmask' => RISK_PERSONAL,
           'captype' => 'read',
@@ -88,8 +97,10 @@ $capabilities = array(
           )
       ),
 
-      // Ability to watch the tutor board report
-      // summating all learningtimechecks in the course
+      /*
+       * Ability to watch the tutor board report
+       * summating all learningtimechecks in the course
+       */
       'mod/learningtimecheck:viewtutorboard' => array(
           'riskbitmask' => RISK_PERSONAL,
           'captype' => 'read',
@@ -100,7 +111,7 @@ $capabilities = array(
           )
       ),
 
-    // Ability to view reports related to their 'mentees' only
+    // Ability to view reports related to their 'mentees' only.
     'mod/learningtimecheck:viewmenteereports' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -108,7 +119,7 @@ $capabilities = array(
         'archetypes' => array()  // Not assigned by default
     ),
 
-    // Ability to create and manage learningtimechecks
+    // Ability to create and manage learningtimechecks.
     'mod/learningtimecheck:edit' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
@@ -119,7 +130,7 @@ $capabilities = array(
         )
     ),
 
-    // Will receive emails when learningtimechecks complete (if learningtimecheck is set to do so)
+    // Will receive emails when learningtimechecks complete (if learningtimecheck is set to do so).
     'mod/learningtimecheck:emailoncomplete' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -130,7 +141,7 @@ $capabilities = array(
         )
     ),
 
-    // Can update teacher learningtimecheck marks even if locked
+    // Can update teacher learningtimecheck marks even if locked.
     'mod/learningtimecheck:updatelocked' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -140,14 +151,13 @@ $capabilities = array(
         )
     ),
 
-    // Ability to view reports related to their 'mentees' only
+    // Ability to view reports related to their 'mentees' only.
     'mod/learningtimecheck:forceintrainingsessions' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'manager' => CAP_ALLOW,
-        )  // Not assigned by default
+        )
     ),
-
 );
