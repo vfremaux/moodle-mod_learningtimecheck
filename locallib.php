@@ -1873,7 +1873,7 @@ class learningtimecheck_class {
             }
 
             $logmanager = get_log_manager();
-            $readers = $logmanager->get_readers('\core\log\sql_select_reader');
+            $readers = $logmanager->get_readers('\core\log\sql_reader');
             $reader = reset($readers);
 
             if (empty($reader)) {

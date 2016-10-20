@@ -200,7 +200,7 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
             // from 2.7 : use events
             /*
             $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            $readers = $logmanger->get_readers('\core\log\sql_reader');
             $reader = reset($readers);
         
             if (empty($reader)) {
@@ -235,7 +235,7 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
             // from 2.7 : use events
             /*
             $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            $readers = $logmanger->get_readers('\core\log\sql_reader');
             $reader = reset($readers);
         
             if (empty($reader)) {
