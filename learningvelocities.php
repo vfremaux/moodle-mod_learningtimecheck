@@ -27,12 +27,12 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/local/vflibs/jqplotlib.php');
+
 $PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
 $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 
-
-$id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$learningtimecheckid  = optional_param('l', 0, PARAM_INT);  // learningtimecheck instance ID
+$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
+$learningtimecheckid  = optional_param('l', 0, PARAM_INT);  // Learningtimecheck instance ID.
 $scale = optional_param('scale', 'days', PARAM_ALPHA);
 $page = optional_param('page', 0, PARAM_INT);
 $action = optional_param('what', '', PARAM_ALPHA);
@@ -40,28 +40,28 @@ $action = optional_param('what', '', PARAM_ALPHA);
 $url = new moodle_url('/mod/learningtimecheck/learningvelocities.php', array('id' => $id, 'l' => $learningtimecheckid));
 
 if ($id) {
-    if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
+    if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
         error('Course Module ID was incorrect');
     }
 
-    if (! $course = $DB->get_record('course', array('id' => $cm->course) )) {
+    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
         print_error('coursemisconf');
     }
 
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
+    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance))) {
         error('Course module is incorrect');
     }
 
     $url->param('id', $id);
 
 } else if ($learningtimecheckid) {
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
+    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid))) {
         print_error('Course module is incorrect');
     }
-    if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course) )) {
+    if (!$course = $DB->get_record('course', array('id' => $learningtimecheck->course))) {
         print_error('coursemisconf');
     }
-    if (! $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
+    if (!$cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
         error('Course Module ID was incorrect');
     }
 
@@ -112,12 +112,15 @@ echo $renderer->learning_curves($users, $scale, $lowesttime);
 
 echo $OUTPUT->paging_bar(count($allusers), $page, $perpage, $url);
 
-echo $OUTPUT->single_button(new moodle_url('/mod/learningtimecheck/learningvelocities.php', array('id' => $cm->id, 'what' => 'refreshchecks', 'sesskey' => sesskey())), get_string('refresh', 'learningtimecheck'));
+$params = array('id' => $cm->id, 'what' => 'refreshchecks', 'sesskey' => sesskey());
+$buttonurl = new moodle_url('/mod/learningtimecheck/learningvelocities.php', $params);
+echo $OUTPUT->single_button($buttonurl, get_string('refresh', 'learningtimecheck'));
 
-echo $OUTPUT->single_button(new moodle_url('/mod/learningtimecheck/view.php', array('id' => $cm->id)), get_string('back', 'learningtimecheck'));
+$buttonurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $cm->id));
+echo $OUTPUT->single_button($buttonurl, get_string('back', 'learningtimecheck'));
 
 if ($course->format == 'page') {
-    require_once $CFG->dirroot.'/course/format/page/xlib.php';
+    require_once($CFG->dirroot.'/course/format/page/xlib.php');
     page_print_page_format_navigation($cm);
 }
 
