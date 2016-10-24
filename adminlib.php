@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod\learningtimecheck;
-
 /**
  * @package    mod
  * @subpackage learningtimecheck
@@ -23,6 +21,9 @@ namespace mod\learningtimecheck;
  * @copyright  Valery Fremaux (valery.fremaux@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod\learningtimecheck;
+
+defined('MOODLE_INTERNAL') || die;
 
 /**
  * Time selector
@@ -94,7 +95,7 @@ class admin_setting_configdatetime extends \admin_setting {
         if (is_array($default)) {
             $defaultinfo = $default['y'].'-'.$default['M'].'-'.$default['d'].' '.$default['h'].':'.$default['m'];
         } else {
-            $defaultinfo = NULL;
+            $defaultinfo = null;
         }
 
         $return = '<div class="form-datetime defaultsnext">';

@@ -22,7 +22,6 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
 require('../../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
@@ -34,7 +33,7 @@ $url = new moodle_url('/mod/learningtimecheck/ajax/services.php');
 $PAGE->set_url($url);
 
 $action = required_param('what', PARAM_TEXT);
-$id = required_param('id', PARAM_INT); // The course module id
+$id = required_param('id', PARAM_INT); // The course module id.
 
 if (! $cm = $DB->get_record('course_modules', array('id' => $id))) {
     print_error('Course Module ID was incorrect');
@@ -49,7 +48,8 @@ if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $c
 }
 
 $editurl = new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $id, 'sesskey' => sesskey()));
-$reporturl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $id, 'view' => 'report', 'sesskey' => sesskey()));
+$params = array('id' => $id, 'view' => 'report', 'sesskey' => sesskey());
+$reporturl = new moodle_url('/mod/learningtimecheck/view.php', $params);
 
 $context = context_module::instance($id);
 $PAGE->set_context($context);

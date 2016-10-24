@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package mod_learningtimecheck
  * @category mod
@@ -24,12 +22,13 @@ defined('MOODLE_INTERNAL') || die();
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+defined('MOODLE_INTERNAL') || die();
 
 if ($action == 'refreshchecks') {
     require_sesskey();
 
     $DB->set_field('learningtimecheck', 'lastcompiledtime', 0, array('id' => $learningtimecheck->id));
-    // reset also "in memory" records.
+    // Reset also "in memory" records.
     $chk->learningtimecheck->lastcompiledtime = 0;
     $learningtimecheck->lastcompiledtime = 0;
     $items = $DB->get_records_menu('learningtimecheck_item', array('learningtimecheck' => $learningtimecheck->id), 'id,id');
