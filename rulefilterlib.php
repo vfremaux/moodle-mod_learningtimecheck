@@ -21,6 +21,7 @@
  * @author Valery Fremaux
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+defined('MOODLE_INTERNAL') || die;
 
 /**
  * Computes a ruleset for all users and filter non matching users. Rules are usually
@@ -76,7 +77,7 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
     $filterdatetime = strtotime($filterrule->datetime);
     $ruleops = learningtimecheck_class::get_ruleop_options();
 
-    switch($filterrule->rule) {
+    switch ($filterrule->rule) {
         case 'courseenroltime':
             $sql = "
                 SELECT
@@ -162,112 +163,111 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
             return $result;
 
         case 'sitefirstevent':
-            // up to 2.6
-            $firstevent = $DB->get_field('log', 'MIN(time)', array('userid' => $userid));
-
-            // from 2.7 : use events
-            /*
             $logmanger = get_log_manager();
             $readers = $logmanger->get_readers('\core\log\sql_select_reader');
             $reader = reset($readers);
-        
+
             if (empty($reader)) {
                 return false; // No log reader found.
             }
-            // We'll have to probably address directly the log tables (standard_log and log if used)
+            // We'll have to probably address directly the log tables (standard_log and log if used).
             if ($reader instanceof \logstore_standard\log\store) {
                 // address standard log
                 $firstevent = $DB->get_field('logstore_standard_log', 'MIN(timecreated)', array('userid' => $userid));
-            } elseif($reader instanceof \logstore_standard\log\store) {
+            } else if ($reader instanceof \logstore_standard\log\store) {
                 // address legacy log table
                 $firstevent = $DB->get_field('log', 'MIN(time)', array('userid' => $userid));
             } else {
-                // might be not supported or needs to be developed, such as external DB logging
+                // Might be not supported or needs to be developed, such as external DB logging.
             }
-            */
 
-            // Needs at least an event to accept
-            if (!$firstevent) return false;
+            // Needs at least an event to accept.
+            if (!$firstevent) {
+                return false;
+            }
 
             $statement = " \$result = {$firstevent} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             eval($statement);
             return $result;
 
         case 'sitelastevent':
-            // up to 2.6
-            $lastevent = $DB->get_field('log', 'MAX(time)', array('userid' => $userid));
-
-            // from 2.7 : use events
-            /*
             $logmanger = get_log_manager();
             $readers = $logmanger->get_readers('\core\log\sql_select_reader');
             $reader = reset($readers);
-        
+
             if (empty($reader)) {
                 return false; // No log reader found.
             }
-            // We'll have to probably address directly the log tables (standard_log and log if used)
+            // We'll have to probably address directly the log tables (standard_log and log if used).
             if ($reader instanceof \logstore_standard\log\store) {
-                // address standard log
+                // Address standard log.
                 $lastevent = $DB->get_field('logstore_standard_log', 'MAX(timecreated)', array('userid' => $userid));
-            } elseif($reader instanceof \logstore_standard\log\store) {
-                // address legacy log table
+            } else if ($reader instanceof \logstore_standard\log\store) {
+                // Address legacy log table.
                 $lastevent = $DB->get_field('log', 'MAX(time)', array('userid' => $userid));
             } else {
-                // might be not supported or needs to be developed, such as external DB logging
+                // Might be not supported or needs to be developed, such as external DB logging.
+                return false;
             }
-            */
-            
-            // Needs at least an event to accept
-            if (!$lastevent) return false;
+
+            // Needs at least an event to accept.
+            if (!$lastevent) {
+                return false;
+            }
 
             $statement = " \$result = {$lastevent} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             eval($statement);
             return $result;
 
         case 'firstcoursestarted':
-            // this means : i have started activity in at least one registered course (except SITE and MY page). this
-            // can discriminate users just registered in global spaces from users being actually users in courses
-
-            // up to 2.6
-            $mincourserecord = $DB->count_records_select('log', 'MIN(time)', " userid = ? AND course > 1 ", array('userid' => $userid));
-
-            // from 2.7 : use events
             /*
+             * this means : i have started activity in at least one registered course (except SITE and MY page). this
+             * can discriminate users just registered in global spaces from users being actually users in courses
+             */
+
             $logmanger = get_log_manager();
             $readers = $logmanger->get_readers('\core\log\sql_select_reader');
             $reader = reset($readers);
-        
+
             if (empty($reader)) {
                 return false; // No log reader found.
             }
-            // We'll have to probably address directly the log tables (standard_log and log if used)
+            // We'll have to probably address directly the log tables (standard_log and log if used).
             if ($reader instanceof \logstore_standard\log\store) {
-                // address standard log
-                $lastevent = $DB->count_record_select('logstore_standard_log', 'MIN(timecreated)', " userid = ? AND courseid > 1 ", array('userid' => $userid));
-            } elseif($reader instanceof \logstore_standard\log\store) {
-                // address legacy log table
-                $lastevent = $DB->count_records_select('log', 'MIN(time)', " userid = ? AND course > 1 ", array('userid' => $userid));
+                // Address standard log.
+                $select = " userid = ? AND courseid > 1 ";
+                $params = array('userid' => $userid);
+                $lastevent = $DB->count_record_select('logstore_standard_log', 'MIN(timecreated)', $select, $params);
+            } else if ($reader instanceof \logstore_standard\log\store) {
+                // Address legacy log table.
+                $select = " userid = ? AND course > 1 ";
+                $lastevent = $DB->count_records_select('log', 'MIN(time)', $select, array('userid' => $userid));
             } else {
-                // might be not supported or needs to be developed, such as external DB logging
+                // Might be not supported or needs to be developed, such as external DB logging.
+                return false;
             }
-            */
 
-            if (!$mincourserecord) return false;
+            if (!$mincourserecord) {
+                return false;
+            }
 
             $statement = " \$result = {$mincourserecord} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             return $result;
 
         case 'firstcoursecompleted':
-            // to be implemented
+            // To be implemented.
             return true;
 
         case 'usercohortaddition':
-            // This means actually : first addition to any cohort, as user filter cannot store contextual
-            // information related to the currently used view.
+            /*
+             * This means actually : first addition to any cohort, as user filter cannot store contextual
+             * information related to the currently used view.
+             */
             $mincohortaddition = $DB->get_field('cohort_members', 'MIN(timeadded)', array('userid' => $userid));
 
-            if (!$mincohortaddition) return false;
+            if (!$mincohortaddition) {
+                return false;
+            }
 
             $statement = " \$result = {$mincourserecord} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             return $result;
@@ -281,7 +281,9 @@ function learningtimecheck_apply_namefilters(&$fullusers) {
     $firstnamefilter = optional_param('filterfirstname', false, PARAM_TEXT);
     $lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
 
-    if (!$firstnamefilter && !$lastnamefilter) return;
+    if (!$firstnamefilter && !$lastnamefilter) {
+        return;
+    }
 
     if ($firstnamefilter) {
         foreach ($fullusers as $userid => $user) {
