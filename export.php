@@ -30,7 +30,7 @@
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/importexportfields.php');
 
-$id = required_param('id', PARAM_INT); // course module id
+$id = required_param('id', PARAM_INT); // Course module id.
 
 if (!$cm = $DB->get_record('course_modules', array('id' => $id))) {
     print_error('invalidcoursemodule');
@@ -57,12 +57,12 @@ if (!$items) {
     print_error('noitems', 'learningtimecheck');
 }
 
-if (strpos($CFG->wwwroot, 'https://') === 0) { //https sites - watch out for IE! KB812935 and KB316431
+if (strpos($CFG->wwwroot, 'https://') === 0) {
     @header('Cache-Control: max-age=10');
     @header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
     @header('Pragma: ');
 } else {
-    //normal http - prevent caching at all cost
+    // Normal http - prevent caching at all cost.
     @header('Cache-Control: private, must-revalidate, pre-check=0, post-check=0, max-age=0');
     @header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
     @header('Pragma: no-cache');
@@ -85,4 +85,3 @@ foreach ($items as $item) {
     echo implode($separator, $output)."\n";
 }
 
-exit;

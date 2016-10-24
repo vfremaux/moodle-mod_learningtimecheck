@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod_learningtimecheck
- * @category mod
- * @author  David Smith <moodle@davosmith.co.uk> as checklist
- * @author Valery Fremaux
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package     mod_learningtimecheck
+ * @category    mod
+ * @author      David Smith <moodle@davosmith.co.uk> as checklist
+ * @author      Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU Public License
  *
  * This file defines the main learningtimecheck configuration form
  * It uses the standard core Moodle (>1.8) formslib. For
@@ -48,18 +48,17 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
 class mod_learningtimecheck_mod_form extends moodleform_mod {
 
-    function definition() {
+    public function definition() {
 
         global $COURSE, $CFG;
-        $mform =& $this->_form;
+        $mform = $this->_form;
 
         $config = get_config('learningtimecheck');
 
-//-------------------------------------------------------------------------------
-    /// Adding the "general" fieldset, where all the common settings are showed
+        // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-    /// Adding the standard "name" field
+        // Adding the standard "name" field.
         $mform->addElement('text', 'name', get_string('modulename', 'learningtimecheck'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
@@ -67,80 +66,47 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
 
         $this->add_intro_editor(true, get_string('learningtimecheckintro', 'learningtimecheck'));
 
-//-------------------------------------------------------------------------------
-
         $mform->addElement('header', 'learningtimechecksettings', get_string('learningtimechecksettings', 'learningtimecheck'));
 
         $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
 
-        /*
-        // This is not a tested options. Cause issues when reordering.
-        $mform->addElement('select', 'useritemsallowed', get_string('useritemsallowed', 'learningtimecheck'), $ynoptions);
-        */
-
-        $teditoptions = array(LEARNINGTIMECHECK_MARKING_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
-                              LEARNINGTIMECHECK_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
-                              LEARNINGTIMECHECK_MARKING_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'),
-                              LEARNINGTIMECHECK_MARKING_EITHER => get_string('eithercheck', 'learningtimecheck'),
+        $teditoptions = array(LTC_MARKING_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
+                              LTC_MARKING_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
+                              LTC_MARKING_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'),
+                              LTC_MARKING_EITHER => get_string('eithercheck', 'learningtimecheck'),
                               );
         $mform->addElement('select', 'teacheredit', get_string('marktypes', 'learningtimecheck'), $teditoptions);
 
-        // These settings are all disabled, as they are not currently implemented
-
-        /*
-        $themes = array('default' => 'default');
-        $mform->addElement('select', 'theme', get_string('theme', 'learningtimecheck'), $themes);
-        */
+        // These settings are all disabled, as they are not currently implemented.
 
         $mform->addElement('select', 'teachercomments', get_string('teachercomments', 'learningtimecheck'), $ynoptions);
         $mform->setDefault('teachercomments', 1);
         $mform->setAdvanced('teachercomments');
 
-        /*
-        // No more grade concern in LTC
-        $mform->addElement('text', 'maxgrade', get_string('maximumgrade'), array('size' => '10'));
-        $mform->setType('maxgrade', PARAM_TEXT);
-        $mform->setDefault('maxgrade', 100);
-        $mform->setAdvanced('maxgrade');
-        */
-
-        $emailrecipients = array(LEARNINGTIMECHECK_EMAIL_NO => get_string('no'),
-                                 LEARNINGTIMECHECK_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
-                                 LEARNINGTIMECHECK_EMAIL_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
-                                 LEARNINGTIMECHECK_EMAIL_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
+        $emailrecipients = array(LTC_EMAIL_NO => get_string('no'),
+                                 LTC_EMAIL_STUDENT => get_string('teachernoteditcheck', 'learningtimecheck'),
+                                 LTC_EMAIL_TEACHER => get_string('teacheroverwritecheck', 'learningtimecheck'),
+                                 LTC_EMAIL_BOTH => get_string('teacheralongsidecheck', 'learningtimecheck'));
 
         $mform->addElement('select', 'emailoncomplete', get_string('emailoncomplete', 'learningtimecheck'), $emailrecipients);
         $mform->setDefault('emailoncomplete', 0);
         $mform->addHelpButton('emailoncomplete', 'emailoncomplete', 'learningtimecheck');
 
         if (!($COURSE->format == 'page')) {
-            $autopopulateoptions = array (LEARNINGTIMECHECK_AUTOPOPULATE_NO => get_string('no'),
-                                          LEARNINGTIMECHECK_AUTOPOPULATE_SECTION => get_string('importfromsection','learningtimecheck'),
-                                          LEARNINGTIMECHECK_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
+            $autopopulateoptions = array (LTC_AUTOPOPULATE_NO => get_string('no'),
+                                          LTC_AUTOPOPULATE_SECTION => get_string('importfromsection','learningtimecheck'),
+                                          LTC_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
         } else {
-            $autopopulateoptions = array (LEARNINGTIMECHECK_AUTOPOPULATE_NO => get_string('no'),
-                                          LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_PAGE => get_string('importfrompage','learningtimecheck'),
-                                          LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs','learningtimecheck'),
-                                          LEARNINGTIMECHECK_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromtoppage','learningtimecheck'),
-                                          LEARNINGTIMECHECK_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
+            $autopopulateoptions = array (LTC_AUTOPOPULATE_NO => get_string('no'),
+                                          LTC_AUTOPOPULATE_CURRENT_PAGE => get_string('importfrompage','learningtimecheck'),
+                                          LTC_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs','learningtimecheck'),
+                                          LTC_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromtoppage','learningtimecheck'),
+                                          LTC_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
         }
 
         $mform->addElement('select', 'autopopulate', get_string('autopopulate', 'learningtimecheck'), $autopopulateoptions);
         $mform->setDefault('autopopulate', 0 + @$config->initialautocapture);
         $mform->addHelpButton('autopopulate', 'autopopulate', 'learningtimecheck');
-
-        /*
-         * Should now always be true by cron as being optimisezed for permformances
-        $autoupdate_options = array(LEARNINGTIMECHECK_AUTOUPDATE_NO => get_string('no'),
-                                    LEARNINGTIMECHECK_AUTOUPDATE_YES => get_string('yesnooverride', 'learningtimecheck'),
-        );
-        $mform->addElement('select', 'autoupdate', get_string('autoupdate', 'learningtimecheck'), $autoupdate_options);
-        $mform->setDefault('autoupdate', @$config->autoupdateusecron);
-        $mform->disabledIf('autoupdate', 'autopopulate', 'eq', 0);
-        $mform->addHelpButton('autoupdate', 'autoupdate', 'learningtimecheck');
-        $mform->addElement('static', 'autoupdatenote', '', get_string('autoupdatenote', 'learningtimecheck'));
-        */
-
 
         $mform->addElement('selectyesno', 'lockteachermarks', get_string('lockteachermarks', 'learningtimecheck'));
         $mform->setDefault('lockteachermarks', 0);
@@ -153,51 +119,53 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'lastcompiledtime', get_string('lastcompiledtime', 'learningtimecheck'));
         $mform->setAdvanced('lastcompiledtime');
 
-//-------------------------------------------------------------------------------
-        // add standard elements, common to all modules
+        // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
 
-//-------------------------------------------------------------------------------
-        // add standard buttons, common to all modules
+        // Add standard buttons, common to all modules.
         $this->add_action_buttons();
 
     }
 
-    function data_preprocessing(&$default_values) {
+    public function data_preprocessing(&$default_values) {
         parent::data_preprocessing($default_values);
 
-        // Set up the completion checkboxes which aren't part of standard data.
-        // We also make the default value (if you turn on the checkbox) for those
-        // numbers to be 1, this will not apply unless checkbox is ticked.
+        /*
+         * Set up the completion checkboxes which aren't part of standard data.
+         * We also make the default value (if you turn on the checkbox) for those
+         * numbers to be 1, this will not apply unless checkbox is ticked.
+         */
         $default_values['completionpercentenabled'] = !empty($default_values['completionpercent']) ? 1 : 0;
         if (empty($default_values['completionpercent'])) {
             $default_values['completionpercent'] = 100;
         }
     }
 
-    function add_completion_rules() {
-        $mform =& $this->_form;
+    public function add_completion_rules() {
+        $mform = $this->_form;
 
         $group = array();
-        $group[] =& $mform->createElement('checkbox', 'completionpercentenabled', '', get_string('completionpercent','learningtimecheck'));
-        $group[] =& $mform->createElement('text', 'completionpercent', '', array('size' => 3));
+        $label = get_string('completionpercent', 'learningtimecheck');
+        $group[] = $mform->createElement('checkbox', 'completionpercentenabled', '', $label);
+        $group[] = $mform->createElement('text', 'completionpercent', '', array('size' => 3));
         $mform->setType('completionpercent',PARAM_INT);
-        $mform->addGroup($group, 'completionpercentgroup', get_string('completionpercentgroup','learningtimecheck'), array(' '), false);
+        $label = get_string('completionpercentgroup', 'learningtimecheck');
+        $mform->addGroup($group, 'completionpercentgroup', $label, array(' '), false);
         $mform->disabledIf('completionpercent', 'completionpercentenabled', 'notchecked');
 
         return array('completionpercentgroup');
     }
 
-    function completion_rule_enabled($data) {
+    public function completion_rule_enabled($data) {
         return (!empty($data['completionpercentenabled']) && $data['completionpercent'] != 0);
     }
 
-    function get_data() {
+    public function get_data() {
         $data = parent::get_data();
         if (!$data) {
             return false;
         }
-        // Turn off completion settings if the checkboxes aren't ticked
+        // Turn off completion settings if the checkboxes aren't ticked.
         $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
         if (empty($data->completionpercentenabled) || !$autocompletion) {
             $data->completionpercent = 0;

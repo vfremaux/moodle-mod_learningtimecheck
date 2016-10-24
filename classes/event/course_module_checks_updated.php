@@ -23,6 +23,7 @@
  */
 
 namespace mod_learningtimecheck\event;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

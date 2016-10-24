@@ -28,8 +28,6 @@ require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
 
-$url = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $id, 'learningtimecheck' => $learningtimecheckid));
-$PAGE->set_url($url);
 $PAGE->requires->jquery();
 $PAGE->requires->js('/mod/learningtimecheck/js/jquery.easyui.min.js');
 $PAGE->requires->js('/mod/learningtimecheck/js/locale/easyui-lang-'.current_language().'.js');
@@ -50,8 +48,6 @@ if ($id) {
     if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
         print_error('badlearningtimecheckid', 'learningtimecheck');
     }
-    $url->param('id', $id);
-
 } else if ($learningtimecheckid) {
     if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
         print_error('Course module is incorrect');
@@ -62,8 +58,6 @@ if ($id) {
     if (! $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
         print_error('Course Module ID was incorrect');
     }
-    $url->param('learningtimecheck', $learningtimecheckid);
-
 } else {
     print_error('You must specify a course_module ID or an instance ID');
 }
@@ -85,6 +79,9 @@ if (has_capability('mod/learningtimecheck:viewreports', $context)) {
 } else {
     $view = optional_param('view', 'view', PARAM_TEXT);
 }
+
+$url = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $id, 'learningtimecheck' => $learningtimecheckid, 'view' => $view));
+$PAGE->set_url($url);
 
 // Resolve view controllers.
 if ($view == 'preview') {

@@ -34,46 +34,45 @@ require_once $CFG->dirroot.'/mod/learningtimecheck/adminlib.php';
 use \mod\learningtimecheck\admin_setting_configdatetime;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configcheckbox('learningtimecheck/initiallymandatory',
-                                                    get_string('configinitiallymandatory', 'mod_learningtimecheck'),
-                                                    get_string('configinitiallymandatory_desc', 'mod_learningtimecheck'), 1));
+    $key = 'learningtimecheck/initiallymandatory';
+    $label = get_string('configinitiallymandatory', 'mod_learningtimecheck');
+    $desc = get_string('configinitiallymandatory_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 1));
 
-    $settings->add(new admin_setting_configcheckbox('learningtimecheck/initialcredittimeon',
-                                                    get_string('configinitialcredittimeon', 'mod_learningtimecheck'),
-                                                    get_string('configinitialcredittimeon_desc', 'mod_learningtimecheck'), 1));
+    $key = 'learningtimecheck/initialcredittimeon';
+    $label = get_string('configinitialcredittimeon', 'mod_learningtimecheck');
+    $desc = get_string('configinitialcredittimeon_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 1));
 
-   $settings->add(new admin_setting_configcheckbox('learningtimecheck/couplecredittomandatoryoption',
-                                                    get_string('configcouplecredittomandatoryoption', 'mod_learningtimecheck'),
-                                                    get_string('configcouplecredittomandatoryoption_desc', 'mod_learningtimecheck'), 0));
+    $key = 'learningtimecheck/couplecredittomandatoryoption';
+    $label = get_string('configcouplecredittomandatoryoption', 'mod_learningtimecheck');
+    $desc = get_string('configcouplecredittomandatoryoption_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
 
-    $autopopulateoptions = array (LEARNINGTIMECHECK_AUTOPOPULATE_NO => get_string('no'),
-                                  LEARNINGTIMECHECK_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
+    $autopopulateoptions = array (LTC_AUTOPOPULATE_NO => get_string('no'),
+                                  LTC_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
 
-    $settings->add(new admin_setting_configselect('learningtimecheck/initialautocapture',
-                                                    get_string('configinitialautocapture', 'mod_learningtimecheck'),
-                                                    get_string('configinitialautocapture_desc', 'mod_learningtimecheck'), LEARNINGTIMECHECK_AUTOPOPULATE_COURSE, $autopopulateoptions));
+    $key = 'learningtimecheck/initialautocapture';
+    $label = get_string('configinitialautocapture', 'mod_learningtimecheck');
+    $desc = get_string('configinitialautocapture_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configselect($key, $label, $desc, LTC_AUTOPOPULATE_COURSE, $autopopulateoptions));
 
-    /*
-    $autoupdateoptions = array (LEARNINGTIMECHECK_AUTOUPDATE_CRON_NO => get_string('no'),
-                                  LEARNINGTIMECHECK_AUTOUPDATE_CRON_YES => get_string('yes'));
-
-    $settings->add(new admin_setting_configselect('learningtimecheck/autoupdateusecron',
-                                                    get_string('configautoupdateusecron', 'mod_learningtimecheck'),
-                                                    get_string('configautoupdateusecron_desc', 'mod_learningtimecheck'), LEARNINGTIMECHECK_AUTOUPDATE_CRON_YES, $autoupdateoptions));
-    */
-
-    $settings->add(new admin_setting_configdatetime('learningtimecheck/lastcompiled', get_string('configlastcompiled', 'learningtimecheck'),
-                       get_string('configlastcompiled_desc', 'learningtimecheck'), ''));
+    $key = 'learningtimecheck/lastcompiled';
+    $label = get_string('configlastcompiled', 'learningtimecheck');
+    $desc = get_string('configlastcompiled_desc', 'learningtimecheck');
+    $settings->add(new admin_setting_configdatetime($key, $label, $desc, ''));
 
     $settings->add(new admin_setting_heading('h0', get_string('configmy', 'learningtimecheck'), ''));
 
-    $settings->add(new admin_setting_configcheckbox('learningtimecheck/showmymoodle',
-                                                    get_string('configshowmymoodle', 'mod_learningtimecheck'),
-                                                    get_string('configshowmymoodle_desc', 'mod_learningtimecheck'), 1));
+    $key = 'learningtimecheck/showmymoodle';
+    $label = get_string('configshowmymoodle', 'mod_learningtimecheck');
+    $desc = get_string('configshowmymoodle_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 1));
 
-    $settings->add(new admin_setting_configcheckbox('learningtimecheck/showcompletemymoodle',
-                                                    get_string('configshowcompletemymoodle', 'mod_learningtimecheck'),
-                                                    get_string('configshowcompletemymoodle_desc', 'mod_learningtimecheck'), 1));
+    $key = 'learningtimecheck/showcompletemymoodle';
+    $label = get_string('configshowcompletemymoodle', 'mod_learningtimecheck');
+    $desc = get_string('configshowcompletemymoodle_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 1));
 
     $settings->add(new admin_setting_heading('h1', get_string('configcsvformat', 'learningtimecheck'), ''));
 
@@ -81,36 +80,38 @@ if ($ADMIN->fulltree) {
                                   ';' => ';',
                                   ':' => ':',
                                   'TAB' => 'Tab');
-    $settings->add(new admin_setting_configselect('learningtimecheck/csvfieldseparator',
-                                                    get_string('configcsvfieldseparator', 'mod_learningtimecheck'),
-                                                    get_string('configcsvfieldseparator_desc', 'mod_learningtimecheck'), ';', $csvfieldseparatoroptions));
+    $key = 'learningtimecheck/csvfieldseparator';
+    $label = get_string('configcsvfieldseparator', 'mod_learningtimecheck');
+    $desc = get_string('configcsvfieldseparator_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configselect($key, $label, $desc, ';', $csvfieldseparatoroptions));
 
     $csvlineseparatoroptions = array ('LF' => 'LF',
                                   'CR' => 'CR',
-                                  'CRLF' => 'CRLF',
-                                  );
-   $settings->add(new admin_setting_configselect('learningtimecheck/csvlineseparator',
-                                                    get_string('configcsvlineseparator', 'mod_learningtimecheck'),
-                                                    get_string('configcsvlineseparator_desc', 'mod_learningtimecheck'), '\n',$csvlineseparatoroptions));
+                                  'CRLF' => 'CRLF');
+    $key = 'learningtimecheck/csvlineseparator';
+    $label = get_string('configcsvlineseparator', 'mod_learningtimecheck');
+    $desc = get_string('configcsvlineseparator_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configselect($key, $label, $desc, '\n',$csvlineseparatoroptions));
  
     $csvencodingoptions = array ('ISO-8859-1' => 'ISO-8859-1',
                                   'UTF-8' => 'UTF-8',
-                                  'HTML' => 'HTML - Debugging',
-                                  );
-
-   $settings->add(new admin_setting_configselect('learningtimecheck/csvencoding',
-                                                    get_string('configcsvencoding', 'mod_learningtimecheck'),
-                                                    get_string('configcsvencoding_desc', 'mod_learningtimecheck'), 'UTF-8', $csvencodingoptions));
+                                  'HTML' => 'HTML - Debugging');
+    $key = 'learningtimecheck/csvencoding';
+    $label = get_string('configcsvencoding', 'mod_learningtimecheck');
+    $desc = get_string('configcsvencoding_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configselect($key, $label, $desc, 'UTF-8', $csvencodingoptions));
 
     if (is_dir($CFG->dirroot.'/blocks/use_stats')) {
         $settings->add(new admin_setting_heading('h2', get_string('configusestatscoupling', 'learningtimecheck'), ''));
-    
-        $settings->add(new admin_setting_configcheckbox('learningtimecheck/integrateusestats',
-                                                        get_string('configintegrateusestats', 'mod_learningtimecheck'),
-                                                        get_string('configintegrateusestats_desc', 'mod_learningtimecheck'), 0));
-    
-        $settings->add(new admin_setting_configcheckbox('learningtimecheck/allowoverrideusestats',
-                                                        get_string('configallowoverrideusestats', 'mod_learningtimecheck'),
-                                                        get_string('configallowoverrideusestats_desc', 'mod_learningtimecheck'), 0));
+
+        $key = 'learningtimecheck/integrateusestats';
+        $label = get_string('configintegrateusestats', 'mod_learningtimecheck');
+        $desc = get_string('configintegrateusestats_desc', 'mod_learningtimecheck');
+        $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
+
+        $key = 'learningtimecheck/allowoverrideusestats';
+        $label = get_string('configallowoverrideusestats', 'mod_learningtimecheck');
+        $desc = get_string('configallowoverrideusestats', 'mod_learningtimecheck');
+        $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
     }
 }
