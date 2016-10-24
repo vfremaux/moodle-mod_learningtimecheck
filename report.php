@@ -21,13 +21,12 @@
  * @author Valery Fremaux
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
-require_once('../../config.php');
+require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-$id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
+$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
+$learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // Learningtimecheck instance ID.
 $studentid = optional_param('studentid', false, PARAM_INT);
 $action = optional_param('what', '', PARAM_TEXT);
 
@@ -90,7 +89,7 @@ if ($studentid && $chk->only_view_mentee_reports()) {
     if (!$this->is_mentor($this->userid)) {
         $this->userid = false;
     }
-} elseif (!$chk->caneditother()) {
+} else if (!$chk->caneditother()) {
     $studentid = false;
 }
 

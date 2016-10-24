@@ -22,13 +22,12 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-$id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$learningtimecheckid  = optional_param('learningtimecheckid', 0, PARAM_INT);  // learningtimecheck instance ID
+$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
+$learningtimecheckid  = optional_param('learningtimecheckid', 0, PARAM_INT);  // Learningtimecheck instance ID.
 
 $params = array();
 if ($id) {
@@ -48,24 +47,28 @@ if ($id) {
     if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance))) {
         print_error('invalidlearningtimecheckid', 'learningtimecheck');
     }
-    // move require_course_login here to use forced language for course
-    // fix for MDL-6926
+    /*
+     * move require_course_login here to use forced language for course
+     * fix for MDL-6926
+     */
     require_course_login($course, true, $cm);
     $strforums = get_string('modulenameplural', 'learningtimecheck');
     $strforum = get_string('modulename', 'learningtimecheck');
-} elseif ($f) {
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid))) {
+} else if ($f) {
+    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid))) {
         print_error('invalidlearningtimecheckid', 'learningtimecheck');
     }
-    if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course))) {
+    if (!$course = $DB->get_record('course', array('id' => $learningtimecheck->course))) {
         print_error('coursemisconf');
     }
 
     if (!$cm = get_coursemodule_from_instance('learningtimecheck', $chcklist->id, $course->id)) {
         print_error('missingparameter');
     }
-    // move require_course_login here to use forced language for course
-    // fix for MDL-6926
+    /*
+     * move require_course_login here to use forced language for course
+     * fix for MDL-6926
+     */
     require_course_login($course, true, $cm);
     $strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
     $strlearningtimecheck = get_string('modulename', 'learningtimecheck');

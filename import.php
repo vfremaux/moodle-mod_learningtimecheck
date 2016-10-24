@@ -32,7 +32,7 @@ define('STATE_INQUOTES', 1);
 define('STATE_ESCAPE', 2);
 define('STATE_NORMAL', 3);
 
-$id = required_param('id', PARAM_INT); // course module id
+$id = required_param('id', PARAM_INT); // Course module id.
 
 if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
     print_error('invalidcoursemodule');
@@ -66,39 +66,60 @@ class learningtimecheck_import_form extends moodleform {
 
         $mform->addElement('header', 'formheading', get_string('import', 'learningtimecheck'));
 
-        $mform->addElement('filepicker', 'importfile', get_string('importfile', 'learningtimecheck'), null, array('accepted_types'=>array('*.csv')));
+        $label = get_string('importfile', 'learningtimecheck');
+        $mform->addElement('filepicker', 'importfile', $label, null, array('accepted_types' => array('*.csv')));
 
         $this->add_action_buttons(true, get_string('import', 'learningtimecheck'));
     }
 }
 
 function cleanrow($separator, $row) {
-    // Convert and $separator inside quotes into [!SEPARATOR!] (to skip it during the 'explode')
+    // Convert and $separator inside quotes into [!SEPARATOR!] (to skip it during the 'explode').
     $state = STATE_WAITSTART;
     $chars = str_split($row);
     $cleanrow = '';
     $quotes = '"';
+
     foreach ($chars as $char) {
         switch ($state) {
-        case STATE_WAITSTART:
-            if ($char == ' ' || $char == ',') { } // Still in STATE_WAITSTART
-            elseif ($char == '"') { $quotes = '"'; $state = STATE_INQUOTES; }
-            elseif ($char == "'") { $quotes = "'"; $state = STATE_INQUOTES; }
-            else { $state = STATE_NORMAL; }
-            break;
-        case STATE_INQUOTES:
-            if ($char == $quotes) { $state = STATE_NORMAL; } // End of quotes
-            elseif ($char == '\\') { $state = STATE_ESCAPE; continue 2; }  // Possible escaped quotes skip (for now)
-            elseif ($char == $separator) { $cleanrow .= '[!SEPARATOR!]'; continue 2; } // Replace $separator and continue loop
-            break;
-        case STATE_ESCAPE:
-            // Retain escape char, unless escaping a quote character
-            if ($char != $quotes) { $cleanrow .= '\\'; }
-            $state = STATE_INQUOTES;
-            break;
-        default:
-            if ($char == ',') { $state = STATE_WAITSTART; }
-            break;
+            case STATE_WAITSTART:
+                if ($char == ' ' || $char == ',') {
+                    // Still in STATE_WAITSTART.
+                    assert(true);
+                } else if ($char == '"') {
+                    $quotes = '"'; $state = STATE_INQUOTES;
+                } else if ($char == "'") {
+                    $quotes = "'"; $state = STATE_INQUOTES;
+                } else {
+                    $state = STATE_NORMAL;
+                }
+                break;
+            case STATE_INQUOTES:
+                if ($char == $quotes) {
+                    // End of quotes.
+                    $state = STATE_NORMAL;
+                } else if ($char == '\\') {
+                    // Possible escaped quotes skip (for now).
+                    $state = STATE_ESCAPE;
+                    continue 2;
+                } else if ($char == $separator) {
+                    // Replace $separator and continue loop.
+                    $cleanrow .= '[!SEPARATOR!]';
+                    continue 2;
+                }
+                break;
+            case STATE_ESCAPE:
+                // Retain escape char, unless escaping a quote character.
+                if ($char != $quotes) {
+                    $cleanrow .= '\\';
+                }
+                $state = STATE_INQUOTES;
+                break;
+            default:
+                if ($char == ',') {
+                    $state = STATE_WAITSTART;
+                }
+                break;
         }
         $cleanrow .= $char;
     }
@@ -127,14 +148,15 @@ if ($data = $form->get_data()) {
             $filearray = file($filename);
             unlink($filename);
 
-            /// Check for Macintosh OS line returns (ie file on one line), and fix
-            if (ereg("\r", $filearray[0]) AND !ereg("\n", $filearray[0])) {
+            // Check for Macintosh OS line returns (ie file on one line), and fix.
+            if (preg_match("!\r!", $filearray[0]) && !preg_match("!\n!", $filearray[0])) {
                 $filearray = explode("\r", $filearray[0]);
             }
 
             $skipheading = true;
             $ok = true;
-            $position = $DB->count_records('learningtimecheck_item', array('learningtimecheck' => $learningtimecheck->id, 'userid' => 0)) + 1;
+            $params = array('learningtimecheck' => $learningtimecheck->id, 'userid' => 0);
+            $position = $DB->count_records('learningtimecheck_item', $params) + 1;
 
             foreach ($filearray as $row) {
                 if ($skipheading) {
@@ -142,8 +164,10 @@ if ($data = $form->get_data()) {
                     continue;
                 }
 
-                // Separator defined in importexportfields.php (currently ',')
-                // Split $row into array $item, by $separator, but ignore $separator when it occurs within ""
+                /*
+                 * Separator defined in importexportfields.php (currently ',')
+                 * Split $row into array $item, by $separator, but ignore $separator when it occurs within ""
+                 */
                 $row = cleanrow($separator, $row);
                 $item = explode($separator, $row);
 
@@ -159,7 +183,6 @@ if ($data = $form->get_data()) {
                 $newitem->position = $position++;
                 $newitem->userid = 0;
 
-                // $fields defined in importexportfields.php
                 foreach ($fields as $field => $fieldtext) {
                     $itemfield = trim($itemfield);
                     if (substr($itemfield, 0, 1) == '"' && substr($itemfield, -1) == '"') {
@@ -192,7 +215,8 @@ if ($data = $form->get_data()) {
                     $itemfield = next($item);
                 }
 
-                if ($newitem->displaytext) { // Don't insert items without any text in them
+                if ($newitem->displaytext) {
+                    // Don't insert items without any text in them.
                     if (!$DB->insert_record('learningtimecheck_item', $newitem)) {
                         $ok = false;
                         $errormsg = 'Unable to insert DB record for item';

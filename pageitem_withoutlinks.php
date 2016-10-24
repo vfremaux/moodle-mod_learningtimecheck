@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package mod_learningtimecheck
  * @category mod
@@ -26,14 +24,14 @@ defined('MOODLE_INTERNAL') || die();
  * implements a hook for the page_module block to add
  * the link allowing editing the expertnote for experts
  */
+defined('MOODLE_INTERNAL') || die();
 
 function learningtimecheck_withoutlinks_set_instance(&$block) {
     global $USER, $CFG, $COURSE, $PAGE, $OUTPUT;
 
     $str = '';
 
-    // transfer content from title to content
-    // $block->content->text = $block->title;
+    // Transfer content from title to content.
     $block->title = '';
 
     $context = context_module::instance($block->cm->id);

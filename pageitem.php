@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
- * @package mod_learningtimecheck
- * @category mod
- * @author  David Smith <moodle@davosmith.co.uk> as checklist
- * @author Valery Fremaux
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package     mod_learningtimecheck
+ * @category    mod
+ * @author      David Smith <moodle@davosmith.co.uk> as checklist
+ * @author      Valery Fremaux
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU Public License
  *
  * implements a hook for the page_module block to add
  * the link allowing editing the expertnote for experts
  */
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 function learningtimecheck_set_instance(&$block) {
@@ -33,8 +33,10 @@ function learningtimecheck_set_instance(&$block) {
 
     $str = '';
 
-    // Transfer content from title to content.
-    // $block->content->text = $block->title;
+    /*
+     * Transfer content from title to content.
+     * $block->content->text = $block->title;
+     */
     $block->title = '';
 
     $context = context_module::instance($block->cm->id);
@@ -58,7 +60,8 @@ function learningtimecheck_set_instance(&$block) {
         }
         $page = course_page::get_current_page($COURSE->id, false);
         $str .= '<center>';
-        $str .= $OUTPUT->single_button(new moodle_url('/mod/learningtimecheck/view.php', array('id' => $block->cm->id, 'page' => $page->id)), $completeviewstr);
+        $buttonurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $block->cm->id, 'page' => $page->id));
+        $str .= $OUTPUT->single_button($buttonurl, $completeviewstr);
         $str .= '</center>';
 
         $str .= '<br/>';

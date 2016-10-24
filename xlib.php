@@ -49,7 +49,7 @@ function learningtimecheck_get_credittimes($learningtimecheckid = 0, $cmid = 0, 
     $userclause = ($userid) ? " AND cc.userid = $userid " : '';
     $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => "$learningtimecheckid"));
     $teachermarkclause = '';
-    if ($learningtimecheck->teacheredit > LEARNINGTIMECHECK_MARKING_STUDENT) {
+    if ($learningtimecheck->teacheredit > LTC_MARKING_STUDENT) {
         $teachermarkclause = " AND teachermark = 1 ";
     }
 
@@ -102,7 +102,7 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
     $userclause = ($userid) ? " AND cc.userid = $userid " : '' ;
     $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => "$learningtimecheckid"));
     $teachermarkedclause = '';
-    if ($learningtimecheck->teacheredit > LEARNINGTIMECHECK_MARKING_STUDENT) {
+    if ($learningtimecheck->teacheredit > LTC_MARKING_STUDENT) {
         $teachermarkedclause = " AND teachermark = 1 ";
     }
 

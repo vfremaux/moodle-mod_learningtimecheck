@@ -27,7 +27,7 @@ require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-$id = required_param('id', PARAM_INT);   // course
+$id = required_param('id', PARAM_INT); // Course.
 
 if (! $course = $DB->get_record('course', array('id' => $id) )) {
     print_error('coursemisconf');
@@ -48,7 +48,7 @@ $event = \mod_learningtimecheck\event\course_module_instance_list_viewed::create
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-/// Get all required stringsnewmodule
+/// Get all required stringsnewmodule.
 
 $strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
 $strlearningtimecheck  = get_string('modulename', 'learningtimecheck');
@@ -63,7 +63,8 @@ echo $OUTPUT->header();
 // Get all the appropriate data.
 
 if (! $learningtimechecks = get_all_instances_in_course('learningtimecheck', $course)) {
-    echo $OUTPUT->notification(get_string('noinstances', 'learningtimecheck'), new moodle_url('/course/view.php', array('id' => $course->id)));
+    $viewurl = new moodle_url('/course/view.php', array('id' => $course->id));
+    echo $OUTPUT->notification(get_string('noinstances', 'learningtimecheck'), $viewurl);
     die;
 }
 
@@ -104,7 +105,6 @@ foreach ($learningtimechecks as $learningtimecheck) {
         $modurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $learningtimecheck->coursemodule));
         $link = '<a href="'.$modurl.'">'.format_string($learningtimecheck->name).'</a>';
     }
-
 
     if ($course->format == 'weeks' or $course->format == 'topics') {
         $row = array ($learningtimecheck->section, $link);
