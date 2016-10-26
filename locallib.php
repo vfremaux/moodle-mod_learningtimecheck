@@ -141,7 +141,9 @@ class learningtimecheck_class {
      *
      */
     public function get_items() {
-        global $DB, $CFG;
+        global $DB, $CFG, $COURSE;
+
+        $modinfo = get_fast_modinfo($COURSE);
 
         // Load all shared learningtimecheck items.
         $sql = 'learningtimecheck = ? ';
@@ -166,7 +168,7 @@ class learningtimecheck_class {
                 continue;
             }
 
-            $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
+            $cm = $modinfo->get_cm($item->moduleid);
 
             if (!$cm) {
                 // Deleted course modules. 
@@ -195,6 +197,9 @@ class learningtimecheck_class {
                     }
                 }
             }
+
+            $modurl = new moodle_url('/mod/'.$cm->modname.'/view.php', array('id' => $cm->id));
+            $item->modulelink = $modurl;
         }
 
         // Load student's own learningtimecheck items.
