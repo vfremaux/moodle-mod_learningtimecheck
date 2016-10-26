@@ -131,6 +131,7 @@ $string['exportpdf'] = 'Générer PDF';
 $string['forceupdate'] = 'Mettre à jour toutes les marques automatiques';
 $string['fullview'] = 'Voir le détail, et si besoin, marquer manuellement';
 $string['fullviewdeclare'] = 'Voir le détail, et si besoin, marquer manuellement et déclarer les temps';
+$string['gotomodule'] = 'Voir l\'activité';
 $string['gradetocomplete'] = 'Score pour valider :';
 $string['guestsno'] = 'Vous n\'avez pas le droit de consulter cette liste';
 $string['headingitem'] = 'Cet élément est un titre de rubrique - il n\'a pas de case à cocher associée';

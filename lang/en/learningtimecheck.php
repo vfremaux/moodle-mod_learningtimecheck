@@ -125,6 +125,7 @@ $string['exportpdf'] = 'Export as PDF';
 $string['forceupdate'] = 'Update checks for all automatic items';
 $string['fullview'] = 'View checklist details';
 $string['fullviewdeclare'] = 'View checklist details, and declare time counterparts if needed';
+$string['gotomodule'] = 'Go to module';
 $string['gradetocomplete'] = 'Grade to complete:';
 $string['guestsno'] = 'You do not have permission to view this checklist';
 $string['headingitem'] = 'This item is a heading - it will not have a checkbox beside it';

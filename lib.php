@@ -105,8 +105,6 @@ function learningtimecheck_add_instance($learningtimecheck) {
     $learningtimecheck->autoupdate = LTC_AUTOUPDATE_CRON_YES;
     $learningtimecheck->useritemsallowed = 0;
 
-    learningtimecheck_grade_item_update($learningtimecheck);
-
     return $learningtimecheck->id;
 }
 
@@ -179,8 +177,6 @@ function learningtimecheck_delete_instance($id) {
         $result = $result && $DB->delete_records('learningtimecheck_item', array('learningtimecheck' => $learningtimecheck->id));
     }
     $result = $result && $DB->delete_records('learningtimecheck', array('id' => $learningtimecheck->id));
-
-    learningtimecheck_grade_item_delete($learningtimecheck);
 
     return $result;
 }
@@ -524,6 +520,19 @@ function learningtimecheck_cron_task () {
     return true;
 }
 
+/**
+ * This function is needed by LTC upgrader to cleanup old versions.
+ */
+function learningtimecheck_grade_item_delete($learningtimecheck) {
+    global $CFG;
+    require_once($CFG->libdir.'/gradelib.php');
+    if (!isset($learningtimecheck->courseid)) {
+        $learningtimecheck->courseid = $learningtimecheck->course;
+    }
+
+    return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck',
+                        $learningtimecheck->id, 0, null, array('deleted'=>1));
+}
 
 /**
  * Must return an array of user records (all data) who are participants
