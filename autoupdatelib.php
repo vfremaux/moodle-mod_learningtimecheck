@@ -373,7 +373,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
         $userid = $USER->id;
     }
 
-    if (defined("DEBUG_LTC_AUTOUPDATE")) {
+    if (defined('DEBUG_LTC_AUTOUPDATE')) {
         mtrace("Completion status change for cmid: $cmid, userid: $userid, newstate: $newstate");
     }
 
@@ -404,7 +404,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
      * not loading defines from mod/learningtimecheck/locallib.php to reduce overhead
      */
     if (empty($items)) {
-        if (defined("DEBUG_LTC_AUTOUPDATE")) {
+        if (defined('DEBUG_LTC_AUTOUPDATE')) {
             mtrace("No learningtimecheck items linked to this course module");
         }
         return 0;
@@ -491,7 +491,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
         }
     }
 
-    if (defined("DEBUG_LTC_AUTOUPDATE")) {
+    if (defined('DEBUG_LTC_AUTOUPDATE')) {
         mtrace("Updated $updatecount learningtimecheck items from this completion status change");
         mtrace("Created $createcount learningtimecheck items from this completion status change");
     }

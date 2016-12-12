@@ -1875,7 +1875,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $modinfo = get_fast_modinfo($COURSE);
         $cms = $modinfo->get_cms();
-        $ITEMMODS = array();
+        $itemmods = array();
 
         foreach ($printableitems as $item) {
             if ($item->hidden) {
@@ -1888,8 +1888,13 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if ($mod) {
                     $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
                     'class' => 'iconlarge activityicon', 'alt' => $mod->modfullname, 'title' => $mod->modfullname));
-                    $ITEMMODS[$item->id] = $mod;
+                    $itemmods[$item->id] = $mod;
+                } else {
+                    // Lost modules
+                    continue;
                 }
+            } else {
+                $mod = $itemmods[$item->id];
             }
 
             if ($item->itemoptional != LTC_OPTIONAL_HEADING || $reportsettings->showheaders) {

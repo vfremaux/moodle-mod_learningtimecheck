@@ -176,13 +176,7 @@ class learningtimecheck_class {
                 continue;
             }
 
-            if (!$cm->visible) {
-                $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
-                unset($this->items[$iid]);
-            }
-
-            // Check agains group constraints.
-            if (!groups_course_module_visible($cm, $userid = null)) {
+            if (!$cm->uservisible) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }
@@ -572,7 +566,7 @@ class learningtimecheck_class {
                     $itemid = $this->additem($modname, 0, @$keepedindent[$sid] + 1, $nextpos, $cmid, $mandat, $hidden);
                     $changes = true;
                     $existingitems[$itemid] = true;
-                    $goruping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
+                    $grouping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
                     $DB->set_field('learningtimecheck_item', 'grouping', $grouping, array('id' => $itemid));
                 }
                 $nextpos++;
