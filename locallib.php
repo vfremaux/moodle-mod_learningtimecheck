@@ -141,7 +141,9 @@ class learningtimecheck_class {
      *
      */
     public function get_items() {
-        global $DB, $CFG;
+        global $DB, $CFG, $COURSE;
+
+        $modinfo = get_fast_modinfo($COURSE);
 
         // Load all shared learningtimecheck items.
         $sql = 'learningtimecheck = ? ';
@@ -166,7 +168,7 @@ class learningtimecheck_class {
                 continue;
             }
 
-            $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
+            $cm = $modinfo->get_cm($item->moduleid);
 
             if (!$cm) {
                 // Deleted course modules. 
@@ -174,27 +176,24 @@ class learningtimecheck_class {
                 continue;
             }
 
-            if (!$cm->visible) {
-                $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
-                unset($this->items[$iid]);
-            }
-
-            // Check agains group constraints.
-            if (!groups_course_module_visible($cm, $userid = null)) {
+            if (!$cm->uservisible) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }
 
             if ($this->course->format == 'page') {
-                require_once($CFG->dirroot.'/course/format/page/page.class.php');
+                require_once($CFG->dirroot.'/course/format/page/xlib.php');
                 // If paged, check the module is on a visible page.
-                if (!course_page::is_module_visible($cm, false)) {
+                if (!page_module_is_visible($cm, false)) {
                     if (array_key_exists($iid, $this->items)) {
                         $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                         unset($this->items[$iid]);
                     }
                 }
             }
+
+            $modurl = new moodle_url('/mod/'.$cm->modname.'/view.php', array('id' => $cm->id));
+            $item->modulelink = $modurl;
         }
 
         // Load student's own learningtimecheck items.
@@ -567,7 +566,7 @@ class learningtimecheck_class {
                     $itemid = $this->additem($modname, 0, @$keepedindent[$sid] + 1, $nextpos, $cmid, $mandat, $hidden);
                     $changes = true;
                     $existingitems[$itemid] = true;
-                    $goruping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
+                    $grouping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
                     $DB->set_field('learningtimecheck_item', 'grouping', $grouping, array('id' => $itemid));
                 }
                 $nextpos++;

@@ -348,6 +348,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             echo '<ol class="learningtimecheck" id="learningtimecheckouter">';
 
             $allitems = array_values($this->instance->items);
+            $gotomodulestr = get_string('gotomodule', 'learningtimecheck');
 
             for ($i = 0; $i < count($allitems); $i++) {
 
@@ -430,7 +431,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if (isset($item->modulelink)) {
                     $alt = get_string('linktomodule','learningtimecheck');
                     $pix = '<img src="'.$OUTPUT->pix_url('follow_link','learningtimecheck').'" alt="'.$alt.'" />';
-                    $itemstr .= '&nbsp;<a href="'.$item->modulelink.'">'.$pix.'</a>';
+                    $itemstr .= '&nbsp;<a href="'.$item->modulelink.'" title"'.$gotomodulestr.'">'.$pix.'</a>';
                 }
 
                 if (!empty($item->credittime)) {
@@ -1874,7 +1875,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $modinfo = get_fast_modinfo($COURSE);
         $cms = $modinfo->get_cms();
-        $ITEMMODS = array();
+        $itemmods = array();
 
         foreach ($printableitems as $item) {
             if ($item->hidden) {
@@ -1887,8 +1888,13 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if ($mod) {
                     $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
                     'class' => 'iconlarge activityicon', 'alt' => $mod->modfullname, 'title' => $mod->modfullname));
-                    $ITEMMODS[$item->id] = $mod;
+                    $itemmods[$item->id] = $mod;
+                } else {
+                    // Lost modules
+                    continue;
                 }
+            } else {
+                $mod = $itemmods[$item->id];
             }
 
             if ($item->itemoptional != LTC_OPTIONAL_HEADING || $reportsettings->showheaders) {

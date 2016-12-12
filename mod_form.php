@@ -55,7 +55,6 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
 
         $config = get_config('learningtimecheck');
 
-        /* *********************************************************************** */
         // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
@@ -66,8 +65,6 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         $this->standard_intro_elements(get_string('learningtimecheckintro', 'learningtimecheck'));
-
-        /* *********************************************************************** */
 
         $mform->addElement('header', 'learningtimechecksettings', get_string('learningtimechecksettings', 'learningtimecheck'));
 
@@ -122,12 +119,9 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'lastcompiledtime', get_string('lastcompiledtime', 'learningtimecheck'));
         $mform->setAdvanced('lastcompiledtime');
 
-        /* *********************************************************************** */
-
         // Add standard elements, common to all modules.
         $this->standard_coursemodule_elements();
 
-        /* *********************************************************************** */
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
 

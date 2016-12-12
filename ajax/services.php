@@ -23,7 +23,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 require('../../../config.php');
-require($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
 // Security.
 
