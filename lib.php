@@ -634,7 +634,7 @@ function learningtimecheck_reset_userdata($data) {
     $status = array();
     $component = get_string('modulenameplural', 'learningtimecheck');
     $typestr = get_string('resetlearningtimecheckprogress', 'learningtimecheck');
-    $status[] = array('component'=>$component, 'item'=>$typestr, 'error'=>false);
+    $status[] = array('component' => $component, 'item' => $typestr, 'error' => false);
 
     if (!empty($data->reset_learningtimecheck_progress)) {
         $learningtimechecks = $DB->get_records('learningtimecheck', array('course' => $data->courseid));
@@ -726,7 +726,8 @@ function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, 
 
     $fs = get_file_storage();
 
-    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, "sortorder, itemid, filepath, filename", false)) {
+    $sort = 'sortorder, itemid, filepath, filename';
+    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, $sort, false)) {
         $file = array_pop($files);
 
         // Finally send the file.

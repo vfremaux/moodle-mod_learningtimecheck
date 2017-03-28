@@ -189,6 +189,7 @@ $string['percentcomplete'] = 'Eléments obligatoires';
 $string['percentcompleteall'] = 'Tous les éléments';
 $string['pluginadministration'] = 'Admministration de la liste d\'avancement';
 $string['pluginname'] = 'Avancement et temps pédagogiques';
+$string['pluginname_desc'] = 'Ce plugin est basé sur le plugin Checklist et est transformé pour gérer le contrat pédagogique basé sur des affectations de crédit temps aux activités';
 $string['preview'] = 'Prévisualiser';
 $string['progress'] = 'Progression';
 $string['progressbar'] = 'Avancement';

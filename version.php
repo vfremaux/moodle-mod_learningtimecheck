@@ -17,11 +17,12 @@
 /**
  * Version details.
  *
- * @package    mod_learningtimecheck
- * @category   mod
- * @author     Valery Fremaux (valery.fremaux@gmail.com)
- * @copyright  2013 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_learningtimecheck
+ * @category    mod
+ * @author      Davo Smith <moodle@davosmith.co.uk>
+ * @author      Valery Fremaux (valery.fremaux@gmail.com)
+ * @copyright   2015 onwards Valery Fremaux (valery.fremaux@gmail.com)
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
