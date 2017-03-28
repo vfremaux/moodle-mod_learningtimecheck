@@ -34,5 +34,5 @@ $plugin->release  = '3.2.0 (Build: 2016033100)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
-// Non moodle attributes.
+// Non Moodle attributes.
 $plugin->codeincrement = '3.2.0002';

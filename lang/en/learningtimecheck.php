@@ -180,6 +180,7 @@ $string['percentcomplete'] = 'Required items';
 $string['percentcompleteall'] = 'All items';
 $string['pluginadministration'] = 'Checklist administration';
 $string['pluginname'] = 'Learning Time Check';
+$string['pluginname_desc'] = 'This plugin is based on the checklist plugin and has been transformed to assess the time based contract between teacher and student.';
 $string['preview'] = 'Preview';
 $string['progress'] = 'Progress';
 $string['progressbar'] = 'Progress';
@@ -293,7 +294,7 @@ $string['emailoncompletebodyown'] = 'You have completed checklist \'{$a->learnin
 View the checklist here:';
 
 $string['modulename_help'] = 'This module help teachers and students to mark activites and to assess job done, while feeding course objectives with standard credit time or 
-declared credit time. Off line checkable items can be added, also student declared offline tasks can be added to the marking board. Times validaed by teachers will be 
+declared credit time. Off line checkable items can be added, also student declared offline tasks can be added to the marking board. Times validated by teachers will be 
 sent to Training Session reports to appear as required in course time reports.
 ';
 $string['lockteachermarks_help'] = 'When this setting is enabled, once a teacher has saved a \'Yes\' mark, they will be unable to change it. 
