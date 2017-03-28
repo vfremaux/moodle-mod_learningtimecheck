@@ -30,11 +30,17 @@ define('LTC_MAX_CHK_MODS_PER_ROW', 4);
 
 class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
+    protected $output;
+
     public $instance;
     public $groupid;
     public $groupingid;
 
     public function __construct() {
+        global $OUTPUT;
+
+        $this->output = $OUTPUT;
+
         $this->groupid = 0;
         $this->groupingid = 0;
         $this->instance = null;
@@ -2097,9 +2103,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public static function progressbar_thin($percentcomplete) {
+        global $OUTPUT;
 
         $str = '<div class="learningtimecheck-progressthin-outer">';
-        $str .= '<div class="learningtimecheck-progressthin-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress','learningtimecheck').');" >&nbsp;</div>';
+        $str .= '<div class="learningtimecheck-progressthin-inner" style="width:'.$percentcomplete.'%; background-image: url('.$OUTPUT->pix_url('progress','learningtimecheck').');" >&nbsp;</div>';
         $str .= '</div>';
         $str .= '<br>';
         $str .= '<div style="text-align:center">'.sprintf('%0d%%',$percentcomplete).'</div>';
@@ -2576,14 +2583,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * an alternate URL.
      */
     public static function print_event_filter($thispage, $url = null, $component = 'mod', $itemid = 0) {
-        global $SESSION, $CFG;
+        global $SESSION, $CFG, $OUTPUT;
 
         $actionurl = (!is_null($url)) ? $url : new moodle_url('/mod/learningtimecheck/view.php');
 
         $ruleops = learningtimecheck_class::get_ruleop_options();
 
-        $pluspixurl = $this->output->pix_url('t/switch_plus');
-        $minuspixurl = $this->output->pix_url('t/switch_minus');
+        $pluspixurl = $OUTPUT->pix_url('t/switch_plus');
+        $minuspixurl = $OUTPUT->pix_url('t/switch_minus');
 
         $str = '';
         $str .= '<div id="learningtimecheck-event-filter">';
@@ -2624,14 +2631,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $deleteurl = clone($thispage);
                 $params = array('what' => 'deleterule', 'ruleid' => $filterrule->id);
                 $deleteurl->params($params);
-                $str .= '<a href="'.$deleteurl.'"><img src="'.$this->output->pix_url('t/delete').'"></a>';
+                $str .= '<a href="'.$deleteurl.'"><img src="'.$OUTPUT->pix_url('t/delete').'"></a>';
 
                 $str .= '</div>';
             }
         }
 
         // Will ajax load a new rule form.
-        $str .= '<a href="javascript:load_filter_rule_form(\''.$CFG->wwwroot.'\', \''.$thispage->get_param('id').'\', \''.$component.'\', \''.$thispage->get_param('view').'\', \''.$itemid.'\')"><img src="'.$this->output->pix_url('add', 'learningtimecheck').'" /></a>';
+        $str .= '<a href="javascript:load_filter_rule_form(\''.$CFG->wwwroot.'\', \''.$thispage->get_param('id').'\', \''.$component.'\', \''.$thispage->get_param('view').'\', \''.$itemid.'\')"><img src="'.$OUTPUT->pix_url('add', 'learningtimecheck').'" /></a>';
         $str .= '</form>';
         $str .= '<div id="learningtimecheck-filter-new-rule" class="hidden"></div>';
         $str .= '</div>';
