@@ -481,16 +481,6 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
         }
     }
 
-    if (!empty($updatelearningtimechecks)) {
-        $updatelearningtimechecks = array_unique($updatelearningtimechecks);
-        list($csql, $cparams) = $DB->get_in_or_equal($updatelearningtimechecks);
-        $learningtimechecks = $DB->get_records_select('learningtimecheck', 'id '.$csql, $cparams);
-        require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
-        foreach ($learningtimechecks as $learningtimecheck) {
-            learningtimecheck_update_grades($learningtimecheck, $userid);
-        }
-    }
-
     if (defined('DEBUG_LTC_AUTOUPDATE')) {
         mtrace("Updated $updatecount learningtimecheck items from this completion status change");
         mtrace("Created $createcount learningtimecheck items from this completion status change");
