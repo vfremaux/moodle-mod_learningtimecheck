@@ -520,6 +520,19 @@ function learningtimecheck_cron_task () {
     return true;
 }
 
+/**
+ * This function is needed by LTC upgrader to cleanup old versions.
+ */
+function learningtimecheck_grade_item_delete($learningtimecheck) {
+    global $CFG;
+    require_once($CFG->libdir.'/gradelib.php');
+    if (!isset($learningtimecheck->courseid)) {
+        $learningtimecheck->courseid = $learningtimecheck->course;
+    }
+
+    return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck',
+                        $learningtimecheck->id, 0, null, array('deleted'=>1));
+}
 
 /**
  * Must return an array of user records (all data) who are participants
@@ -621,7 +634,7 @@ function learningtimecheck_reset_userdata($data) {
     $status = array();
     $component = get_string('modulenameplural', 'learningtimecheck');
     $typestr = get_string('resetlearningtimecheckprogress', 'learningtimecheck');
-    $status[] = array('component'=>$component, 'item'=>$typestr, 'error'=>false);
+    $status[] = array('component' => $component, 'item' => $typestr, 'error' => false);
 
     if (!empty($data->reset_learningtimecheck_progress)) {
         $learningtimechecks = $DB->get_records('learningtimecheck', array('course' => $data->courseid));

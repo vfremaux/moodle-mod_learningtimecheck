@@ -141,7 +141,9 @@ class learningtimecheck_class {
      *
      */
     public function get_items() {
-        global $DB, $CFG;
+        global $DB, $CFG, $COURSE;
+
+        $modinfo = get_fast_modinfo($COURSE);
 
         // Load all shared learningtimecheck items.
         $sql = 'learningtimecheck = ? ';
@@ -166,7 +168,7 @@ class learningtimecheck_class {
                 continue;
             }
 
-            $cm = $DB->get_record('course_modules', array('id' => $item->moduleid));
+            $cm = $modinfo->get_cm($item->moduleid);
 
             if (!$cm) {
                 // Deleted course modules. 
@@ -195,6 +197,9 @@ class learningtimecheck_class {
                     }
                 }
             }
+
+            $modurl = new moodle_url('/mod/'.$cm->modname.'/view.php', array('id' => $cm->id));
+            $item->modulelink = $modurl;
         }
 
         // Load student's own learningtimecheck items.
@@ -567,7 +572,7 @@ class learningtimecheck_class {
                     $itemid = $this->additem($modname, 0, @$keepedindent[$sid] + 1, $nextpos, $cmid, $mandat, $hidden);
                     $changes = true;
                     $existingitems[$itemid] = true;
-                    $goruping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
+                    $grouping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
                     $DB->set_field('learningtimecheck_item', 'grouping', $grouping, array('id' => $itemid));
                 }
                 $nextpos++;
@@ -2109,7 +2114,8 @@ class learningtimecheck_class {
             $groupings[] = 0;
             $groupings_sel = ' AND grouping IN ('.implode(',',$groupings).') ';
         }
-        $items = $DB->get_records_select('learningtimecheck_item', 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.LTC_OPTIONAL_NO.' AND hidden = '.LTC_HIDDEN_NO.$groupings_sel, array($learningtimecheck->id), '', 'id');
+        $select = 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.LTC_OPTIONAL_NO.' AND hidden = '.LTC_HIDDEN_NO.$groupings_sel;
+        $items = $DB->get_records_select('learningtimecheck_item', $select, array($learningtimecheck->id), '', 'id');
         if (empty($items)) {
             return array(false, false);
         }
@@ -2232,6 +2238,63 @@ class learningtimecheck_class {
     public static function get_reader_source() {
         return '\core\log\sql_select_reader';
     }
+}
+
+/**
+ * Tells wether a feature is supported or not. Gives back the 
+ * implementation path where to fetch resources.
+ * @param string $feature a feature key to be tested.
+ */
+function learningtimecheck_supports_feature($feature) {
+    global $CFG;
+    static $supports;
+
+    $config = get_config('learningtimecheck');
+
+    if (!isset($supports)) {
+        $supports = array(
+            'pro' => array(
+                'format' => array('xls', 'csv', 'pdf', 'json'),
+                'time' => array('student', 'tutor'),
+                'calculation' => array('coupling')
+            ),
+            'community' => array(
+                'format' => array('xls', 'csv'),
+                'time' => array('student'),
+            ),
+        );
+    }
+
+    // Check existance of the 'pro' dir in plugin.
+    if (is_dir(__DIR__.'/pro')) {
+        if ($feature == 'emulate/community') {
+            return 'pro';
+        }
+        if (empty($config->emulatecommunity)) {
+            $versionkey = 'pro';
+        } else {
+            $versionkey = 'community';
+        }
+    } else {
+        $versionkey = 'community';
+    }
+
+    list($feat, $subfeat) = explode('/', $feature);
+
+    if (!array_key_exists($feat, $supports[$versionkey])) {
+        return false;
+    }
+
+    if (!in_array($subfeat, $supports[$versionkey][$feat])) {
+        return false;
+    }
+
+    // Special condition for pdf dependencies.
+    if (($feature == 'format/pdf') && !is_dir($CFG->dirroot.'/local/vflibs')) {
+        return false;
+    }
+
+    return $versionkey;
 }
 
 function learningtimecheck_itemcompare($item1, $item2) {

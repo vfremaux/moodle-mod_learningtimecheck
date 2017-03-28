@@ -94,6 +94,7 @@ function cleanrow($separator, $row) {
                     $state = STATE_NORMAL;
                 }
                 break;
+
             case STATE_INQUOTES:
                 if ($char == $quotes) {
                     // End of quotes.
@@ -108,6 +109,7 @@ function cleanrow($separator, $row) {
                     continue 2;
                 }
                 break;
+
             case STATE_ESCAPE:
                 // Retain escape char, unless escaping a quote character.
                 if ($char != $quotes) {
