@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,15 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-function xmldb_learningtimecheck_upgrade($oldversion=0) {
+/**
+ * @package   mod_Learningtimecheck
+ * @category  mod
+ * @copyright 2014 Valery Fremaux
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-    global $CFG, $THEME, $DB;
+defined('MOODLE_INTERNAL') || die();
+
+function xmldb_learningtimecheck_upgrade($oldversion = 0) {
+    global $CFG, $DB;
 
     $dbman = $DB->get_manager();
     $result = true;
 
     if ($result && $oldversion < 2010022500) {
-        // Adjust (currently unused) 'teachermark' fields to be 0 when unmarked, not 2
+        // Adjust (currently unused) 'teachermark' fields to be 0 when unmarked, not 2.
         $sql = 'UPDATE {learningtimecheck_check} ';
         $sql .= 'SET teachermark=0 ';
         $sql .= 'WHERE teachermark=2';
@@ -33,8 +40,8 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2010022800) {
-        // All learningtimechecks created before this point were 'student only' learningtimechecks
-        // Update the default & previously created learningtimechecks to reflect this
+        // All learningtimechecks created before this point were 'student only' learningtimechecks.
+        // Update the default & previously created learningtimechecks to reflect this.
 
         $sql = 'UPDATE {learningtimecheck} ';
         $sql .= 'SET teacheredit=0 ';
@@ -45,7 +52,7 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
         $field = new xmldb_field('teacheredit', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, null, null, '0', 'useritemsallowed');
         $dbman->change_field_type($table, $field);
 
-        /// learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2010022800, 'learningtimecheck');
     }
 
@@ -54,13 +61,13 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
 
         require_once(dirname(dirname(__FILE__)).'/lib.php');
 
-        // too much debug output
+        // Too much debug output.
         $olddebug = $DB->get_debug();
         $DB->set_debug(false);
         learningtimecheck_update_all_grades();
         $DB->set_debug($olddebug);
 
-        /// learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2010031600, 'learningtimecheck');
     }
 
@@ -72,7 +79,7 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        /// learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2010041800, 'learningtimecheck');
     }
 
@@ -84,13 +91,13 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        /// learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2010041801, 'learningtimecheck');
     }
 
     if ($result && $oldversion < 2010041900) {
 
-        /// Define field eventid to be added to learningtimecheck_item
+        // Define field eventid to be added to learningtimecheck_item.
         $table = new xmldb_table('learningtimecheck_item');
         $field = new xmldb_field('eventid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0', 'duetime');
 
@@ -98,13 +105,13 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        /// learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2010041900, 'learningtimecheck');
     }
 
     if ($result && $oldversion < 2010050100) {
 
-        /// Define field teachercomments to be added to learningtimecheck
+        // Define field teachercomments to be added to learningtimecheck.
         $table = new xmldb_table('learningtimecheck');
         $field = new xmldb_field('teachercomments', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, null, null, '1', 'duedatesoncalendar');
 
@@ -112,28 +119,28 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        /// Define table learningtimecheck_comment to be created
+        // Define table learningtimecheck_comment to be created.
         $table = new xmldb_table('learningtimecheck_comment');
 
-        /// Adding fields to table learningtimecheck_comment
+        // Adding fields to table learningtimecheck_comment.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('itemid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
         $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
         $table->add_field('commentby', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0');
         $table->add_field('text', XMLDB_TYPE_TEXT, 'medium', null, null, null, null);
 
-        /// Adding keys to table learningtimecheck_comment
+        // Adding keys to table learningtimecheck_comment.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
-        /// Adding indexes to table learningtimecheck_comment
+        // Adding indexes to table learningtimecheck_comment.
         $table->add_index('learningtimecheck_item_user', XMLDB_INDEX_UNIQUE, array('itemid', 'userid'));
 
-        /// Conditionally launch create table for learningtimecheck_comment
+        // Conditionally launch create table for learningtimecheck_comment.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
-        /// learningtimecheck savepoint reached
+        // learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2010050100, 'learningtimecheck');
     }
 
@@ -193,7 +200,7 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
 
     if ($result && $oldversion < 2011021600) {
 
-        // I really should not have to update the 'cron' field manually
+        // I really should not have to update the 'cron' field manually.
         $chkmod = $DB->get_record('modules', array('name' => 'learningtimecheck'));
         if ($chkmod) {
             $chkmod_upd = new stdClass;
@@ -211,13 +218,13 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        // Switch alll 'hidden headings' to being headings & hidden
+        // Switch alll 'hidden headings' to being headings & hidden.
         $sql = 'UPDATE {learningtimecheck_item} ';
         $sql .= 'SET hidden=1, itemoptional=2 ';
         $sql .= 'WHERE itemoptional=4';
         $DB->execute($sql);
 
-        // Switch all 'hidden items' to being required items & hidden
+        // Switch all 'hidden items' to being required items & hidden.
         $sql = 'UPDATE {learningtimecheck_item} ';
         $sql .= 'SET hidden=1, itemoptional=0 ';
         $sql .= 'WHERE itemoptional=3';
@@ -258,16 +265,16 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
 
     if ($oldversion < 2012092002) {
 
-        // Define field teacherid to be added to learningtimecheck_check
+        // Define field teacherid to be added to learningtimecheck_check.
         $table = new xmldb_table('learningtimecheck_check');
         $field = new xmldb_field('teacherid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'teachertimestamp');
 
-        // Conditionally launch add field teacherid
+        // Conditionally launch add field teacherid.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
-        // learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint(true, 2012092002, 'learningtimecheck');
     }
 
@@ -290,7 +297,7 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->drop_field($table, $field);
         }
 
-        /// learningtimecheck savepoint reached
+        // learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2015041900, 'learningtimecheck');
     }
 
@@ -306,7 +313,7 @@ function xmldb_learningtimecheck_upgrade($oldversion=0) {
             $dbman->add_field($table, $field);
         }
 
-        /// learningtimecheck savepoint reached
+        // Learningtimecheck savepoint reached.
         upgrade_mod_savepoint($result, 2015100800, 'learningtimecheck');
     }
 

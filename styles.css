@@ -11,8 +11,8 @@ ol.learningtimecheck li {
 }
 
 ol.learningtimecheck li.heading {
-    background-color:#fbfbfb;
-    line-height:1.3em;
+    background-color:#f9f9f9;
+    line-height:2.8em;
     padding:8px;
 }
 
@@ -355,8 +355,11 @@ div.learningtimecheck-data-collect {
     background-color:#f0f0f0;
     border-radius:4px;
     margin:2px;
-    padding-right:15px;
     border-bottom: 10px solid #e0e0e0;
+}
+
+div.learningtimecheck-data-collect div {
+    float:right;
 }
 
 .learningtimecheck-timesettings{
@@ -409,7 +412,15 @@ table.learningtimecheck-timesettings{
     -moz-opacity:0.5;
 }
 
-.learningtimecheck-data-collect-element,
+.learningtimecheck-data-collect-element{
+    display:table-cell;
+    padding:5px 10px 5px 10px;
+}
+
+.learningtimecheck-data-collect-element.teachermarks{
+    background-color:#e5e5e5;
+}
+
 .learningtimecheck-timesetting-cell{
     display:table-cell;
     width:22%;
@@ -532,4 +543,14 @@ table.learningtimecheck-timesettings{
 
 #learningtimechecksavechecks {
     margin:4px auto;
+}
+
+.learningtimecheck-item-pix {
+    width:20px;
+    height:40px;
+}
+
+.learningtimecheck-icon-medium {
+    max-width:400px;
+    max-height:40px;
 }

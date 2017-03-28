@@ -20,7 +20,7 @@
  * @package    mod_learningtimecheck
  * @category   mod
  * @author     Valery Fremaux (valery.fremaux@gmail.com)
- * @copyright  2014 onwards Valery Fremaux (valery.fremaux@gmail.com)
+ * @copyright  2013 onwards Valery Fremaux (valery.fremaux@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -33,5 +33,5 @@ $plugin->release  = '2.8.0 (Build: 2016090700)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015071300', 'local_vflibs' => '2015053000');
 
-// Non Moodle attributes
+// Non Moodle attributes.
 $plugin->codeincrement = '2.8.0002';
