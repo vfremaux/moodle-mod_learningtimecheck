@@ -27,32 +27,32 @@ require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-$id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
+$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
+$learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // Learningtimecheck instance ID.
 
 $url = new moodle_url('/mod/learningtimecheck/view.php');
 if ($id) {
-    if (! $cm = get_coursemodule_from_id('learningtimecheck', $id)) {
+    if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
         print_error('Course Module ID was incorrect');
     }
 
-    if (! $course = $DB->get_record('course', array('id' => $cm->course) )) {
+    if (!$course = $DB->get_record('course', array('id' => $cm->course) )) {
         print_error('coursemisconf');
     }
 
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
+    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
         print_error('Course module is incorrect');
     }
     $url->param('id', $id);
 
 } else if ($learningtimecheckid) {
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
+    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
         print_error('Course module is incorrect');
     }
-    if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course) )) {
+    if (!$course = $DB->get_record('course', array('id' => $learningtimecheck->course) )) {
         print_error('coursemisconf');
     }
-    if (! $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
+    if (!$cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
         print_error('Course Module ID was incorrect');
     }
     $url->param('learningtimecheck', $learningtimecheckid);
@@ -73,10 +73,8 @@ if (!$chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $co
 }
 
 if (!$chk->canedit()) {
-    redirect(new moodle_url('/mod/learningtimecheck/view.php', array('id' => $cm->id)) );
+    redirect(new moodle_url('/mod/learningtimecheck/view.php', array('id' => $cm->id)));
 }
-
-// add_to_log($course->id, "learningtimecheck", "edit", "edit.php?id={$cm->id}", $learningtimecheck->name, $cm->id);
 
 $context = context_module::instance($cm->id);
 
@@ -95,7 +93,7 @@ $event->trigger();
 include($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
 
 if ($learningtimecheck->autopopulate) {
-    // Needs to be done again, just in case the edit actions have changed something
+    // Needs to be done again, just in case the edit actions have changed something.
     $chk->update_items_from_course();
 }
 
@@ -126,7 +124,7 @@ if (!empty($learningtimecheck->usetimecounterpart)) {
 }
 
 if ($course->format == 'page') {
-    require_once $CFG->dirroot.'/course/format/page/xlib.php';
+    require_once($CFG->dirroot.'/course/format/page/xlib.php');
     page_print_page_format_navigation($cm);
 }
 
