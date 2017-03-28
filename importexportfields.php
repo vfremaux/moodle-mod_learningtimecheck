@@ -22,11 +22,11 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+defined('MOODLE_INTERNAL') || die();
 
 $separator = ',';
 
-// fieldname => output string
+// Fieldname => output string.
 $fields = array('displaytext' => 'Item text',
                 'indent' => 'Indent',
-                'itemoptional' => 'Type (0 - normal; 1 - optional; 2 - heading)'
-          );
+                'itemoptional' => 'Type (0 - normal; 1 - optional; 2 - heading)');

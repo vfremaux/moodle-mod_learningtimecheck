@@ -58,9 +58,13 @@ $string['collapseheaders'] = 'Collapse headers';
 $string['comments'] = 'Comments';
 $string['completionpercent'] = 'Percentage of items that should be checked-off:';
 $string['completionpercentgroup'] = 'Require checked-off';
+$string['configusestatscoupling'] = 'Training sessions and Use Stats coupling';
+$string['configallowoverrideusestats'] = 'Allow override use stats';
+$string['configallowoverrideusestats_desc'] = 'If enabled, an overriding item may force credit time in use_stats reports in place of real time.';
 $string['configautoupdateusecron'] = 'Use cron for automatic updates';
 $string['configautoupdateusecron_desc'] = 'If enabled, the cron will process the autoupdate of checks with some little delay. If you can accept this delay, this avoids user interface to compile those check states that may
 take some while, when browsing inside the learningtimecheck activity.';
+$string['configcsvformat'] = 'CSV Format';
 $string['configcsvencoding'] = 'CSV encoding';
 $string['configcsvencoding_desc'] = 'CSV file encoding';
 $string['configcsvfieldseparator'] = 'CSV field separator';
@@ -81,6 +85,7 @@ $string['configintegrateusestats'] = 'Integrate use_stats results';
 $string['configintegrateusestats_desc'] = 'If enabled, use stats tracking measurements will be integrated into learningtimecheck reports';
 $string['configlearningtimecheckautoupdate'] = 'Before allowing this you must make a few changes to the core Moodle code, please see mod/learningtimecheck/README.txt for details';
 $string['configlearningtimecheckautoupdateusecron'] = 'Checks will be automatically detected using log events';
+$string['configmy'] = 'Course overview display';
 $string['configshowcompletemymoodle'] = 'Show completed checklists on \'My Moodle\' page';
 $string['configshowcompletemymoodle_desc'] = 'If this is unchecked then completed checklist  will be hidden from the \'My Moodle\' page';
 $string['configshowmymoodle'] = 'Show checklist  on \'My Moodle\' page';
@@ -120,6 +125,7 @@ $string['exportpdf'] = 'Export as PDF';
 $string['forceupdate'] = 'Update checks for all automatic items';
 $string['fullview'] = 'View checklist details';
 $string['fullviewdeclare'] = 'View checklist details, and declare time counterparts if needed';
+$string['gotomodule'] = 'Go to module';
 $string['gradetocomplete'] = 'Grade to complete:';
 $string['guestsno'] = 'You do not have permission to view this checklist';
 $string['headingitem'] = 'This item is a heading - it will not have a checkbox beside it';
@@ -174,6 +180,7 @@ $string['percentcomplete'] = 'Required items';
 $string['percentcompleteall'] = 'All items';
 $string['pluginadministration'] = 'Checklist administration';
 $string['pluginname'] = 'Learning Time Check';
+$string['pluginname_desc'] = 'This plugin is based on the checklist plugin and has been transformed to assess the time based contract between teacher and student.';
 $string['preview'] = 'Preview';
 $string['progress'] = 'Progress';
 $string['progressbar'] = 'Progress';
@@ -254,6 +261,8 @@ $string['yesoverride'] = 'Yes, can override';
 $string['save'] = 'Save';
 $string['errornodate'] = 'Error : a filter must have a datetime';
 $string['errornologop'] = 'Error : additional filters must have a logical operator defined';
+$string['itemenable'] = 'Enable item';
+$string['itemdisable'] = 'Ignore item';
 
 $string['and'] = 'AND';
 $string['or'] = 'OR';
@@ -285,7 +294,7 @@ $string['emailoncompletebodyown'] = 'You have completed checklist \'{$a->learnin
 View the checklist here:';
 
 $string['modulename_help'] = 'This module help teachers and students to mark activites and to assess job done, while feeding course objectives with standard credit time or 
-declared credit time. Off line checkable items can be added, also student declared offline tasks can be added to the marking board. Times validaed by teachers will be 
+declared credit time. Off line checkable items can be added, also student declared offline tasks can be added to the marking board. Times validated by teachers will be 
 sent to Training Session reports to appear as required in course time reports.
 ';
 $string['lockteachermarks_help'] = 'When this setting is enabled, once a teacher has saved a \'Yes\' mark, they will be unable to change it. 
@@ -299,6 +308,6 @@ To remove the automatic items from the list, change this option back to \'No\', 
 $string['autoupdate_help'] = 'This will automatically check-off items in your LT Checklist when you complete the relevant activity in the course.<br />
 \'Completing\' an activity varies from one activity to another - \'view\' a resource, \'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc.<br />
 If a Moodle 2.0 completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br />
-For details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/learningtimecheck/autoupdate.php\'<br />
+For details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/learningtimecheck/autoupdatelib.php\'<br />
 Note: it can take up to 60 seconds for a student\'s activity to be reflected in their LT Checklist
 ';

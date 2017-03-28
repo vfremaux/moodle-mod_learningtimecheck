@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,19 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// This file replaces:
-//   * STATEMENTS section in db/install.xml
-//   * lib.php/modulename_install() post installation hook
-//   * partially defaults.php
+defined('MOODLE_INTERNAL') || die();
 
 function xmldb_learningtimecheck_install() {
-    global $DB;
 
-/// Install logging support
-/*    update_log_display_entry('learningtimecheck', 'view', 'learningtimecheck', 'name');
-    update_log_display_entry('learningtimecheck', 'edit', 'learningtimecheck', 'name');
-    update_log_display_entry('learningtimecheck', 'update checks', 'learningtimecheck', 'name');
-    update_log_display_entry('learningtimecheck', 'complete', 'learningtimecheck', 'name');
-    update_log_display_entry('learningtimecheck', 'report', 'learningtimecheck', 'name');*/
+    // Initialise global compilation horizon date at one day before installation if never installed before.
+    $config = get_config('learningtimecheck');
+    if (empty($config->lastcompiled)) {
+        set_config('lastcompiled', time() - HOURSECS, 'learningtimecheck');
+    }
 
 }
