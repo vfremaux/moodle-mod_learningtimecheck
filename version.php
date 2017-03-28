@@ -22,7 +22,7 @@
  * @author      Davo Smith <moodle@davosmith.co.uk>
  * @author      Valery Fremaux (valery.fremaux@gmail.com)
  * @copyright   2015 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -34,5 +34,5 @@ $plugin->release  = '3.1.0 (Build: 2016033100)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
-// Non moodle attributes.
+// Non Moodle attributes.
 $plugin->codeincrement = '3.1.0002';
