@@ -48,7 +48,7 @@ $event = \mod_learningtimecheck\event\course_module_instance_list_viewed::create
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-/// Get all required stringsnewmodule.
+// Get all required stringsnewmodule.
 
 $strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
 $strlearningtimecheck  = get_string('modulename', 'learningtimecheck');
