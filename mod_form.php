@@ -49,8 +49,8 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
 class mod_learningtimecheck_mod_form extends moodleform_mod {
 
     public function definition() {
+        global $COURSE;
 
-        global $COURSE, $CFG;
         $mform = $this->_form;
 
         $config = get_config('learningtimecheck');
