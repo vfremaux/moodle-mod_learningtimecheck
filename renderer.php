@@ -407,7 +407,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 if ($isheading) {
                     $optional = ' class="itemheading" ';
-                    $spacerimg = $this->output->pix_url('check_spacer','learningtimecheck');
+                    $spacerimg = $this->output->pix_url('check_spacer', 'learningtimecheck');
                 } else if ($item->itemoptional == LTC_OPTIONAL_YES) {
                     $optional = ' class="itemoptional" ';
                     $checkclass = ' itemoptional';
@@ -416,7 +416,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $checkclass = '';
                 }
 
-                $itemclass = ($isheading) ? 'heading' : '' ;
+                $itemclass = ($isheading) ? 'heading' : '';
                 $itemstr .= '<li class="learningtimecheck-item '.$itemclass.'">';
 
                 $itemstr .= '<div class="learningtimecheck-item-desc">';
@@ -2815,11 +2815,17 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $str = '';
 
+        if (empty($addafteritem)) {
+            return('');
+        }
+
         $str .= '<form style="display:inline;" action="'.$thispage->out_omit_querystring().'" method="get">';
         $str .= html_writer::input_hidden_params($thispage);
         $str .= '<input type="hidden" name="useredit" value="on" />';
         $str .= '<input type="submit" name="submit" value="'.get_string('addownitems','learningtimecheck').'" />';
-        $str .= '<input type="button" name="canceledititem" value="'.get_string('canceledititem','learningtimecheck').'" onclick="cancel_add_item_form(\''.$addafteritem->id.'\')" />';
+        $jshandler = 'cancel_add_item_form(\''.$addafteritem->id.'\')';
+        $label = get_string('canceledititem', 'learningtimecheck');
+        $str .= '<input type="button" name="canceledititem" value="'.$label.'" onclick="'.$jshandler.'" />';
         $str .= '</form>';
 
         return $str;
@@ -2840,13 +2846,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $showteachermark = !($this->instance->learningtimecheck->teacheredit == LTC_MARKING_STUDENT);
         $showstudentmark = !($this->instance->learningtimecheck->teacheredit == LTC_MARKING_TEACHER);
-        $teachermarklocked = $this->instance->learningtimecheck->lockteachermarks && !has_capability('mod/learningtimecheck:updatelocked', $this->instance->context);
+        $teachermarklocked = $this->instance->learningtimecheck->lockteachermarks &&
+                !has_capability('mod/learningtimecheck:updatelocked', $this->instance->context);
 
         // Sort out the heading row.
         $str .= $this->table_head_row($table);
 
         // Output the data.
-        $tickimg = '<img src="'.$this->output->pix_url('tick_green_big', 'learningtimecheck').'" alt="'.get_string('itemcomplete','learningtimecheck').'" />';
+        $pixurl = $this->output->pix_url('tick_green_big', 'learningtimecheck');
+        $tickimg = '<img src="'.$pixurl.'" alt="'.get_string('itemcomplete','learningtimecheck').'" />';
         $teacherimgs = $this->teachermark_pixs();
 
         $oddeven = 1;
@@ -2960,8 +2968,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             if ($modinfo->modname == 'assign') {
                 $userlastname = $DB->get_field('user', 'lastname', array('id' => $item[3]));
                 $userfirstletter = substr($userlastname, 0, 1);
-                $assigncheckurl = new moodle_url('/mod/assign/view.php', array('action' => 'grading', 'id' => $modinfo->id, 'thide' => 'email', 'tilast' => $userfirstletter));
-                $str = '<a href="'.$assigncheckurl.'&thide=picture&thide=grade&thide=userid" target="_blank"><img src="'.$this->output->pix_url('t/hide').'"></a>';
+                $params = array('action' => 'grading', 'id' => $modinfo->id, 'thide' => 'email', 'tilast' => $userfirstletter);
+                $assigncheckurl = new moodle_url('/mod/assign/view.php', $params);
+                $pixurl = $this->output->pix_url('t/hide');
+                $str = '<a href="'.$assigncheckurl.'&thide=picture&thide=grade&thide=userid" target="_blank"><img src="'.$pixurl.'"></a>';
             }
         }
 
@@ -3001,12 +3011,19 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      */
     public function teachermark_pixs() {
 
-        return array(LTC_TEACHERMARK_UNDECIDED => 
-                '<img src="'.$this->output->pix_url('empty_box','learningtimecheck').'" alt="'.get_string('teachermarkundecided','learningtimecheck').'" />',
-                     LTC_TEACHERMARK_YES => 
-                '<img src="'.$this->output->pix_url('tick_green_big','learningtimecheck').'" alt="'.get_string('teachermarkyes','learningtimecheck').'" />',
-                     LTC_TEACHERMARK_NO => 
-                '<img src="'.$this->output->pix_url('wrong_red_big','learningtimecheck').'" alt="'.get_string('teachermarkno','learningtimecheck').'" />');
+        $pixurl = $this->output->pix_url('empty_box','learningtimecheck');
+        $piximg = '<img src="'.$pixurl.'" alt="'.get_string('teachermarkundecided', 'learningtimecheck').'" />';
+        $pixarray[LTC_TEACHERMARK_UNDECIDED] = $piximg;
+
+        $pixurl = $this->output->pix_url('tick_green_big', 'learningtimecheck');
+        $piximg = '<img src="'.$pixurl.'" alt="'.get_string('teachermarkyes', 'learningtimecheck').'" />';
+        $pixarray[LTC_TEACHERMARK_YES] = $piximg;
+
+        $pixurl = $this->output->pix_url('wrong_red_big', 'learningtimecheck');
+        $piximg = '<img src="'.$pixurl.'" alt="'.get_string('teachermarkno', 'learningtimecheck').'" />';
+        $pixarray[LTC_TEACHERMARK_NO] = $piximg;
+
+        return $pixarray;
     }
 
     public function namefilter(&$thispageurl) {
@@ -3108,7 +3125,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     if ($learningtimecheck->teacheredit > 0) {
                         if ($item->teachermark) {
                             $itemclasses = 'green';
-                        } elseif ($item->checked) {
+                        } else if ($item->checked) {
                             $itemclasses = 'green';
                         }
                     }
@@ -3122,16 +3139,16 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $str;
     }
 
-    /** 
+    /**
      * Renders a JQPlot graph showing compared progress of students in a given population.
      *
      */
     public function learning_curves(&$users, $scale = 'days', $timeorigin) {
         global $USER;
 
-        $scalediv = ($scale == 'days') ? DAYSECS : HOURSECS ;
+        $scalediv = ($scale == 'days') ? DAYSECS : HOURSECS;
 
-        // Precalculate curves
+        // Precalculate curves.
         $series = array();
         $k = 0;
         $maxtix = 0;
@@ -3161,7 +3178,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 $maxtix = ($maxtix < $tix) ? $tix : $maxtix;
                 $sumtime += $c->credittime;
-                // $progress[$user->id][$tix] = $sumtime;
                 if ($checksums['mandatory']['time']) {
                     $yvalue = round($sumtime / $checksums['mandatory']['time'] * 100);
                 } else {
@@ -3197,8 +3213,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     'numberColumns' => 2,
                     'seriesToggle' => true,
                 ),
-                'show' => true, 
-                'location' => 'e', 
+                'show' => true,
+                'location' => 'e',
                 'placement' => 'outsideGrid',
                 'showSwatches' => true,
                 'marginLeft' => '10px',
