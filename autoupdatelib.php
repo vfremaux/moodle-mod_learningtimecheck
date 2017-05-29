@@ -37,106 +37,131 @@ function learningtimecheck_standardlog_autoupdate($courseid, $component, $target
     $module = str_replace('mod_', '', $component);
 
     switch ($module) {
-        case 'quiz':
+        case 'quiz': {
             $action = ($action == 'submitted') ? 'close attempt' : null;
             break;
+        }
 
-        case 'forum':
+        case 'forum': {
             $action = ($action == 'created' && ($target == 'post' || $target == 'discussion')) ? 'add post' : null;
             break;
+        }
 
-        case 'resource':
+        case 'resource': {
             $action = ($action == 'created' && ($target == 'post')) ? 'view' : null;
             break;
+        }
 
-        case 'page':
+        case 'page': {
             $action = ($action == 'viewed') ? 'view' : null;
             break;
+        }
 
-        case 'url':
+        case 'url': {
             $action = ($action == 'viewed') ? 'view' : null;
             break;
+        }
 
-        case 'hotpot':
+        case 'hotpot': {
             $action = ($action == 'submitted' && $target == 'attempt') ? 'submit' : null;
             break;
+        }
 
-        case 'wiki':
+        case 'wiki': {
             $action = ($action == 'created' && $target == 'page') ? 'edit' : null;
             break;
+        }
 
-        case 'learningtimecheck':
+        case 'learningtimecheck': {
             $action = ($action == 'completed') ? 'complete' : null;
             break;
+        }
 
-        case 'choice':
+        case 'choice': {
             $action = ($action == 'submitted' && $target == 'answer') ? 'choose' : null;
             break;
+        }
 
-        case 'lams':
+        case 'lams': {
             $action = ($action == 'submitted' && $target == 'answer') ? 'view' : null;
             break;
+        }
 
-        case 'scorm':
+        case 'scorm': {
             $action = ($action == 'submitted' && $target == 'answer') ? 'view' : null;
             break;
+        }
 
-        case 'assignment':
+        case 'assignment': {
             // Assignment should be definitely disabled over 2.7.
             $action = null;
             break;
+        }
 
-        case 'assign':
+        case 'assign': {
             $action = ($action == 'submitted' && $target == 'assessable') ? 'submit' : null;
             break;
+        }
 
-        case 'journal':
+        case 'journal': {
             $action = ($action == 'submitted' && $target == 'assessable') ? 'add entry' : null;
             break;
+        }
 
-        case 'lesson':
+        case 'lesson': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'end' : null;
             break;
+        }
 
-        case 'realtimequiz':
+        case 'realtimequiz': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
             break;
+        }
 
-        case 'workshop':
+        case 'workshop': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
             break;
+        }
 
-        case 'glossary':
+        case 'glossary': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'add entry' : null;
             break;
+        }
 
-        case 'data':
+        case 'data': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'add' : null;
             break;
+        }
 
-        case 'chat':
+        case 'chat': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'talk' : null;
             break;
+        }
 
-        case 'feedback':
+        case 'feedback': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
             break;
+        }
 
-        case 'magtest':
+        case 'magtest': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
             break;
+        }
 
-        case 'questionnaire':
+        case 'questionnaire': {
             $action = ($action == 'ended' && $target == 'lesson') ? 'submit' : null;
             break;
+        }
 
-        case 'scheduler':
+        case 'scheduler': {
             $action = ($action == 'added' && $target == 'booking') ? 'submit' : null;
             break;
+        }
 
-        case 'flashcard':
+        case 'flashcard': {
             $action = ($action == 'played') ? 'submit' : null;
             break;
+        }
     }
     if ($action) {
         learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $userid, $url, $learningtimechecks);
@@ -323,7 +348,8 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                 $check->id = $item->checkid;
                 $check->userid = $userid;
                 $check->usertimestamp = $logtime;
-                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) || !$config->applyfiltering) {
+                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                         !$config->applyfiltering) {
                     // Checks eventual working day and workingtime rules.
                     $DB->update_record('learningtimecheck_check', $check);
                     $updatecount++;
@@ -340,7 +366,8 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                  * to reduce overhead
                  */
 
-                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) || !$config->applyfiltering) {
+                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                        !$config->applyfiltering) {
                     // Checks eventual working day and workingtime rules.
                     $check->id = $DB->insert_record('learningtimecheck_check', $check);
                     $createcount++;
@@ -364,7 +391,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
  * @param int $completiontime the time completion state was modified (i.e. completion state registered)
  */
 function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $completiontime) {
-    global $DB, $CFG, $USER;
+    global $DB, $USER;
     static $ltccontext = array();
 
     $config = get_config('learningtimecheck');
@@ -441,7 +468,8 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
                 $check->id = $item->checkid;
                 $check->userid = $userid;
                 $check->usertimestamp = $completiontime;
-                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) || !$config->applyfiltering) {
+                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                        !$config->applyfiltering) {
                     $DB->update_record('learningtimecheck_check', $check);
                     $updatelearningtimechecks[] = $item->learningtimecheck;
                     $updatecount++;
@@ -473,7 +501,8 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
             $check->teachermark = 0;
             // LTC_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead.
 
-            if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) || !$config->applyfiltering) {
+            if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                    !$config->applyfiltering) {
                 $check->id = $DB->insert_record('learningtimecheck_check', $check);
                 $updatelearningtimechecks[] = $item->learningtimecheck;
                 $createcount++;
