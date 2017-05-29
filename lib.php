@@ -726,7 +726,8 @@ function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, 
 
     $fs = get_file_storage();
 
-    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, "sortorder, itemid, filepath, filename", false)) {
+    $sort = 'sortorder, itemid, filepath, filename';
+    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, $sort, false)) {
         $file = array_pop($files);
 
         // Finally send the file.

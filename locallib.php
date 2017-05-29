@@ -173,21 +173,15 @@ class learningtimecheck_class {
                 continue;
             }
 
-            $cm = $modinfo->get_cm($item->moduleid);
-
-            if (!$cm) {
+            try {
+                $cm = $modinfo->get_cm($item->moduleid);
+            } catch (Exception $e) {
                 // Deleted course modules.
                 // TODO : Cleanup the item list accordingly.
                 continue;
             }
 
-            if (!$cm->visible) {
-                $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
-                unset($this->items[$iid]);
-            }
-
-            // Check agains group constraints.
-            if (!groups_course_module_visible($cm, $userid = null)) {
+            if (!$cm->uservisible) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }

@@ -22,7 +22,6 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
@@ -100,7 +99,7 @@ if ($learningtimecheck->autopopulate) {
 $PAGE->set_title(format_string($learningtimecheck->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->navbar->add(get_string('edit', 'learningtimecheck'));
-$PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
+$PAGE->requires->jquery();
 $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 
 echo $OUTPUT->header();

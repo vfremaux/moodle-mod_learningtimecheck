@@ -15,17 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Exports the item list of a Learningtimecheck instance as a CSV file.
+ * regardless to real users results or marking.
+ *
  * @package mod_learningtimecheck
  * @category mod
  * @author  David Smith <moodle@davosmith.co.uk> as checklist
  * @author Valery Fremaux
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- */
-
-/**
- * Exports the item list of a Learningtimecheck instance as a CSV file.
- * regardless to real users results or marking.
  */
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/importexportfields.php');
@@ -52,7 +50,8 @@ if (!has_capability('mod/learningtimecheck:edit', $context)) {
     print_error('errornoeditcapability', 'learningtimecheck');
 }
 
-$items = $DB->get_records_select('learningtimecheck_item', "learningtimecheck = ? AND userid = 0", array($learningtimecheck->id), 'position');
+$select = "learningtimecheck = ? AND userid = 0";
+$items = $DB->get_records_select('learningtimecheck_item', $select, array($learningtimecheck->id), 'position');
 if (!$items) {
     print_error('noitems', 'learningtimecheck');
 }
