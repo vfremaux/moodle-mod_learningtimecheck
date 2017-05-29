@@ -22,13 +22,13 @@
  * @author      Davo Smith <moodle@davosmith.co.uk>
  * @author      Valery Fremaux (valery.fremaux@gmail.com)
  * @copyright   2015 onwards Valery Fremaux (valery.fremaux@gmail.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version  = 2016090700;  // The current module version (Date: YYYYMMDDXX).
-$plugin->requires = 2016052300;
+$plugin->requires = 2016112900;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release  = '3.2.0 (Build: 2016033100)';
 $plugin->component = 'mod_learningtimecheck';
