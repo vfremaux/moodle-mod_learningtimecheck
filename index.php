@@ -22,7 +22,6 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
@@ -35,7 +34,7 @@ if (! $course = $DB->get_record('course', array('id' => $id) )) {
 
 $context = context_course::instance($course->id);
 
-$PAGE->set_url('/mod/learningtimecheck/index.php', array('id'=>$course->id));
+$PAGE->set_url('/mod/learningtimecheck/index.php', array('id' => $course->id));
 
 // Security.
 
