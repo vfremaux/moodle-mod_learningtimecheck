@@ -22,13 +22,12 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-
-require_once('../../config.php');
+require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/local/vflibs/jqplotlib.php');
 
-$PAGE->requires->jquery_plugin('jqplotjquery', 'local_vflibs');
+$PAGE->requires->jquery();
 $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
