@@ -173,9 +173,9 @@ class learningtimecheck_class {
                 continue;
             }
 
-            $cm = $modinfo->get_cm($item->moduleid);
-
-            if (!$cm) {
+            try {
+                $cm = $modinfo->get_cm($item->moduleid);
+            } catch (Exception $e) {
                 // Deleted course modules.
                 // TODO : Cleanup the item list accordingly.
                 continue;
