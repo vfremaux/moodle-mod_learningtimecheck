@@ -118,7 +118,7 @@ function learningtimecheck_add_instance($learningtimecheck) {
  * @return boolean Success/Fail
  */
 function learningtimecheck_update_instance($learningtimecheck) {
-    global $DB, $CFG;
+    global $DB;
 
     $learningtimecheck->timemodified = time();
     $learningtimecheck->id = $learningtimecheck->instance;
@@ -272,7 +272,7 @@ function learningtimecheck_print_recent_activity($course, $isteacher, $timestart
  * @todo something is weird in there... needs deep debug
  */
 function learningtimecheck_print_overview($courses, &$htmlarray) {
-    global $USER, $CFG, $DB;
+    global $USER, $DB;
 
     return;
 
@@ -726,7 +726,8 @@ function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, 
 
     $fs = get_file_storage();
 
-    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, "sortorder, itemid, filepath, filename", false)) {
+    $sort = 'sortorder, itemid, filepath, filename';
+    if ($files = $fs->get_area_files($context->id, 'mod_learningtimecheck', $filearea, $itemid, $sort, false)) {
         $file = array_pop($files);
 
         // Finally send the file.
