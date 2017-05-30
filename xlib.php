@@ -209,3 +209,36 @@ function learningtimecheck_get_checklists($uid, $courseid = 0) {
         // returns all learningtimechecks concerned by the user
     }
 }
+
+function learningtimecheck_course_has_ltc_tracking($courseid) {
+    global $DB;
+
+    return $DB->record_exists('learningtimecheck', array('course' => $courseid));
+}
+
+function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = false) {
+    global $DB;
+
+    $instances = $DB->get_records('learningtimecheck', array('course' => $courseid));
+
+    $marks = array();
+    if ($instances) {
+        foreach ($instances as $ltcrec) {
+            $cm = get_coursemodule_from_instance('learningtimecheck', $ltcrec->id);
+            $ltc = new learningtimecheck_class($cm->id, $userid, $ltcrec, $cm);
+            foreach ($ltc->items as $item) {
+                if ($item->itemoptional == LTC_OPTIONAL_HEADING) {
+                    continue;
+                }
+                if ($mandatory) {
+                    if ($item->itemoptional != LTC_OPTIONAL_NO) {
+                        continue;
+                    }
+                }
+                $marks[$item->moduleid] = $item->checked;
+            }
+        }
+    }
+
+    return $marks;
+}

@@ -82,7 +82,7 @@ function cleanrow($separator, $row) {
 
     foreach ($chars as $char) {
         switch ($state) {
-            case STATE_WAITSTART:
+            case STATE_WAITSTART: {
                 if ($char == ' ' || $char == ',') {
                     // Still in STATE_WAITSTART.
                     assert(true);
@@ -94,8 +94,9 @@ function cleanrow($separator, $row) {
                     $state = STATE_NORMAL;
                 }
                 break;
+            }
 
-            case STATE_INQUOTES:
+            case STATE_INQUOTES: {
                 if ($char == $quotes) {
                     // End of quotes.
                     $state = STATE_NORMAL;
@@ -109,14 +110,17 @@ function cleanrow($separator, $row) {
                     continue 2;
                 }
                 break;
+            }
 
-            case STATE_ESCAPE:
+            case STATE_ESCAPE: {
                 // Retain escape char, unless escaping a quote character.
                 if ($char != $quotes) {
                     $cleanrow .= '\\';
                 }
                 $state = STATE_INQUOTES;
                 break;
+            }
+
             default:
                 if ($char == ',') {
                     $state = STATE_WAITSTART;
@@ -193,11 +197,12 @@ if ($data = $form->get_data()) {
                     $itemfield = trim($itemfield);
                     $itemfield = str_replace('[!SEPARATOR!]', $separator, $itemfield);
                     switch ($field) {
-                        case 'displaytext':
+                        case 'displaytext': {
                             $newitem->displaytext = trim($itemfield);
                             break;
+                        }
 
-                        case 'indent':
+                        case 'indent': {
                             $newitem->indent = intval($itemfield);
                             if ($newitem->indent < 0) {
                                 $newitem->indent = 0;
@@ -205,13 +210,15 @@ if ($data = $form->get_data()) {
                                 $newitem->indent = 10;
                             }
                             break;
+                        }
 
-                        case 'itemoptional':
+                        case 'itemoptional': {
                             $newitem->itemoptional = intval($itemfield);
                             if ($newitem->itemoptional < 0 || $newitem->itemoptional > 2) {
                                 $newitem->itemoptional = 0;
                             }
                             break;
+                        }
                     }
 
                     $itemfield = next($item);
