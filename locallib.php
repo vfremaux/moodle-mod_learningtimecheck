@@ -106,6 +106,7 @@ class learningtimecheck_class {
         $this->strlearningtimecheck = get_string('modulename', 'learningtimecheck');
         $this->strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
         $this->pagetitle = strip_tags($this->course->shortname.': '.$this->strlearningtimecheck.': '.format_string($this->learningtimecheck->name,true));
+
         $this->get_items();
 
         if ($this->learningtimecheck->autopopulate) {

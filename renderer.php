@@ -1092,7 +1092,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
 
             $table->head[] = s($item->displaytext);
-            $table->level[] = ($item->indent < 3) ? $item->indent : 2;
             $table->size[] = '*';
             $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
@@ -1164,15 +1163,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 }
                 $itemname = s($this->instance->items[$checkid]->displaytext);
                 if (!$heading) {
-                    $class = 'cell level'.$this->instance->items[$checkid]->indent;
+                    $class = 'cell';
                     if ($teachermark == 1) {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.'-checked';
+                        $class = 'cell-checked';
                     } else if ($teachermark == 2) {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.'-unchecked';
+                        $class = 'cell-unchecked';
                     } else if ($studentmark) {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.'-done';
+                        $class = 'cell-done';
                     } else {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.' '.$optionalclass;
+                        $class = 'cell '.$optionalclass;
                     }
                     if ($this->instance->items[$checkid]->moduleid) {
                         if (@$this->instance->items[$checkid]->modulelink && !$hidelinks) {
@@ -1261,8 +1260,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             echo '<table id="learningtimecheck-edit" width="100%">';
 
             echo '<tr>';
-            echo '<th>'.get_string('ismandatory', 'learningtimecheck').'</th>'; // indent column
-            echo '<th>'; // indent column
+            echo '<th>'.get_string('ismandatory', 'learningtimecheck').'</th>';
+            echo '<th>';
             if ($this->instance->learningtimecheck->usetimecounterpart) {
                 echo $this->timesettings_form($item, true);
             }
@@ -1336,9 +1335,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 echo '<td></td>';
                 echo '</tr>';
-
-                // Add invisible item addition pod. Form is setup using ajax call.
-                echo '<tr class="hidden" id="row-add-after-'.$item->id.'"><td colspan="3" id="add-after-'.$item->id.'"></td></tr>';
             }
             echo '</table>';
         }
@@ -1556,6 +1552,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         // Event filters.
 
         echo $this->print_event_filter($thispage);
+        $reportrenderer = $PAGE->get_renderer('report_learningtimecheck');
+        echo $reportrenderer->options('report', $COURSE->id, 0);
 
         // Course report global indicators.
         echo $this->print_global_counters();
@@ -1662,7 +1660,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $ausers = learningtimecheck_get_report_users($this->instance, $page, $perpage, $orderby);
 
         if (!empty($ausers)) {
-            if (count($ausers) < $page*$perpage) {
+            if (count($ausers) < $page * $perpage) {
                 $page = 0;
             }
             $barurl = new moodle_url($thispage, array('perpage' => $perpage, 'sortby' => @$reportsettings->sortby));
@@ -1952,7 +1950,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $table->head[] = '<div title="'.s($item->displaytext).'"><img src="'.$this->output->pix_url('t/switch_plus').'"/></div>';
                 }
             }
-            $table->level[] = ($item->indent < 3) ? $item->indent : 2;
+            // $table->level[] = ($item->indent < 3) ? $item->indent : 2;
             $table->size[] = '80px';
             $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
@@ -2278,6 +2276,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '&nbsp;<img src="'.$this->output->pix_url('hiddenbymodule', 'learningtimecheck').'" alt='.$title.' title='.$title.' /></a>';
             }
         } else {
+            /*
             // Edit command (for non automatic items).
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'edititem')).'">';
             $title = '"'.get_string('edititem', 'learningtimecheck').'"';
@@ -2287,12 +2286,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'deleteitem')).'">';
             $title = '"'.get_string('deleteitem', 'learningtimecheck').'"';
             $str .= '<img src="'.$this->output->pix_url('/t/delete').'" alt='.$title.' title='.$title.' /></a>';
+            */
         }
 
         // Add non auto item after this one.
+        /*
         $title = '"'.get_string('additemhere', 'learningtimecheck').'"';
         $img = '<img src="'.$this->output->pix_url('add', 'learningtimecheck').'" alt='.$title.' title='.$title.' />';
         $str .= '&nbsp;&nbsp;&nbsp;<a href="javascript:load_add_item_form(\''.$CFG->wwwroot.'\', \''.$this->instance->cm->id.'\', \''.$item->id.'\')">'.$img.'</a>';
+        */
 
         return $str;
     }
@@ -2895,7 +2897,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                     $size = $table->size[$key];
                     $content = '';
-                    $cellclass = ($heading) ? 'reportheading cell c'.$key.' level'.$table->level[$key] : ' level'.$table->level[$key].' cell c'.$key;
+                    $cellclass = ($heading) ? 'reportheading cell c'.$key : ' cell c'.$key;
 
                     if ($heading) {
                         // We print a blank cell for headings.
@@ -3003,7 +3005,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 continue;
             }
             $size = $table->size[$key];
-            $levelclass = ' head'.$table->level[$key];
+            $levelclass = 'ltc-header';
             if ($key == $lastkey) {
                 $levelclass .= ' lastcol';
             }
