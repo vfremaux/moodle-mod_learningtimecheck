@@ -1587,7 +1587,7 @@ class learningtimecheck_class {
 
         $updategrades = false;
         if ($this->learningtimecheck->teacheredit != LTC_MARKING_STUDENT) {
-            if ($this->userid && !$student = $DB->get_record('user', array('id' => $this->userid))) {
+            if (!$this->userid || !$student = $DB->get_record('user', array('id' => $this->userid))) {
                 print_error('erronosuchuser', 'learningtimecheck');
             }
             $info = $this->learningtimecheck->name.' ('.fullname($student, true).')';
