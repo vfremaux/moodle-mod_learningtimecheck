@@ -58,6 +58,7 @@ class learningtimecheck_class {
     public $useredit;
     public $additemafter;
     public $groupings;
+    public $counters = array();
 
     public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null) {
         global $COURSE, $DB, $CFG;
@@ -105,7 +106,6 @@ class learningtimecheck_class {
         $this->strlearningtimecheck = get_string('modulename', 'learningtimecheck');
         $this->strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
         $this->pagetitle = strip_tags($this->course->shortname.': '.$this->strlearningtimecheck.': '.format_string($this->learningtimecheck->name,true));
-
         $this->get_items();
 
         if ($this->learningtimecheck->autopopulate) {
@@ -141,9 +141,19 @@ class learningtimecheck_class {
      *
      */
     public function get_items() {
+        static $modnames = array();
         global $DB, $CFG, $COURSE;
 
         $modinfo = get_fast_modinfo($COURSE);
+
+        $this->counters['optionals'] = 0;
+        $this->counters['mandatories'] = 0;
+        $this->counters['optionalschecked'] = 0;
+        $this->counters['mandatorieschecked'] = 0;
+        $this->counters['optionalcredittime'] = 0;
+        $this->counters['mandatorycredittime'] = 0;
+        $this->counters['optionalacquiredtime'] = 0;
+        $this->counters['mandatoryacquiredtime'] = 0;
 
         // Load all shared learningtimecheck items.
         $sql = 'learningtimecheck = ? ';
@@ -160,16 +170,11 @@ class learningtimecheck_class {
          */
         foreach ($this->items as $iid => $item) {
 
-            if (!$item->moduleid) {
-                continue;
-            }
-
             if ($item->itemoptional == LTC_OPTIONAL_HEADING) {
                 continue;
             }
 
-            if (!$DB->record_exists('course_modules', array('id' => $item->moduleid))) {
-                // Safety.
+            if (!$item->moduleid) {
                 continue;
             }
 
@@ -178,7 +183,31 @@ class learningtimecheck_class {
             } catch (Exception $e) {
                 // Deleted course modules.
                 // TODO : Cleanup the item list accordingly.
-                continue;
+                if (!$cm = $DB->get_record('course_modules', array('id' => $item->moduleid))) {
+                    // Safety.
+                    continue;
+                }
+                $cm->uservisible = $cm->visible;
+                if (!in_array($cm->id, $modnames)) {
+                    // Cache names for performance.
+                    $mname = $DB->get_field('modules', 'name', array('id' => $cm->module));
+                    $modnames[$cm->id] = format_string($DB->get_field($mname, 'name', array('id' => $cm->instance)));
+                }
+                $cm->modname = $modnames[$cm->id];
+            }
+
+            if ($item->itemoptional == LTC_OPTIONAL_YES) {
+                $this->counters['optionals']++;
+            } else {
+                $this->counters['mandatories']++;
+            }
+
+            if (!empty($item->credittime)) {
+                if ($item->itemoptional == LTC_OPTIONAL_YES) {
+                    $this->counters['optionalcredittime'] += $item->credittime;
+                } else {
+                    $this->counters['mandatorycredittime'] += $item->credittime;
+                }
             }
 
             if (!$cm->uservisible) {
@@ -241,6 +270,43 @@ class learningtimecheck_class {
                     $this->items[$id]->usertimestamp = $check->usertimestamp;
                     $this->items[$id]->teachertimestamp = $check->teachertimestamp;
                     $this->items[$id]->teacherid = $check->teacherid;
+
+                    // Calculate checked counters
+                    if ($this->learningtimecheck->teacheredit == LTC_MARKING_STUDENT || $this->learningtimecheck->teacheredit == LTC_MARKING_EITHER) {
+                        if (!empty($this->items[$id]->checked)) {
+                            if ($this->items[$id]->itemoptional == LTC_OPTIONAL_YES) {
+                                $this->counters['optionalschecked']++;
+                            } else {
+                                $this->counters['mandatorieschecked']++;
+                            }
+
+                            if (!empty($this->items[$id]->credittime)) {
+                                if ($this->items[$id]->itemoptional == LTC_OPTIONAL_YES) {
+                                    $this->counters['optionalacquiredtime'] += $item->credittime;
+                                } else {
+                                    $this->counters['mandatoryacquiredtime'] += $item->credittime;
+                                }
+                            }
+                        }
+                    } else {
+                        // Teacher must have marked.
+                        if ($this->items[$id]->teachermark == LTC_TEACHERMARK_YES) {
+                            if ($this->items[$id]->itemoptional == LTC_OPTIONAL_YES) {
+                                $this->counters['optionalschecked']++;
+                            } else {
+                                $this->counters['mandatorieschecked']++;
+                            }
+                        }
+
+                        if (!empty($this->items[$id]->credittime)) {
+                            if ($this->items[$id]->itemoptional == LTC_OPTIONAL_YES) {
+                                $this->counters['optionalacquiredtime'] += $item->credittime;
+                            } else {
+                                $this->counters['mandatoryacquiredtime'] += $item->credittime;
+                            }
+                        }
+                    }
+
                 } else if ($this->useritems && isset($this->useritems[$id])) {
                     $this->useritems[$id]->checked = $check->usertimestamp > 0;
                     $this->useritems[$id]->usertimestamp = $check->usertimestamp;
