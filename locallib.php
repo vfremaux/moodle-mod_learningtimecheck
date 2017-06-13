@@ -106,6 +106,7 @@ class learningtimecheck_class {
         $this->strlearningtimecheck = get_string('modulename', 'learningtimecheck');
         $this->strlearningtimechecks = get_string('modulenameplural', 'learningtimecheck');
         $this->pagetitle = strip_tags($this->course->shortname.': '.$this->strlearningtimecheck.': '.format_string($this->learningtimecheck->name,true));
+
         $this->get_items();
 
         if ($this->learningtimecheck->autopopulate) {
@@ -1587,7 +1588,7 @@ class learningtimecheck_class {
 
         $updategrades = false;
         if ($this->learningtimecheck->teacheredit != LTC_MARKING_STUDENT) {
-            if ($this->userid && !$student = $DB->get_record('user', array('id' => $this->userid))) {
+            if (!$this->userid || !$student = $DB->get_record('user', array('id' => $this->userid))) {
                 print_error('erronosuchuser', 'learningtimecheck');
             }
             $info = $this->learningtimecheck->name.' ('.fullname($student, true).')';
