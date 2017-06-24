@@ -330,6 +330,21 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         upgrade_mod_savepoint($result, 2016090700, 'learningtimecheck');
     }
 
+    if ($oldversion < 2017062303) {
+
+        // Add completion for mandatory items only.
+
+        $table = new xmldb_table('learningtimecheck');
+        $field = new xmldb_field('completionmandatory', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0', 'completionpercent');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Learningtimecheck savepoint reached.
+        upgrade_mod_savepoint($result, 2017062303, 'learningtimecheck');
+    }
+
     return $result;
 
 }
