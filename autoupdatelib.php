@@ -393,6 +393,8 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
 function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $completiontime) {
     global $DB, $USER;
     static $ltccontext = array();
+    static $cmcache = array();
+    static $coursecache = array();
 
     $config = get_config('learningtimecheck');
 
@@ -421,7 +423,6 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
         ON
             (c.item = i.id AND c.userid = ?)
         WHERE
-            cl.autoupdate > 0 AND
             i.moduleid = ? AND
             i.itemoptional < 2
     ";
@@ -452,6 +453,8 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
             $cm = get_coursemodule_from_instance('learningtimecheck', $item->learningtimecheck);
             $context = context_module::instance($cm->id);
             $ltccontext[$item->learningtimecheck] = $context;
+            $cmcache[$item->learningtimecheck] = $cm;
+            $coursecache[$item->learningtimecheck] = $DB->get_record('course', array('id' => $cm->course));
         }
 
         if ($item->checkid) {
@@ -502,12 +505,16 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
             // LTC_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead.
 
             if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
-                    !$config->applyfiltering) {
+                    !@$config->applyfiltering) {
                 $check->id = $DB->insert_record('learningtimecheck_check', $check);
                 $updatelearningtimechecks[] = $item->learningtimecheck;
                 $createcount++;
             }
         }
+
+        $completioninfo = new completion_info($coursecache[$item->learningtimecheck]);
+        $cm = $cmcache[$item->learningtimecheck];
+        $completioninfo->update_state($cm, COMPLETION_UNKNOWN, $userid);
     }
 
     if (defined('DEBUG_LTC_AUTOUPDATE')) {
