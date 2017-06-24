@@ -128,6 +128,9 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $newcompletion = $learningtimecheck->completionpercent;
     $oldcompletion = $DB->get_field('learningtimecheck', 'completionpercent', array('id' => $learningtimecheck->id));
 
+    $newcompletionmandatory = $learningtimecheck->completionmandatory;
+    $oldcompletionmandatory = $DB->get_field('learningtimecheck', 'completionmandatory', array('id' => $learningtimecheck->id));
+
     // Ensure we will resync all mark states from the beginning.
     $learningtimecheck->lastcompiledtime = 0;
 
@@ -138,7 +141,7 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
     $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
 
-    if ($newcompletion != $oldcompletion) {
+    if (($newcompletion != $oldcompletion) || ($newcompletionmandatory != $oldcompletionmandatory)) {
         $ci = new completion_info($course);
         $context = context_module::instance($cm->id);
         $users = get_users_by_capability($context, 'mod/learningtimecheck:updateown', 'u.id', '', '', '', '', '', false);
@@ -375,10 +378,6 @@ function learningtimecheck_cron_task () {
     $lastcron = 0 + @$config->lastcompiled;
 
     include_once($CFG->dirroot.'/mod/learningtimecheck/autoupdatelib.php');
-    if (!$config->autoupdateusecron) {
-        mtrace("learningtimecheck cron updates disabled");
-        return true;
-    }
 
     if ($lastcron) {
         // Subtract 5 seconds just in case a log slipped through during the last cron update.
@@ -394,92 +393,18 @@ function learningtimecheck_cron_task () {
     if (!$learningtimechecks) {
         // No learningtimechecks to update.
         mtrace("No automatic update learningtimechecks found");
+        set_config('lastcompiled', time() - 30, 'learningtimecheck');
         return true;
     }
 
-    // Match up these learningtimechecks with the courses they are in.
-    $courses = array();
-    foreach ($learningtimechecks as $learningtimecheck) {
-        if (array_key_exists($learningtimecheck->course, $courses)) {
-            $courses[$learningtimecheck->course][$learningtimecheck->id] = $learningtimecheck;
-        } else {
-            $courses[$learningtimecheck->course] = array($learningtimecheck->id => $learningtimecheck);
-        }
-    }
-    $courseids = implode(',', array_keys($courses));
-
-    if (defined("DEBUG_LTC_AUTOUPDATE")) {
-        mtrace("Looking for updates in courses: $courseids");
-    }
-
-    $logmanager = get_log_manager();
-    $readers = $logmanager->get_readers(learningtimecheck_class::get_reader_source());
-    $reader = reset($readers);
-
-    if (empty($reader)) {
-        // No log reader found.
-        return false;
-    }
-
-    $logupdate = 0;
-    $totalcount = 0;
-
-    mtrace("checking logs ");
-    if ($reader instanceof \logstore_standard\log\store) {
-        $sql = "
-            SELECT
-                l.id,
-                l.courseid as course,
-                l.action,
-                l.objectid as cmid,
-                l.timecreated as time,
-                l.userid as userid,
-                '' as url,
-                l.component as module
-            FROM
-                {logstore_standard_log} l
-            WHERE
-                timecreated >= ? AND
-                courseid IN ($courseids) AND
-                objectid > 0 AND
-                component LIKE 'mod%'
-        ";
-        $logs = $DB->get_records_sql($sql, array($lastlogtime));
-    } elseif ($reader instanceof \logstore_legacy\log\store) {
-        echo "Getting old logs";
-        $select = '
-            l.time >= ? AND
-            l.course IN ('.$courseids.') AND
-            cmid > 0';
-        $logs = get_logs($select, array($lastlogtime), 'l.time ASC', '', '', $totalcount);
-    } else {
-        set_config('lastcompiled', time() - 30, 'learningtimecheck');
-        return;
-    }
-
-    // Process all logs since the last cron update.
-    if ($logs) {
-        if (defined("DEBUG_LTC_AUTOUPDATE")) {
-            mtrace("Found ".count($logs)." log updates to check");
-        }
-        foreach ($logs as $log) {
-            $logupdate += learningtimecheck_autoupdate($log->course, $log->module, $log->action, $log->time, $log->cmid,
-                                                       $log->userid, $log->url, $courses[$log->course]);
-        }
-    }
-
-    if ($logupdate) {
-        mtrace("\n\tUpdated $logupdate checkmark(s) from log changes");
-    } else {
-        mtrace("\n\tNo checkmarks need updating from log changes");
-    }
+    mtrace("\n\tChecking completions");
 
     /*
      * Process all the completion changes since the last cron update
      * Need the cmid, userid and newstate
      */
     $completionupdate = 0;
-    list($msql, $mparam) = $DB->get_in_or_equal(array_keys($courses));
+
     $sql = "
         SELECT
             c.id,
@@ -493,15 +418,19 @@ function learningtimecheck_cron_task () {
             {course_modules} m
         ON
             c.coursemoduleid = m.id
+        JOIN
+            {learningtimecheck_item} ltci
+        ON
+            ltci.moduleid = m.id
         WHERE
-            c.timemodified > ? AND
-            m.course $msql
+            c.timemodified > ?
     ";
-    $params = array_merge(array($lastlogtime), $mparam);
+    $params = array($lastlogtime);
     $completions = $DB->get_records_sql($sql, $params);
     if (defined("DEBUG_LTC_AUTOUPDATE")) {
         mtrace("Found ".count($completions)." completion updates to check");
     }
+
     foreach ($completions as $completion) {
         $completionupdate += learningtimecheck_completion_autoupdate($completion->coursemoduleid,
                                                              $completion->userid,
@@ -516,6 +445,88 @@ function learningtimecheck_cron_task () {
     }
 
     set_config('lastcompiled', time() - 30, 'learningtimecheck');
+
+
+    // Match up these learningtimechecks with the courses they are in.
+    $courses = array();
+    foreach ($learningtimechecks as $learningtimecheck) {
+        $course = $DB->get_record('course', array('id' => $learningtimecheck->course));
+        $ci = new completion_info($course);
+        if (!$ci->is_enabled()) {
+            if (array_key_exists($learningtimecheck->course, $courses)) {
+                $courses[$learningtimecheck->course][$learningtimecheck->id] = $learningtimecheck;
+            } else {
+                $courses[$learningtimecheck->course] = array($learningtimecheck->id => $learningtimecheck);
+            }
+        }
+    }
+
+    if (!empty($courses)) {
+        $courseids = implode(',', array_keys($courses));
+
+        mtrace("Looking for updates in courses: $courseids");
+
+        $logmanager = get_log_manager();
+        $readers = $logmanager->get_readers(learningtimecheck_class::get_reader_source());
+        $reader = reset($readers);
+
+        if (!empty($reader)) {
+            // No log reader found.
+            mtrace("No logs reader.");
+            set_config('lastcompiled', time() - 30, 'learningtimecheck');
+
+            $logupdate = 0;
+            $totalcount = 0;
+
+            $logs = array();
+            mtrace("checking logs ");
+            if ($reader instanceof \logstore_standard\log\store) {
+                $sql = "
+                    SELECT
+                        l.id,
+                        l.courseid as course,
+                        l.action,
+                        l.objectid as cmid,
+                        l.timecreated as time,
+                        l.userid as userid,
+                        '' as url,
+                        l.component as module
+                    FROM
+                        {logstore_standard_log} l
+                    WHERE
+                        timecreated >= ? AND
+                        courseid IN ($courseids) AND
+                        objectid > 0 AND
+                        component LIKE 'mod%'
+                ";
+                $logs = $DB->get_records_sql($sql, array($lastlogtime));
+            } else if ($reader instanceof \logstore_legacy\log\store) {
+                echo "Getting old logs";
+                $select = '
+                    l.time >= ? AND
+                    l.course IN ('.$courseids.') AND
+                    cmid > 0';
+                $logs = get_logs($select, array($lastlogtime), 'l.time ASC', '', '', $totalcount);
+            }
+
+            // Process all logs since the last cron update.
+            if ($logs) {
+                if (defined("DEBUG_LTC_AUTOUPDATE")) {
+                    mtrace("Found ".count($logs)." log updates to check");
+                }
+                foreach ($logs as $log) {
+                    $logupdate += learningtimecheck_autoupdate($log->course, $log->module, $log->action, $log->time, $log->cmid,
+                                                               $log->userid, $log->url, $courses[$log->course]);
+                }
+            }
+
+            if ($logupdate) {
+                mtrace("\n\tUpdated $logupdate checkmark(s) from log changes");
+            } else {
+                mtrace("\n\tNo checkmarks need updating from log changes");
+            }
+        }
+    }
 
     return true;
 }
@@ -683,8 +694,18 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
     $result = $type; // Default return value.
 
     if ($learningtimecheck->completionpercent) {
-        list($ticked, $total) = learningtimecheck_class::get_user_progress($cm->instance, $userid);
+        list($ticked, $total) = learningtimecheck_class::get_user_progress($cm->instance, $userid, LTC_OPTIONAL_YES);
         $value = ($total) ? $learningtimecheck->completionpercent <= ($ticked * 100 / $total) : false;
+        if ($type == COMPLETION_AND) {
+            $result = $result && $value;
+        } else {
+            $result = $result || $value;
+        }
+    }
+
+    if ($learningtimecheck->completionmandatory) {
+        list($ticked, $total) = learningtimecheck_class::get_user_progress($cm->instance, $userid, LTC_OPTIONAL_NO);
+        $value = ($total) ? $learningtimecheck->completionmandatory <= ($ticked * 100 / $total) : false;
         if ($type == COMPLETION_AND) {
             $result = $result && $value;
         } else {
