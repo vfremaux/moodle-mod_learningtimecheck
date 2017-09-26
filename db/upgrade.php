@@ -330,6 +330,68 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         upgrade_mod_savepoint($result, 2016090700, 'learningtimecheck');
     }
 
+    if ($oldversion < 2017062303) {
+
+        // Add completion for mandatory items only.
+
+        $table = new xmldb_table('learningtimecheck');
+        $field = new xmldb_field('completionmandatory', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0', 'completionpercent');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Learningtimecheck savepoint reached.
+        upgrade_mod_savepoint($result, 2017062303, 'learningtimecheck');
+    }
+
+    if ($oldversion < 2017081001) {
+
+        // Add completion for mandatory items only.
+
+        $table = new xmldb_table('learningtimecheck');
+        $field = new xmldb_field('cplpercentenabled', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, '0', 'completionpercent');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('cplmandatoryenabled', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, '0', 'completionmandatory');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_postprocess_completion();
+
+        // Learningtimecheck savepoint reached.
+        upgrade_mod_savepoint($result, 2017081001, 'learningtimecheck');
+    }
+
     return $result;
 
+}
+
+/**
+ * Updates consistantly the initial value of existing completion
+ * enablers.
+ *
+ */
+function upgrade_postprocess_completion() {
+    global $DB;
+
+    $ltcs = $DB->get_records('learningtimecheck');
+    if ($ltcs) {
+        foreach ($ltcs as $ltc) {
+            if ($ltc->completionpercent > 0) {
+                $ltc->cplpercentenabled = 1;
+            }
+
+            if ($ltc->completionmandatory > 0) {
+                $ltc->cplmandatoryenabled = 1;
+            }
+
+            $DB->update_record('learningtimecheck', $ltc);
+        }
+    }
 }

@@ -1657,14 +1657,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 break;
         }
 
-        $ausers = learningtimecheck_get_report_users($this->instance, $page, $perpage, $orderby);
+        $ausers = learningtimecheck_get_report_users($this->instance, $page, $perpage, $orderby, $totalusers);
 
         if (!empty($ausers)) {
             if (count($ausers) < $page * $perpage) {
                 $page = 0;
             }
             $barurl = new moodle_url($thispage, array('perpage' => $perpage, 'sortby' => @$reportsettings->sortby));
-            echo $this->output->paging_bar(count($ausers), $page, $perpage, $barurl);
+            echo $this->output->paging_bar($totalusers, $page, $perpage, $barurl);
         }
 
         // Report panels.
