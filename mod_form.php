@@ -127,73 +127,36 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
 
     }
 
-    public function data_preprocessing(&$default_values) {
-        parent::data_preprocessing($default_values);
-
-        /*
-         * Set up the completion checkboxes which aren't part of standard data.
-         * We also make the default value (if you turn on the checkbox) for those
-         * numbers to be 1, this will not apply unless checkbox is ticked.
-         */
-        if (!array_key_exists('completionpercent', $default_values)) {
-            $default_values['completionpercent'] = 100;
-        }
-
-        if ($default_values['completionpercent'] > 0) {
-            $default_values['completionpercentenabled'] = 1;
-        }
-
-        if (!array_key_exists('completionmandatory', $default_values)) {
-            $default_values['completionmandatory'] = 100;
-        }
-
-        if ($default_values['completionmandatory'] > 0) {
-            $default_values['completionmandatoryenabled'] = 1;
-        }
-    }
-
     public function add_completion_rules() {
         $mform = $this->_form;
 
         $group = array();
         $label = get_string('completionpercent', 'learningtimecheck');
-        $group[] = $mform->createElement('advcheckbox', 'completionpercentenabled', '', $label);
+        $group[] = $mform->createElement('advcheckbox', 'cplpercentenabled', '', $label);
         $group[] = $mform->createElement('text', 'completionpercent', '', array('size' => 3));
         $mform->setType('completionpercent', PARAM_INT);
         $label = get_string('completionpercentgroup', 'learningtimecheck');
         $mform->addGroup($group, 'completionpercentgroup', $label, array(' '), false);
-        $mform->disabledIf('completionpercent', 'completionpercentenabled', 'notchecked');
+        $mform->disabledIf('completionpercent', 'cplpercentenabled', 'notchecked');
+        $mform->setDefault('completionpercent', 100);
 
         $group = array();
         $label = get_string('completionmandatory', 'learningtimecheck');
-        $group[] = $mform->createElement('advcheckbox', 'completionmandatoryenabled', '', $label);
+        $group[] = $mform->createElement('advcheckbox', 'cplmandatoryenabled', '', $label);
         $group[] = $mform->createElement('text', 'completionmandatory', '', array('size' => 3));
         $mform->setType('completionmandatory', PARAM_INT);
         $label = get_string('completionmandatorygroup', 'learningtimecheck');
         $mform->addGroup($group, 'completionmandatorygroup', $label, array(' '), false);
-        $mform->disabledIf('completionmandatory', 'completionmandatoryenabled', 'notchecked');
+        $mform->disabledIf('completionmandatory', 'cplmandatoryenabled', 'notchecked');
+        $mform->setDefault('completionmandatory', 100);
 
         return array('completionpercentgroup', 'completionmandatorygroup');
     }
 
     public function completion_rule_enabled($data) {
-        $cond = !empty($data['completionpercentenabled']) && $data['completionpercent'] != 0;
-        $condmandatory = !empty($data['completionmandatoryenabled']) && $data['completionmandatory'] != 0;
+        $cond = !empty($data['cplpercentenabled']) && $data['completionpercent'] != 0;
+        $condmandatory = !empty($data['cplmandatoryenabled']) && $data['completionmandatory'] != 0;
         return ($cond || $condmandatory);
     }
 
-    public function get_data() {
-        $data = parent::get_data();
-        if (!$data) {
-            return false;
-        }
-        // Turn off completion settings if the checkboxes aren't ticked.
-        if (empty($data->completionpercentenabled)) {
-            $data->completionpercent = 0;
-        }
-        if (empty($data->completionmandatoryenabled)) {
-            $data->completionmandatory = 0;
-        }
-        return $data;
-    }
 }

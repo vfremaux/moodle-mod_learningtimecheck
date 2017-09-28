@@ -125,9 +125,13 @@ function learningtimecheck_update_instance($learningtimecheck) {
 
     $learningtimecheck->maxgrade = 0;
 
+    $newcompletionenabled = $learningtimecheck->cplpercentenabled;
+    $oldcompletionenabled = $DB->get_field('learningtimecheck', 'cplpercentenabled', array('id' => $learningtimecheck->id));
     $newcompletion = $learningtimecheck->completionpercent;
     $oldcompletion = $DB->get_field('learningtimecheck', 'completionpercent', array('id' => $learningtimecheck->id));
 
+    $newcompletionmandatoryenabled = $learningtimecheck->cplmandatoryenabled;
+    $oldcompletionmandatoryenabled = $DB->get_field('learningtimecheck', 'cplmandatoryenabled', array('id' => $learningtimecheck->id));
     $newcompletionmandatory = $learningtimecheck->completionmandatory;
     $oldcompletionmandatory = $DB->get_field('learningtimecheck', 'completionmandatory', array('id' => $learningtimecheck->id));
 
@@ -141,7 +145,11 @@ function learningtimecheck_update_instance($learningtimecheck) {
     $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
     $chk = new learningtimecheck_class($cm->id, 0, $learningtimecheck, $cm, $course);
 
-    if (($newcompletion != $oldcompletion) || ($newcompletionmandatory != $oldcompletionmandatory)) {
+    if (($newcompletionenabled != $oldcompletionenabled) ||
+            ($newcompletion != $oldcompletion) ||
+                    ($newcompletionmandatoryenabled != $oldcompletionmandatoryenabled) ||
+                            ($newcompletionmandatory != $oldcompletionmandatory)) {
+        // Invalidate completion info of users if something has changed in completion setup.
         $ci = new completion_info($course);
         $context = context_module::instance($cm->id);
         $users = get_users_by_capability($context, 'mod/learningtimecheck:updateown', 'u.id', '', '', '', '', '', false);
@@ -182,6 +190,22 @@ function learningtimecheck_delete_instance($id) {
     $result = $result && $DB->delete_records('learningtimecheck', array('id' => $learningtimecheck->id));
 
     return $result;
+}
+
+/**
+ * Force the course view to refresh LTC completion info for the user.
+ * @param objectref &$cminfo
+ */
+function learningtimecheck_cm_info_dynamic(&$cminfo) {
+    global $COURSE, $USER, $DB;
+
+    // Trigger a completion update for the current learningtimecheck and user.
+    $completioninfo = new completion_info($COURSE);
+    $cm = $DB->get_record('course_modules', array('id' => $cminfo->id));
+    $enablestate = $completioninfo->is_enabled($cm);
+    if ($enablestate == COMPLETION_TRACKING_AUTOMATIC) {
+        $completioninfo->update_state($cm, COMPLETION_UNKNOWN, $USER->id);
+    }
 }
 
 /**
@@ -446,7 +470,6 @@ function learningtimecheck_cron_task () {
 
     set_config('lastcompiled', time() - 30, 'learningtimecheck');
 
-
     // Match up these learningtimechecks with the courses they are in.
     $courses = array();
     foreach ($learningtimechecks as $learningtimecheck) {
@@ -693,7 +716,7 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
 
     $result = $type; // Default return value.
 
-    if ($learningtimecheck->completionpercent) {
+    if ($learningtimecheck->cplpercentenabled && $learningtimecheck->completionpercent) {
         list($ticked, $total) = learningtimecheck_class::get_user_progress($cm->instance, $userid, LTC_OPTIONAL_YES);
         $value = ($total) ? $learningtimecheck->completionpercent <= ($ticked * 100 / $total) : false;
         if ($type == COMPLETION_AND) {
@@ -703,7 +726,7 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
         }
     }
 
-    if ($learningtimecheck->completionmandatory) {
+    if ($learningtimecheck->cplmandatoryenabled && $learningtimecheck->completionmandatory) {
         list($ticked, $total) = learningtimecheck_class::get_user_progress($cm->instance, $userid, LTC_OPTIONAL_NO);
         $value = ($total) ? $learningtimecheck->completionmandatory <= ($ticked * 100 / $total) : false;
         if ($type == COMPLETION_AND) {

@@ -27,12 +27,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2017062303;  // The current module version (Date: YYYYMMDDXX).
+$plugin->version  = 2017081001;  // The current module version (Date: YYYYMMDDXX).
 $plugin->requires = 2016052300;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release  = '3.1.0 (Build: 2017062303)';
+$plugin->release  = '3.1.0 (Build: 2017081001)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
 // Non Moodle attributes.
-$plugin->codeincrement = '3.1.0004';
+$plugin->codeincrement = '3.1.0005';
