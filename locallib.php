@@ -2172,6 +2172,13 @@ class learningtimecheck_class {
         }
     }
 
+    /**
+     * Get the progress ratio of a user
+     * @param int $learningtimecheckid
+     * @param int $userid
+     * @param int $mandatory
+     *
+     */
     public static function get_user_progress($learningtimecheckid, $userid, $mandatory = LTC_OPTIONAL_NO) {
         global $DB, $CFG;
 
@@ -2187,7 +2194,11 @@ class learningtimecheck_class {
             $groupings[] = 0;
             $groupings_sel = ' AND grouping IN ('.implode(',',$groupings).') ';
         }
-        $select = 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.$mandatory.' AND hidden = '.LTC_HIDDEN_NO.$groupings_sel;
+        $select = '
+            learningtimecheck = ? AND
+            userid = 0 AND
+            itemoptional = '.$mandatory.' AND
+            hidden = '.LTC_HIDDEN_NO.$groupings_sel;
         $items = $DB->get_records_select('learningtimecheck_item', $select, array($learningtimecheck->id), '', 'id');
         if (empty($items)) {
             return array(false, false);
