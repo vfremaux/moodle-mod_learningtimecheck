@@ -98,3 +98,7 @@ Any questions, suggested improvements to:
 Davo Smith - moodle@davosmith.co.uk
 Any enquiries about custom development to Synergy Learning: http://www.synergy-learning.com
 
+2017081000
+=================================
+
+Renormalise completion storage with explicit enablers to rip off value confusion.
