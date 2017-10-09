@@ -1522,18 +1522,19 @@ class learningtimecheck_class {
 
                 $newval = in_array($item->id, $newchecks);
 
-                if ($newval != @$item->checked) {
+                if ($newval != @$item->checked || !empty($check->declaredtime)) {
                     $updategrades = true;
                     $item->checked = $newval;
 
                     $check = $DB->get_record('learningtimecheck_check', array('item' => $item->id, 'userid' => $this->userid) );
                     if ($check) {
-                        if ($newval) {
+                        if ($newval || !empty($check->declaredtime)) {
+                            // If the item has been newly checked or given time, register user timestamp.
                             $check->usertimestamp = time();
                         } else {
+                            // Item has been unchecked, or declaredtime erased. Revert to undeclared state.
                             $check->usertimestamp = 0;
                         }
-
                         $DB->update_record('learningtimecheck_check', $check);
                         $completion->update_state($this->cm, COMPLETION_UNKNOWN, $this->userid);
 
@@ -1552,6 +1553,7 @@ class learningtimecheck_class {
             }
         }
 
+        // This should be removed. There are no more user defined items in learningtimecheck.
         if ($this->useritems) {
             foreach ($this->useritems as $item) {
                 $newval = in_array($item->id, $newchecks);
