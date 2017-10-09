@@ -97,6 +97,11 @@ if ($view == 'preview') {
 
     $view = 'view';
 
+    // Process submits nbuttons.
+    if (!empty($_POST['viewnext'])) {
+        $action = 'viewnext';
+    }
+
     if (!has_capability('mod/learningtimecheck:updateother', $context)) {
         $userid = $USER->id;
     }

@@ -324,6 +324,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $realview = optional_param('view', '', PARAM_TEXT);
                 echo '<input type="hidden" name="view" value="'.$realview.'">';
                 echo '<input type="hidden" name="id" value="'.$thispage->get_param('id').'">';
+                echo '<input type="hidden" name="studentid" value="'.$this->instance->userid.'" >';
                 echo learningtimecheck_add_paged_params();
                 echo '<input type="hidden" name="what" value="'.($isteacher ? 'teacherupdatechecks' : 'updatechecks').'" />';
                 echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
@@ -464,6 +465,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $itemstr .= ' <div class="learningtimecheck-credittime">'.$creditstr.'</div>';
                 }
 
+                if (!empty($item->declaredtime) && (@$item->isdeclarative > 0) && !$isheading) {
+                    $declaredstr = get_string('itemdeclaredtime', 'learningtimecheck', $item->declaredtime);
+                    $itemstr .= ' <div class="learningtimecheck-declaredtime">'.$declaredstr.'</div>';
+                }
+
                 $itemstr .= '</div>';
 
                 $collectitemstr = '<div class="learningtimecheck-data-collect">';
@@ -496,8 +502,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if (@$item->isdeclarative > 0 && !$isheading) {
 
                     // Teacher side.
-                    if (has_capability('mod/learningtimecheck:updateother', $context) &&
-                            ($item->isdeclarative > LTC_DECLARATIVE_STUDENTS)) {
+                    if ($isteacher && ($item->isdeclarative > LTC_DECLARATIVE_STUDENTS)) {
 
                         if ($USER->id != $this->instance->userid) {
                             // We are evaluating other.
@@ -535,7 +540,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     if (($USER->id == $this->instance->userid) &&
                             (($item->isdeclarative == LTC_DECLARATIVE_STUDENTS) ||
                                     ($item->isdeclarative == LTC_DECLARATIVE_BOTH))) {
-                        if (has_capability('mod/learningtimecheck:updateother', $context)) {
+                        if ($isteacher) {
                             // Nothing for teachers here.
                         } else {
                             // Students are declaring their student time.
@@ -934,6 +939,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     /**
+     * @see
      * DEPRECATED
      */
     public function view_own_report() {
