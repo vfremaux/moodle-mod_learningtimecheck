@@ -190,11 +190,22 @@ ol.learningtimecheck li .itemteachername {
 
 .learningtimecheck-credittime {
     font-size:0.8em;
+    color: #fff;
     border:1px solid #808080;
     display:inline;
     padding:2px;
     border-radius:3px;
     background-color:#9D98C0;
+}
+
+.learningtimecheck-declaredtime {
+    font-size:0.8em;
+    color: #000;
+    border:1px solid #808080;
+    display:inline;
+    padding:2px;
+    border-radius:3px;
+    background-color:#bbf4bb;
 }
 
 .learningtimecheck-progress-inner {
