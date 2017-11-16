@@ -227,6 +227,9 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
             $cm = get_coursemodule_from_instance('learningtimecheck', $ltcrec->id);
             $ltc = new learningtimecheck_class($cm->id, $userid, $ltcrec, $cm);
             foreach ($ltc->items as $item) {
+                if ($item->itemoptional == LTC_OPTIONAL_HEADING) {
+                    continue;
+                }
                 if ($mandatory) {
                     if ($item->itemoptional != LTC_OPTIONAL_NO) {
                         continue;
