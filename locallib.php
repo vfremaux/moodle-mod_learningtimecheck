@@ -181,7 +181,13 @@ class learningtimecheck_class {
                 continue;
             }
 
-            if (!$cm->uservisible) {
+            if (!$cm->visible) {
+                $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
+                unset($this->items[$iid]);
+            }
+
+            // Check agains group constraints.
+            if (!groups_course_module_visible($cm, $userid = null)) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }
