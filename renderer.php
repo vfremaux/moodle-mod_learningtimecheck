@@ -324,6 +324,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $realview = optional_param('view', '', PARAM_TEXT);
                 echo '<input type="hidden" name="view" value="'.$realview.'">';
                 echo '<input type="hidden" name="id" value="'.$thispage->get_param('id').'">';
+                echo '<input type="hidden" name="studentid" value="'.$this->instance->userid.'" >';
                 echo learningtimecheck_add_paged_params();
                 echo '<input type="hidden" name="what" value="'.($isteacher ? 'teacherupdatechecks' : 'updatechecks').'" />';
                 echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
@@ -464,6 +465,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $itemstr .= ' <div class="learningtimecheck-credittime">'.$creditstr.'</div>';
                 }
 
+                if (!empty($item->declaredtime) && (@$item->isdeclarative > 0) && !$isheading) {
+                    $declaredstr = get_string('itemdeclaredtime', 'learningtimecheck', $item->declaredtime);
+                    $itemstr .= ' <div class="learningtimecheck-declaredtime">'.$declaredstr.'</div>';
+                }
+
                 $itemstr .= '</div>';
 
                 $collectitemstr = '<div class="learningtimecheck-data-collect">';
@@ -496,8 +502,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if (@$item->isdeclarative > 0 && !$isheading) {
 
                     // Teacher side.
-                    if (has_capability('mod/learningtimecheck:updateother', $context) &&
-                            ($item->isdeclarative > LTC_DECLARATIVE_STUDENTS)) {
+                    if ($isteacher && ($item->isdeclarative > LTC_DECLARATIVE_STUDENTS)) {
 
                         if ($USER->id != $this->instance->userid) {
                             // We are evaluating other.
@@ -535,7 +540,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     if (($USER->id == $this->instance->userid) &&
                             (($item->isdeclarative == LTC_DECLARATIVE_STUDENTS) ||
                                     ($item->isdeclarative == LTC_DECLARATIVE_BOTH))) {
-                        if (has_capability('mod/learningtimecheck:updateother', $context)) {
+                        if ($isteacher) {
                             // Nothing for teachers here.
                         } else {
                             // Students are declaring their student time.
@@ -934,6 +939,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     /**
+     * @see
      * DEPRECATED
      */
     public function view_own_report() {
@@ -1092,7 +1098,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
 
             $table->head[] = s($item->displaytext);
-            $table->level[] = ($item->indent < 3) ? $item->indent : 2;
             $table->size[] = '*';
             $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
@@ -1164,15 +1169,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 }
                 $itemname = s($this->instance->items[$checkid]->displaytext);
                 if (!$heading) {
-                    $class = 'cell level'.$this->instance->items[$checkid]->indent;
+                    $class = 'cell';
                     if ($teachermark == 1) {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.'-checked';
+                        $class = 'cell-checked';
                     } else if ($teachermark == 2) {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.'-unchecked';
+                        $class = 'cell-unchecked';
                     } else if ($studentmark) {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.'-done';
+                        $class = 'cell-done';
                     } else {
-                        $class = 'cell level'.$this->instance->items[$checkid]->indent.' '.$optionalclass;
+                        $class = 'cell '.$optionalclass;
                     }
                     if ($this->instance->items[$checkid]->moduleid) {
                         if (@$this->instance->items[$checkid]->modulelink && !$hidelinks) {
@@ -1261,8 +1266,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             echo '<table id="learningtimecheck-edit" width="100%">';
 
             echo '<tr>';
-            echo '<th>'.get_string('ismandatory', 'learningtimecheck').'</th>'; // indent column
-            echo '<th>'; // indent column
+            echo '<th>'.get_string('ismandatory', 'learningtimecheck').'</th>';
+            echo '<th>';
             if ($this->instance->learningtimecheck->usetimecounterpart) {
                 echo $this->timesettings_form($item, true);
             }
@@ -1336,9 +1341,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 echo '<td></td>';
                 echo '</tr>';
-
-                // Add invisible item addition pod. Form is setup using ajax call.
-                echo '<tr class="hidden" id="row-add-after-'.$item->id.'"><td colspan="3" id="add-after-'.$item->id.'"></td></tr>';
             }
             echo '</table>';
         }
@@ -1556,6 +1558,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         // Event filters.
 
         echo $this->print_event_filter($thispage);
+        $reportrenderer = $PAGE->get_renderer('report_learningtimecheck');
+        echo $reportrenderer->options('report', $COURSE->id, 0);
 
         // Course report global indicators.
         echo $this->print_global_counters();
@@ -1659,14 +1663,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 break;
         }
 
-        $ausers = learningtimecheck_get_report_users($this->instance, $page, $perpage, $orderby);
+        $ausers = learningtimecheck_get_report_users($this->instance, $page, $perpage, $orderby, $totalusers);
 
         if (!empty($ausers)) {
-            if (count($ausers) < $page*$perpage) {
+            if (count($ausers) < $page * $perpage) {
                 $page = 0;
             }
             $barurl = new moodle_url($thispage, array('perpage' => $perpage, 'sortby' => @$reportsettings->sortby));
-            echo $this->output->paging_bar(count($ausers), $page, $perpage, $barurl);
+            echo $this->output->paging_bar($totalusers, $page, $perpage, $barurl);
         }
 
         // Report panels.
@@ -1917,40 +1921,42 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 continue;
             }
 
-            $icon = '';
-            if (in_array($item->moduleid, array_keys($cms))) {
-                // Try first in module cache.
-                $mod = $modinfo->get_cm($item->moduleid);
-                if (!$mod) {
-                    // Try rebuild.
-                    rebuild_course_cache($COURSE->id);
-                    $modinfo = get_fast_modinfo($COURSE);
-                    $cms = $modinfo->get_cms();
+            if ($item->itemoptional != LTC_OPTIONAL_HEADING) {
+                $icon = '';
+                if (in_array($item->moduleid, array_keys($cms))) {
+                    // Try first in module cache.
                     $mod = $modinfo->get_cm($item->moduleid);
-                }
-                if ($mod) {
-                    $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
-                    'class' => 'iconlarge activityicon', 'alt' => $mod->modfullname, 'title' => $mod->modfullname));
-                    $itemmods[$item->id] = $mod;
+                    if (!$mod) {
+                        // Try rebuild.
+                        rebuild_course_cache($COURSE->id);
+                        $modinfo = get_fast_modinfo($COURSE);
+                        $cms = $modinfo->get_cms();
+                        $mod = $modinfo->get_cm($item->moduleid);
+                    }
+                    if ($mod) {
+                        $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
+                        'class' => 'iconlarge activityicon', 'alt' => $mod->modfullname, 'title' => $mod->modfullname));
+                        $itemmods[$item->id] = $mod;
+                    } else {
+                        // Lost modules
+                        continue;
+                    }
                 } else {
-                    // Lost modules
-                    continue;
+                    if (!$mod = $DB->get_record('course_modules', array('id' => $item->moduleid))) {
+                        $mod = new StdClass;
+                        $mod->modname = $DB->get_field('modules', 'name', array('id' => $item->moduleid));
+                        continue;
+                    }
                 }
-            } else {
-                if (!$mod = $DB->get_record('course_modules', array('id' => $item->moduleid))) {
-                    $mod = new StdClass;
-                    $mod->modname = $DB->get_field('modules', 'name', array('id' => $item->moduleid));
-                    continue;
-                }
-            }
 
-            if ($item->itemoptional != LTC_OPTIONAL_HEADING || $reportsettings->showheaders) {
                 $itemurl = new moodle_url('/mod/'.$mod->modname.'/view.php', array('id' => $item->moduleid));
                 $table->head[] = '<a href="'.$itemurl.'">'.$icon.'</a> '.s($item->displaytext);
             } else {
-                $table->head[] = '<div title="'.s($item->displaytext).'"><img src="'.$this->output->pix_url('t/switch_plus').'"/></div>';
+                if ($reportsettings->showheaders) {
+                    $table->head[] = '<div title="'.s($item->displaytext).'"><img src="'.$this->output->pix_url('t/switch_plus').'"/></div>';
+                }
             }
-            $table->level[] = ($item->indent < 3) ? $item->indent : 2;
+            // $table->level[] = ($item->indent < 3) ? $item->indent : 2;
             $table->size[] = '80px';
             $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
@@ -1978,7 +1984,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     }
 
                     if ($check->itemoptional == LTC_OPTIONAL_HEADING) {
-                        $row[] = array(false, false, true, 0, 0, null);
+                        if ($reportsettings->showheaders) {
+                            $row[] = array(false, false, true, 0, 0, null);
+                        }
                     } else {
                         if ($check->usertimestamp > 0) {
                             $row[] = array($check->teachermark, true, false, $auser->id, $check->id, @$ITEMMODS[$check->id]);
@@ -2274,6 +2282,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '&nbsp;<img src="'.$this->output->pix_url('hiddenbymodule', 'learningtimecheck').'" alt='.$title.' title='.$title.' /></a>';
             }
         } else {
+            /*
             // Edit command (for non automatic items).
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'edititem')).'">';
             $title = '"'.get_string('edititem', 'learningtimecheck').'"';
@@ -2283,12 +2292,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'deleteitem')).'">';
             $title = '"'.get_string('deleteitem', 'learningtimecheck').'"';
             $str .= '<img src="'.$this->output->pix_url('/t/delete').'" alt='.$title.' title='.$title.' /></a>';
+            */
         }
 
         // Add non auto item after this one.
+        /*
         $title = '"'.get_string('additemhere', 'learningtimecheck').'"';
         $img = '<img src="'.$this->output->pix_url('add', 'learningtimecheck').'" alt='.$title.' title='.$title.' />';
         $str .= '&nbsp;&nbsp;&nbsp;<a href="javascript:load_add_item_form(\''.$CFG->wwwroot.'\', \''.$this->instance->cm->id.'\', \''.$item->id.'\')">'.$img.'</a>';
+        */
 
         return $str;
     }
@@ -2844,7 +2856,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      */
     public function report_table(&$table, $editchecks) {
 
-        $summarystr = get_string('reporttablesummary','learningtimecheck');
+        $summarystr = get_string('reporttablesummary', 'learningtimecheck');
 
         $str = '';
 
@@ -2860,7 +2872,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         // Output the data.
         $pixurl = $this->output->pix_url('tick_green_big', 'learningtimecheck');
-        $tickimg = '<img src="'.$pixurl.'" alt="'.get_string('itemcomplete','learningtimecheck').'" />';
+        $tickimg = '<img src="'.$pixurl.'" alt="'.get_string('itemcomplete', 'learningtimecheck').'" />';
         $teacherimgs = $this->teachermark_pixs();
 
         $oddeven = 1;
@@ -2891,7 +2903,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                     $size = $table->size[$key];
                     $content = '';
-                    $cellclass = ($heading) ? 'reportheading cell c'.$key.' level'.$table->level[$key] : ' level'.$table->level[$key].' cell c'.$key;
+                    $cellclass = ($heading) ? 'reportheading cell c'.$key : ' cell c'.$key;
 
                     if ($heading) {
                         // We print a blank cell for headings.
@@ -2999,7 +3011,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 continue;
             }
             $size = $table->size[$key];
-            $levelclass = ' head'.$table->level[$key];
+            $levelclass = 'ltc-header';
             if ($key == $lastkey) {
                 $levelclass .= ' lastcol';
             }
