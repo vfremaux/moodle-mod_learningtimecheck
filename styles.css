@@ -252,6 +252,14 @@ ol.learningtimecheck li .itemteachername {
     border-radius: 2px;
 }
 
+.learningtimecheck-progressthin-inner.both {
+    height: 50%;
+}
+
+.learningtimecheck-progressthin-inner.both.progress2 {
+    top: 7px;
+}
+
 .learningtimecheck-progress-anim {
     background-color: #98c193;
     height: 25px;

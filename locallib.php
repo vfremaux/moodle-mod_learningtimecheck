@@ -614,7 +614,7 @@ class learningtimecheck_class {
                     if (($cmitem->hidden == LTC_HIDDEN_BYMODULE) && $mods->get_cm($cmid)->visible) {
                         // Course module was hidden and now is not.
                         $cmitem->hidden = LTC_HIDDEN_NO;
-                    } elseif (($cmitem->hidden == LTC_HIDDEN_NO) && !$mods->get_cm($cmid)->visible) {
+                    } else if (($cmitem->hidden == LTC_HIDDEN_NO) && !$mods->get_cm($cmid)->visible) {
                         // Course module is now hidden.
                         $cmitem->hidden = LTC_HIDDEN_BYMODULE;
                     }
@@ -970,57 +970,73 @@ class learningtimecheck_class {
         $firstevent = array('optionals' => 0, 'mandatories' => 0);
         $lastevent = array('optionals' => 0, 'mandatories' => 0);
 
+        $discards = array();
+ 
         foreach ($allchecks as $checkitem) {
 
             // Item is hidden administratively.
             if ($checkitem->hidden) {
+                $discards[] = $checkitem->id." because hidden";
                 continue;
             }
 
-            // No headings.
             if (!report_learningtimecheck_meet_report_conditions($checkitem, $reportsettings, $useroptions,
                                                                  $user, $idnumbernotused)) {
+                $discards[] = $checkitem->id." because outside report conditions";
                 continue;
             }
 
             // Not "my" item.
             if (($checkitem->userid && ($checkitem->userid != $user->id))) {
+                $discards[] = $checkitem->id." because user bound and not owner";
                 continue;
             }
 
-            if ($checkitem->itemoptional != LTC_OPTIONAL_HEADING) {
-                if ($checkitem->itemoptional == LTC_OPTIONAL_YES) {
-                    $optionals['items']++;
-                    $optionals['time'] += $checkitem->credittime;
-                    if ($this->is_checked($checkitem)) {
-                        $optionals['ticked']++;
-                        $optionals['tickedtime'] += $checkitem->credittime;
-                        if ($checkitem->usertimestamp > $lastevent['optionals']) {
-                            $lastevent['optionals'] = $checkitem->usertimestamp;
-                            $optionals['lastcheckid'] = $checkitem->id;
-                        }
-                        if (($checkitem->usertimestamp < $firstevent['optionals']) || !$firstevent['optionals']) {
-                            $firstevent['optionals'] = $checkitem->usertimestamp;
-                            $optionals['firstcheckid'] = $checkitem->id;
-                        }
+            // No headings.
+            if ($checkitem->itemoptional == LTC_OPTIONAL_HEADING) {
+                $discards[] = $checkitem->id." because heading";
+                continue;
+            }
+
+            $discards[] = $checkitem->id." OK";
+            if ($checkitem->itemoptional == LTC_OPTIONAL_YES) {
+                $optionals['items']++;
+                $optionals['time'] += $checkitem->credittime;
+                if ($this->is_checked($checkitem)) {
+                    $optionals['ticked']++;
+                    $optionals['tickedtime'] += $checkitem->credittime;
+                    if ($checkitem->usertimestamp > $lastevent['optionals']) {
+                        $lastevent['optionals'] = $checkitem->usertimestamp;
+                        $optionals['lastcheckid'] = $checkitem->id;
                     }
-                } else {
-                    $mandatories['items']++;
-                    $mandatories['time'] += $checkitem->credittime;
-                    if ($this->is_checked($checkitem)) {
-                        $mandatories['ticked']++;
-                        $mandatories['tickedtime'] += $checkitem->credittime;
-                        if ($checkitem->usertimestamp > $lastevent['mandatories']) {
-                            $lastevent['mandatories'] = $checkitem->usertimestamp;
-                            $mandatories['lastcheckid'] = $checkitem->id;
-                        }
-                        if ($checkitem->usertimestamp < $firstevent['mandatories'] || !$firstevent['mandatories']) {
-                            $firstevent['mandatories'] = $checkitem->usertimestamp;
-                            $mandatories['firstcheckid'] = $checkitem->id;
-                        }
+                    if (($checkitem->usertimestamp < $firstevent['optionals']) || !$firstevent['optionals']) {
+                        $firstevent['optionals'] = $checkitem->usertimestamp;
+                        $optionals['firstcheckid'] = $checkitem->id;
+                    }
+                }
+            } else {
+                $mandatories['items']++;
+                $mandatories['time'] += $checkitem->credittime;
+                if ($this->is_checked($checkitem)) {
+                    $mandatories['ticked']++;
+                    $mandatories['tickedtime'] += $checkitem->credittime;
+                    if ($checkitem->usertimestamp > $lastevent['mandatories']) {
+                        $lastevent['mandatories'] = $checkitem->usertimestamp;
+                        $mandatories['lastcheckid'] = $checkitem->id;
+                    }
+                    if ($checkitem->usertimestamp < $firstevent['mandatories'] || !$firstevent['mandatories']) {
+                        $firstevent['mandatories'] = $checkitem->usertimestamp;
+                        $mandatories['firstcheckid'] = $checkitem->id;
                     }
                 }
             }
+        }
+
+        if (optional_param('debug', false, PARAM_BOOL)) {
+            echo '<pre>';
+            echo "For USERID $user->id\n\n";
+            echo implode("\n", $discards);
+            echo '</pre>';
         }
 
         if ($mandatories['items']) {
