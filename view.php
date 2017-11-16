@@ -93,7 +93,14 @@ if ($view == 'preview') {
         include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
     }
 
-} elseif ($view == 'view') {
+} else if ($view == 'view' or empty($view)) {
+
+    $view = 'view';
+
+    // Process submits nbuttons.
+    if (!empty($_POST['viewnext'])) {
+        $action = 'viewnext';
+    }
 
     if (!has_capability('mod/learningtimecheck:updateother', $context)) {
         $userid = $USER->id;
@@ -104,14 +111,14 @@ if ($view == 'preview') {
     if ($action) {
         include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
     }
-} elseif ($view == 'report') {
+} else if ($view == 'report') {
     $studentid = optional_param('studentid', false, PARAM_INT);
     if ($studentid && has_capability('mod/learningtimecheck:viewmenteereports', $context) && !has_capability('mod/learningtimecheck:viewreports', $context)) {
         // Check i am a mentor of this student.
         if (!learningtimecheck::is_mentor($studentid)) {
             $studentid = false;
         }
-    } elseif (!has_capability('mod/learningtimecheck:updateother', $context)) {
+    } else if (!has_capability('mod/learningtimecheck:updateother', $context)) {
         $studentid = false;
     }
 
