@@ -90,7 +90,7 @@ switch($action) {
         $chk->updateitemtext($itemid, $displaytext);
         break;
 
-    case 'seeknext':
+    case 'viewnext':
         $nextuser = learningtimecheck_get_next_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
         $params = array('id' => $id, 'view' => 'view', 'studentid' => $nextuser->id, 'sesskey' => sesskey());
         redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
