@@ -25,6 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/rulefilterlib.php');
+require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
 
 define('LTC_MAX_CHK_MODS_PER_ROW', 4);
 
@@ -1559,7 +1560,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         echo $this->print_event_filter($thispage);
         $reportrenderer = $PAGE->get_renderer('report_learningtimecheck');
-        echo $reportrenderer->options('report', $COURSE->id, 0);
+        echo $reportrenderer->options('report', $COURSE->id, 0, 'mod/'.$this->instance->cm->id.'/report');
 
         // Course report global indicators.
         echo $this->print_global_counters();
@@ -1609,8 +1610,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         echo $this->print_export_excel_button($thispage);
         echo '&nbsp;';
         echo $this->print_export_pdf_button($thispage);
-        echo '&nbsp;';
-        echo $reportrenderer->print_user_options_button('course', $COURSE->id, $COURSE->id, 'mod/'.$this->instance->cm->id.'/report');
         echo '&nbsp;';
 
         $hpage = optional_param('hpage', 0, PARAM_INT);
@@ -1763,7 +1762,18 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $row = array();
                     $row[] = $userlink.$vslink;
 
-                    $row[] = mod_learningtimecheck_renderer::progressbar_thin($checkinfo['mandatory']['percentcomplete']* 100);
+                    $useroptions = (object) report_learningtimecheck_get_user_options();
+                    if ($useroptions->progressbars == PROGRESSBAR_BOTH) {
+                        $complete1 = $checkinfo['mandatory']['percentcomplete'] * 100;
+                        $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
+                    } else if ($useroptions->progressbars == PROGRESSBAR_ITEMS) {
+                        $complete1 = $checkinfo['mandatory']['percentcomplete'] * 100;
+                        $complete2 = null;
+                    } else {
+                        $complete1 = null;
+                        $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
+                    }
+                    $row[] = mod_learningtimecheck_renderer::progressbar_thin($complete1, $complete2);
 
                     $totalitems = $checkinfo['mandatory']['items'];
                     if ($reportsettings->showoptional) {
@@ -2082,11 +2092,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             return;
         }
 
-        $allpercentcomplete = ($allcompleteitems * 100) / $totalitems;
+        $allpercentcomplete = round(($allcompleteitems * 100) / $totalitems);
 
         $str .= '<div class="learningtimecheck-progressbar">';
         if ($requireditems > 0 && $totalitems > $requireditems) {
-            $percentcomplete = ($completeitems * 100) / $requireditems;
+            $percentcomplete = round(($completeitems * 100) / $requireditems);
             $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
             $str .= get_string('percentcomplete','learningtimecheck').':&nbsp;';
             $str .= '</div>';
@@ -2095,7 +2105,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress','learningtimecheck').');" >&nbsp;</div>';
             $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
             $str .= '</div>';
-            $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d',$percentcomplete).'% </span>';
+            $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $percentcomplete).'% </span>';
             $str .= '</div>';
             $str .= '<br style="clear:both"/>';
         }
@@ -2116,14 +2126,35 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $str;
     }
 
-    public static function progressbar_thin($percentcomplete) {
+    public static function progressbar_thin($percentcomplete1, $percentcomplete2) {
         global $OUTPUT;
 
+        $class = '';
+        if (!is_null($percentcomplete1) && !is_null($percentcomplete2)) {
+            $class = ' both';
+        }
+
         $str = '<div class="learningtimecheck-progressthin-outer">';
-        $str .= '<div class="learningtimecheck-progressthin-inner" style="width:'.$percentcomplete.'%; background-image: url('.$OUTPUT->pix_url('progress','learningtimecheck').');" >&nbsp;</div>';
+        if (!is_null($percentcomplete1)) {
+            $percentcomplete1 = round($percentcomplete1);
+            $pixurl = $OUTPUT->pix_url('progress1','learningtimecheck');
+            $str .= '<div class="learningtimecheck-progressthin-inner progress1 '.$class.'" style="width:'.$percentcomplete1.'%; background-image: url('.$pixurl.');" >&nbsp;</div>';
+        }
+        if (!is_null($percentcomplete2)) {
+            $percentcomplete2 = round($percentcomplete2);
+            $pixurl = $OUTPUT->pix_url('progress2','learningtimecheck');
+            $str .= '<div class="learningtimecheck-progressthin-inner progress2 '.$class.'" style="width:'.$percentcomplete2.'%; background-image: url('.$pixurl.');" >&nbsp;</div>';
+        }
         $str .= '</div>';
         $str .= '<br>';
-        $str .= '<div style="text-align:center">'.sprintf('%0d%%',$percentcomplete).'</div>';
+        $str .= '<div style="text-align:center">';
+        if (!is_null($percentcomplete1)) {
+            $str .= sprintf('%0d%%', $percentcomplete1).' ('.get_string('items', 'learningtimecheck').')';
+        }
+        if (!is_null($percentcomplete2)) {
+            $str .= ' '.sprintf('%0d%%', $percentcomplete2).' ('.get_string('time', 'learningtimecheck').')';
+        }
+        $str .= '</div>';
 
         return $str;
     }
