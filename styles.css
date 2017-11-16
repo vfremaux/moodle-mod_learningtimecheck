@@ -152,58 +152,22 @@ ol.learningtimecheck li .itemteachername {
     -moz-border-radius:10px;
 }
 
-.learningtimecheck-report .cell.level0 {
+.learningtimecheck-report .cell {
     background-color: #e7e7e7;
     border:1px solid #c7c7c7;
 }
 
-.learningtimecheck-report .cell.level1 {
-    background-color: #c7c7c7;
-    border:1px solid #afafaf;
-}
-
-.learningtimecheck-report .cell.level2 {
-    background-color: #afafaf;
-    border:1px solid #909090;
-}
-
-.learningtimecheck-report .cell.level0.optional {
+.learningtimecheck-report .cell.optional {
     background-color: #e7e7e7;
     border:1px dashed #c7c7c7;
 }
 
-.learningtimecheck-report .cell.level1.optional {
-    background-color: #c7c7c7;
-    border:1px dashed #afafaf;
-}
-
-.learningtimecheck-report .cell.level2.optional {
-    background-color: #afafaf;
-    border:1px dashed #c7c7c7;
-}
-
-.learningtimecheck-report .cell.level0-checked {
+.learningtimecheck-report .cell-checked {
     background-color: #00ff00;
 }
 
-.learningtimecheck-report .cell.level1-checked {
-    background-color: #00df00;
-}
-
-.learningtimecheck-report .cell.level2-checked {
-    background-color: #00bf00;
-}
-
-.learningtimecheck-report .cell.level0-unchecked {
+.learningtimecheck-report .cell-unchecked {
     background-color: #ff0000;
-}
-
-.learningtimecheck-report .cell.level1-unchecked {
-    background-color: #df0000;
-}
-
-.learningtimecheck-report .cell.level2-unchecked {
-    background-color: #bf0000;
 }
 
 .learningtimecheck-progress-outer {
