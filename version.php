@@ -35,4 +35,4 @@ $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015071300', 'local_vflibs' => '2015053000');
 
 // Non Moodle attributes.
-$plugin->codeincrement = '2.8.0006';
+$plugin->codeincrement = '2.8.0007';
