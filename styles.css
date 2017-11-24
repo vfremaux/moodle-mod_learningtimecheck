@@ -190,6 +190,7 @@ ol.learningtimecheck li .itemteachername {
 
 .learningtimecheck-credittime {
     font-size:0.8em;
+    color: #fff;
     border:1px solid #808080;
     display:inline;
     padding:2px;
@@ -197,19 +198,29 @@ ol.learningtimecheck li .itemteachername {
     background-color:#9D98C0;
 }
 
+.learningtimecheck-declaredtime {
+    font-size:0.8em;
+    color: #000;
+    border:1px solid #808080;
+    display:inline;
+    padding:2px;
+    border-radius:3px;
+    background-color:#bbf4bb;
+}
+
 .learningtimecheck-progress-inner {
     background-color: #229b15;
-    height: 100%;
-    width: 100%;
-    background-repeat: repeat-x;
     background-position: top;
-    z-index: 10;
+    background-repeat: repeat-x;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #229b15;
     display: block;
+    height: 100%;
+    left: 0;
     position: absolute;
     top: 0;
-    left: 0;
-    box-shadow: 0 0 4px #229b15;
-    border-radius: 2px;
+    width: 100%;
+    z-index: 10;
 }
 
 .learningtimecheck-progressthin-outer {
@@ -239,6 +250,14 @@ ol.learningtimecheck li .itemteachername {
     left: 0;
     box-shadow: 0 0 4px #229b15;
     border-radius: 2px;
+}
+
+.learningtimecheck-progressthin-inner.both {
+    height: 50%;
+}
+
+.learningtimecheck-progressthin-inner.both.progress2 {
+    top: 7px;
 }
 
 .learningtimecheck-progress-anim {
