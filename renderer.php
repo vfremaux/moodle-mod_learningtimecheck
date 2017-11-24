@@ -224,7 +224,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
             $info = format_text($this->instance->learningtimecheck->name).' ('.fullname($student, true).')';
 
-            echo '<h2>'.get_string('learningtimecheckfor','learningtimecheck').' '.fullname($student, true).'</h2>';
+            echo '<h2>'.get_string('learningtimecheckfor', 'learningtimecheck').' '.fullname($student, true).'</h2>';
 
             // Command block.
 
@@ -1773,6 +1773,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $complete1 = null;
                         $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
                     }
+
+                    // Get time ratio anyway for displaying the remaining time.
+                    $timecomplete = round($checkinfo['mandatory']['percenttimecomplete'] * 100);
+                    $timecompleteoptional = round($checkinfo['optional']['percenttimecomplete'] * 100);
+
                     $row[] = mod_learningtimecheck_renderer::progressbar_thin($complete1, $complete2);
 
                     $totalitems = $checkinfo['mandatory']['items'];
@@ -1793,11 +1798,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     }
                     $row[] =  $tickedtimes;
 
-                    $leftratio = sprintf('%0d', $checkinfo['mandatory']['percenttimeleft'] * 100).' %';
+                    $timeleftratio = (100 - $timecomplete).' %';
                     if ($reportsettings->showoptional && @$checkinfo['optional']['percenttimeleft']) {
-                        $leftratio .= '<span class="learningtimecheck-optional"> +'.sprintf('%0d', $checkinfo['optional']['percenttimeleft'] * 100).' %</span>';
+                        $timeleftratio .= '<span class="learningtimecheck-optional"> +'.(100 - $timecompleteoptional).' %</span>';
                     }
-                    $row[] =  $leftratio;
+                    $row[] =  $timeleftratio;
 
                     $timeleft = learningtimecheck_format_time($checkinfo['mandatory']['timeleft']);
                     if ($reportsettings->showoptional && @$checkinfo['optional']['timeleft']) {
@@ -1819,9 +1824,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $row1->cells[] = $cell1;
 
                 $cell2 = new html_table_cell();
-                $averagedone = ($sums['mandatory']['items']) ? sprintf('%0d', round($sums['mandatory']['ticked'] / $sums['mandatory']['items'] * 100)).' %' : '0 %';
+                $averagedonenum = round($sums['mandatory']['ticked'] / $sums['mandatory']['items'] * 100);
+                $averagedone = ($sums['mandatory']['items']) ? sprintf('%0d', $averagedonenum).' %' : '0 %';
                 if ($reportsettings->showoptional) {
-                    $averagedone .= ($sums['optional']['items']) ? '<span class="learningtimecheck-optional"> +'.sprintf('%0d', round($sums['optional']['ticked'] / $sums['optional']['items'] * 100)). ' %</span>' : '';
+                    $averagedonenumoptional = round($sums['optional']['ticked'] / $sums['optional']['items'] * 100);
+                    $averagedone .= ($sums['optional']['items']) ? '<span class="learningtimecheck-optional"> +'.sprintf('%0d', $averagedonenumoptional). ' %</span>' : '';
                 }
                 $cell2->text = $averagedone.' '.get_string('average', 'learningtimecheck');
                 $row1->cells[] = $cell2;
@@ -1852,9 +1859,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $row1->cells[] = $cell5;
 
                 $cell6 = new html_table_cell();
-                $percentleft = ($sums['mandatory']['items']) ? sprintf('%0.2f', ($sums['mandatory']['items'] - $sums['mandatory']['ticked']) / $sums['mandatory']['items'] * 100).' %' : '0 %';
+                $ratio = 100 - $averagedonenum;
+                $percentleft = ($sums['mandatory']['items']) ? sprintf('%0d', $ratio.' %') : '0 %';
                 if ($reportsettings->showoptional && @$sums['optional']['items']) {
-                    $optionalpercentleft = ($sums['optional']['items']) ? sprintf('%0.2f', ($sums['optional']['items'] - $sums['optional']['ticked']) / $sums['optional']['items'] * 100).' %' : '0 %';
+                    $ratio = 100 - $averagedonenumoptional;
+                    $optionalpercentleft = ($sums['optional']['items']) ? sprintf('%0d', $ratio.' %') : '0 %';
                     $percentleft .= '<span class="learningtimecheck-optional"> +'.$optionalpercentleft.'</span>';
                 }
                 $cell6->text = $percentleft;
@@ -2028,6 +2037,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
     public function progressbar() {
 
+        $useroptions = (object) report_learningtimecheck_get_user_options();
+
         $str = '';
 
         // Actually should already be catched sooner.
@@ -2044,7 +2055,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $totalitems = 0;
         $requireditems = 0;
         $completeitems = 0;
+        $totaltime = 0;
+        $requiredtime = 0;
+        $completetime = 0;
         $allcompleteitems = 0;
+        $allcompletetime = 0;
         $checkgroupings = $this->instance->learningtimecheck->autopopulate && ($this->instance->groupings !== false);
 
         foreach ($this->instance->items as $item) {
@@ -2059,31 +2074,41 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
             if ($item->itemoptional == LTC_OPTIONAL_NO) {
                 $requireditems++;
+                $requiredtime += $item->credittime;
                 if ($teacherprogress) {
                     if ($item->teachermark == LTC_TEACHERMARK_YES) {
                         $completeitems++;
+                        $completetime += $item->credittime;
                         $allcompleteitems++;
+                        $allcompletetime += $item->credittime;
                     }
                 } else if ($item->checked) {
                     $completeitems++;
+                    $completetime += $item->credittime;
                     $allcompleteitems++;
+                    $allcompletetime += $item->credittime;
                 }
             } else if ($teacherprogress) {
                 if ($item->teachermark == LTC_TEACHERMARK_YES) {
                     $allcompleteitems++;
+                    $allcompletetime += $item->credittime;
                 }
             } else if ($item->checked) {
                 $allcompleteitems++;
+                $allcompletetime += $item->credittime;
             }
             $totalitems++;
+            $totaltime += $item->credittime;
         }
         if (!$teacherprogress) {
             if (!empty($this->instance->useritems)) {
                 foreach ($this->instance->useritems as $item) {
                     if ($item->checked) {
                         $allcompleteitems++;
+                        $allcompletetime += $item->credittime;
                     }
                     $totalitems++;
+                    $totaltime += $item->credittime;
                 }
             }
         }
@@ -2093,35 +2118,70 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         $allpercentcomplete = round(($allcompleteitems * 100) / $totalitems);
+        $alltimepercentcomplete = round(($allcompletetime * 100) / $totaltime);
 
         $str .= '<div class="learningtimecheck-progressbar">';
         if ($requireditems > 0 && $totalitems > $requireditems) {
-            $percentcomplete = round(($completeitems * 100) / $requireditems);
-            $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
-            $str .= get_string('percentcomplete','learningtimecheck').':&nbsp;';
-            $str .= '</div>';
-            $str .= '<div id="learningtimecheck-progress-required">';
-            $str .= '<div class="learningtimecheck-progress-outer">';
-            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress','learningtimecheck').');" >&nbsp;</div>';
-            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
-            $str .= '</div>';
-            $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $percentcomplete).'% </span>';
-            $str .= '</div>';
-            $str .= '<br style="clear:both"/>';
+
+            if (in_array($useroptions->progressbars, array(PROGRESSBAR_ITEMS, PROGRESSBAR_BOTH))) {
+                $percentcomplete = round(($completeitems * 100) / $requireditems);
+                $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
+                $str .= get_string('percentcomplete','learningtimecheck').':&nbsp;';
+                $str .= '</div>';
+                $str .= '<div id="learningtimecheck-progress-required">';
+                $str .= '<div class="learningtimecheck-progress-outer">';
+                $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress1_big','learningtimecheck').');" >&nbsp;</div>';
+                $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+                $str .= '</div>';
+                $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $percentcomplete).'% </span>';
+                $str .= '</div>';
+                $str .= '<br style="clear:both"/>';
+            }
+
+            if (in_array($useroptions->progressbars, array(PROGRESSBAR_TIME, PROGRESSBAR_BOTH))) {
+                $percentcomplete = round(($completetime * 100) / $requiredtime);
+                $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
+                $str .= get_string('timepercentcomplete','learningtimecheck').':&nbsp;';
+                $str .= '</div>';
+                $str .= '<div id="learningtimecheck-progress-required-time">';
+                $str .= '<div class="learningtimecheck-progress-outer">';
+                $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress2_big','learningtimecheck').');" >&nbsp;</div>';
+                $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+                $str .= '</div>';
+                $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $percentcomplete).'% </span>';
+                $str .= '</div>';
+                $str .= '<br style="clear:both"/>';
+            }
         }
 
-        $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
-        $str .= get_string('percentcompleteall','learningtimecheck').':&nbsp;';
-        $str .= '</div>';
-        $str .= '<div id="learningtimecheck-progress-all">';
-        $str .= '<div class="learningtimecheck-progress-outer">';
-        $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->pix_url('progress','learningtimecheck').');" >&nbsp;</div>';
-        $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
-        $str .= '</div>';
-        $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d',$allpercentcomplete).'% </span>';
-        $str .= '</div>';
-        $str .= '<br style="clear:both"/>';
-        $str .= '</div>';
+        if (in_array($useroptions->progressbars, array(PROGRESSBAR_ITEMS, PROGRESSBAR_BOTH))) {
+            $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
+            $str .= get_string('percentcompleteall','learningtimecheck').':&nbsp;';
+            $str .= '</div>';
+            $str .= '<div id="learningtimecheck-progress-all">';
+            $str .= '<div class="learningtimecheck-progress-outer">';
+            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->pix_url('progress1_big','learningtimecheck').');" >&nbsp;</div>';
+            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+            $str .= '</div>';
+            $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d',$allpercentcomplete).'% </span>';
+            $str .= '</div>';
+            $str .= '<br style="clear:both"/>';
+            $str .= '</div>';
+        }
+        if (in_array($useroptions->progressbars, array(PROGRESSBAR_TIME, PROGRESSBAR_BOTH))) {
+            $str .= '<div style="display:block; float:left; width:250px;" class="learningtimecheck-progress-heading">';
+            $str .= get_string('timepercentcompleteall','learningtimecheck').':&nbsp;';
+            $str .= '</div>';
+            $str .= '<div id="learningtimecheck-progress-all-time">';
+            $str .= '<div class="learningtimecheck-progress-outer">';
+            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$alltimepercentcomplete.'%; background-image: url('.$this->output->pix_url('progress2_big','learningtimecheck').');" >&nbsp;</div>';
+            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$alltimepercentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+            $str .= '</div>';
+            $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $alltimepercentcomplete).'% </span>';
+            $str .= '</div>';
+            $str .= '<br style="clear:both"/>';
+            $str .= '</div>';
+        }
 
         return $str;
     }

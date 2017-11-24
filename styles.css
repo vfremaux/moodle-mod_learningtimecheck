@@ -210,17 +210,17 @@ ol.learningtimecheck li .itemteachername {
 
 .learningtimecheck-progress-inner {
     background-color: #229b15;
-    height: 100%;
-    width: 100%;
-    background-repeat: repeat-x;
     background-position: top;
-    z-index: 10;
+    background-repeat: repeat-x;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #229b15;
     display: block;
+    height: 100%;
+    left: 0;
     position: absolute;
     top: 0;
-    left: 0;
-    box-shadow: 0 0 4px #229b15;
-    border-radius: 2px;
+    width: 100%;
+    z-index: 10;
 }
 
 .learningtimecheck-progressthin-outer {
