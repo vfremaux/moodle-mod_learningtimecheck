@@ -384,7 +384,9 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
 }
 
 /**
- * Marks checks based on completion achievement
+ * Marks checks based on completion achievement. Finds all LTC instances that address
+ * this course module with this user to be marked.
+ *
  * @param int $cmid the course module ID being completed
  * @param int $userid the user completion owner's id
  * @param int $newstate the state of completion
@@ -393,6 +395,8 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
 function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $completiontime) {
     global $DB, $USER;
     static $ltccontext = array();
+    static $cmcache = array();
+    static $coursecache = array();
 
     $config = get_config('learningtimecheck');
 
@@ -421,7 +425,6 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
         ON
             (c.item = i.id AND c.userid = ?)
         WHERE
-            cl.autoupdate > 0 AND
             i.moduleid = ? AND
             i.itemoptional < 2
     ";
@@ -447,11 +450,15 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
 
     foreach ($items as $item) {
 
+        // Save all the contextual info of this LTC in caches so we can reuse it
         if (!array_key_exists($item->learningtimecheck, $ltccontext)) {
             // Make a local cache of reusable contexts.
             $cm = get_coursemodule_from_instance('learningtimecheck', $item->learningtimecheck);
             $context = context_module::instance($cm->id);
+
             $ltccontext[$item->learningtimecheck] = $context;
+            $cmcache[$item->learningtimecheck] = $cm;
+            $coursecache[$item->learningtimecheck] = $DB->get_record('course', array('id' => $cm->course));
         }
 
         if ($item->checkid) {
@@ -502,12 +509,16 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
             // LTC_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead.
 
             if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
-                    !$config->applyfiltering) {
+                    !@$config->applyfiltering) {
                 $check->id = $DB->insert_record('learningtimecheck_check', $check);
                 $updatelearningtimechecks[] = $item->learningtimecheck;
                 $createcount++;
             }
         }
+
+        // Trigger a completion update for the learningtimecheck.
+        $completioninfo = new completion_info($coursecache[$item->learningtimecheck]);
+        $completioninfo->update_state($cmcache[$item->learningtimecheck], COMPLETION_UNKNOWN, $userid);
     }
 
     if (defined('DEBUG_LTC_AUTOUPDATE')) {
