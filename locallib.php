@@ -549,7 +549,7 @@ class learningtimecheck_class {
             $sqlparams = array('learningtimecheck' => $this->learningtimecheck->id,
                                'moduleid' => $sid,
                                'itemoptional' => LTC_OPTIONAL_HEADING);
-            if ($headingitem = $DB->get_record('learningtimecheck_item', $sqlparams)) {
+            if ($headingitem = $DB->get_record('learningtimecheck_item', $sqlparams, '*', IGNORE_MULTIPLE)) {
                 $headingitemid = $headingitem->id;
             }
 
@@ -936,7 +936,6 @@ class learningtimecheck_class {
      */
     public function get_items_for_user(&$user, $reportsettings = null, $useroptions = null) {
         global $DB;
-        static $CMCACHE = array();
 
         $totalitems = 0;
         $totaloptionalitems = 0;
@@ -1001,6 +1000,8 @@ class learningtimecheck_class {
                 $mandatories['time'] += $checkitem->credittime;
             }
 
+            $checkitem->course = $this->course;
+
             if (!report_learningtimecheck_meet_report_conditions($checkitem, $reportsettings, $useroptions,
                                                                  $user, $idnumbernotused)) {
                 $discards[] = $checkitem->id." because outside report conditions";
@@ -1037,9 +1038,10 @@ class learningtimecheck_class {
             }
         }
 
-        if (optional_param('debug', false, PARAM_BOOL)) {
+        $syscontext = context_system::instance();
+        if (optional_param('debug', false, PARAM_BOOL) && has_capability('moodle/config:site', $syscontext)) {
             echo '<pre>';
-            echo "For USERID $user->id\n\n";
+            echo "For USERID $user->id in LTC {$this->learningtimecheck->id} in course {$this->course->id}\n\n";
             echo implode("\n", $discards);
             echo '</pre>';
         }
