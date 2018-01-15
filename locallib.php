@@ -1041,7 +1041,7 @@ class learningtimecheck_class {
         $syscontext = context_system::instance();
         if (optional_param('debug', false, PARAM_BOOL) && has_capability('moodle/config:site', $syscontext)) {
             echo '<pre>';
-            echo "For USERID $user->id in LTC {$this-<learningtimecheck->id} in course {$this->course->id}\n\n";
+            echo "For USERID $user->id in LTC {$this->learningtimecheck->id} in course {$this->course->id}\n\n";
             echo implode("\n", $discards);
             echo '</pre>';
         }
