@@ -41,16 +41,23 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
  * @return validated credittimes on course modules with several filters.
  * credittime values are normalized in secs.
  */
-function learningtimecheck_get_credittimes($learningtimecheckid = 0, $cmid = 0, $userid = 0) {
+function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0, $userid = 0) {
     global $CFG, $DB;
 
-    $learningtimecheckclause = ($learningtimecheckid) ? " AND ci.learningtimecheck = $learningtimecheckid " : '';
+    if (is_numeric($learningtimecheckorid)) {
+        $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckorid));
+    } else {
+        $learningtimecheck = $learningtimecheckorid;
+    }
+
+    $learningtimecheckclause = ($learningtimecheck->id) ? " AND ci.learningtimecheck = {$learningtimecheck->id} " : '';
     $cmclause = ($cmid) ? " AND cm.id = $cmid " : '';
     $userclause = ($userid) ? " AND cc.userid = $userid " : '';
-    $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => "$learningtimecheckid"));
     $teachermarkclause = '';
-    if ($learningtimecheck->teacheredit > LTC_MARKING_STUDENT) {
-        $teachermarkclause = " AND teachermark = 1 ";
+    if ($learningtimecheck->teacheredit == LTC_MARKING_TEACHER || $learningtimecheck->teacheredit == LTC_MARKING_BOTH) {
+        $markvalue = 'teachermark as ismarked,';
+    } else {
+        $markvalue = ' usertimestamp > 0 as ismarked,';
     }
 
     // get only teacher validated marks to assess the credit time
@@ -60,15 +67,15 @@ function learningtimecheck_get_credittimes($learningtimecheckid = 0, $cmid = 0, 
             cc.userid,
             ci.moduleid AS cmid,
             ci.credittime * 60 AS credittime,
+            $markvalue
             m.name AS modname
         FROM
-            {learningtimecheck_check} cc
-        JOIN
             {learningtimecheck_item} ci
+        LEFT JOIN
+            {learningtimecheck_check} cc
         ON
             ci.id = cc.item AND
             ci.userid = cc.userid
-            $learningtimecheckclause
             $userclause
         LEFT JOIN
             {course_modules} cm
@@ -76,12 +83,12 @@ function learningtimecheck_get_credittimes($learningtimecheckid = 0, $cmid = 0, 
             cm.id = ci.moduleid
         LEFT JOIN
             {modules} m
-        ON 
+        ON
             m.id = cm.module
         WHERE
             ci.enablecredit = 1
-            $teachermarkclause
             $cmclause
+            $learningtimecheckclause
     ";
 
     return $DB->get_records_sql($sql);
