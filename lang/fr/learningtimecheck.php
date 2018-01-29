@@ -83,6 +83,7 @@ $string['configinitialcredittimeon'] = 'Temps forfaitaires activés initiallemen
 $string['configintegrateusestats'] = 'Intégrer les mesures réelles d\'activité';
 $string['configlearningtimecheckautoupdate'] = 'Bénéficier de cette fonctionnalité demande la quelques modifications locales du noyau de Moodle, lisez le document mod/learningtimecheck/README.txt pour plus de détails ou consultez un intégrateur.';
 $string['configlearningtimecheckautoupdateusecron'] = 'Les accomplissements seront automatiquement marqués sur la base d\'événements des traces';
+$string['configstrictcredits'] = 'Application stricte du crédit temps';
 $string['configmy'] = 'Affichage dans les vues d\'ensemble de cours';
 $string['configshowcompletemymoodle'] = 'Montrer les listes d\'avancement complétées sur les pages personnalisées';
 $string['configshowmymoodle'] = 'Montrer les listes d\'avancement sur les pages personnalisées';
@@ -364,3 +365,7 @@ Voir la liste ici :';
 
 $string['emailoncompletebodyown'] = 'Vous avez terminé les travaux de la liste \'{$a->learningtimecheck}\' du cours \'{$a->coursename}\' 
 Voir la liste ici :';
+
+$string['configstrictcredits_desc'] = 'Si actif, les temps crédités sont utilisés dans tous les cas à la place. Sinon, le crédit temps ne sera affecté que
+ si il est supérieur au temps mesuré réel.';
+
