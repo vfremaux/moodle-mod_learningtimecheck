@@ -1905,11 +1905,15 @@ class learningtimecheck_class {
         $now = time();
 
         $cap = 'mod/learningtimecheck:updateown';
-        $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
-        if (!$users) {
-            return;
+        if ($this->userid) {
+            $userids = $this->userid;
+        } else {
+            $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
+            if (!$users) {
+                return;
+            }
+            $userids = implode(',', array_keys($users));
         }
-        $userids = implode(',',array_keys($users));
 
         // Get a list of all the learningtimecheck items with a module linked to them (ignoring headings).
         $sql = "
@@ -1946,9 +1950,10 @@ class learningtimecheck_class {
                 if ($using_completion && $item->completion) {
                     $fakecm = new stdClass;
                     $fakecm->id = $item->cmid;
-    
+
                     foreach ($users as $user) {
                         $comp_data = $completion->get_data($fakecm, false, $user->id);
+
                         if ($comp_data->completionstate == COMPLETION_COMPLETE ||
                                 $comp_data->completionstate == COMPLETION_COMPLETE_PASS) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
