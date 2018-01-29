@@ -110,7 +110,12 @@ if ($ADMIN->fulltree) {
 
         $key = 'learningtimecheck/allowoverrideusestats';
         $label = get_string('configallowoverrideusestats', 'mod_learningtimecheck');
-        $desc = get_string('configallowoverrideusestats', 'mod_learningtimecheck');
+        $desc = get_string('configallowoverrideusestats_desc', 'mod_learningtimecheck');
+        $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
+
+        $key = 'learningtimecheck/strictcredits';
+        $label = get_string('configstrictcredits', 'mod_learningtimecheck');
+        $desc = get_string('configstrictcredits_desc', 'mod_learningtimecheck');
         $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
     }
 }
