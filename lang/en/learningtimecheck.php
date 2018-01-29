@@ -95,6 +95,7 @@ $string['configshowcompletemymoodle_desc'] = 'If this is unchecked then complete
 $string['configshowmymoodle'] = 'Show checklist  on \'My Moodle\' page';
 $string['configshowmymoodle_desc'] = 'If this is unchecked then checklist activities (with progress bars) will no longer appear on the \'My Moodle\' page';
 $string['configusestatscoupling'] = 'Training sessions and Use Stats coupling';
+$string['configstrictcredits'] = 'Strict credit time application';
 $string['confirmdeleteitem'] = 'Are you sure you want to permanently delete this checklist item?';
 $string['coursecalibrationreport'] = 'Course Learning Time Calibration';
 $string['coursecompletionboard'] = 'Course completion';
@@ -318,3 +319,6 @@ If a Moodle 2.0 completion tracking is switched on for a particular activity, th
 For details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/learningtimecheck/autoupdatelib.php\'<br />
 Note: it can take up to 60 seconds for a student\'s activity to be reflected in their LT Checklist
 ';
+
+$string['configstrictcredits_desc'] = 'When enabled, credit times will be used in replacement of measured time in all cases. If not, credit time will be used only if
+it is is higher to the effectively measured time. This protects smart students justification on assessed training.';

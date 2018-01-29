@@ -549,7 +549,7 @@ class learningtimecheck_class {
             $sqlparams = array('learningtimecheck' => $this->learningtimecheck->id,
                                'moduleid' => $sid,
                                'itemoptional' => LTC_OPTIONAL_HEADING);
-            if ($headingitem = $DB->get_record('learningtimecheck_item', $sqlparams)) {
+            if ($headingitem = $DB->get_record('learningtimecheck_item', $sqlparams, '*', IGNORE_MULTIPLE)) {
                 $headingitemid = $headingitem->id;
             }
 
@@ -936,7 +936,6 @@ class learningtimecheck_class {
      */
     public function get_items_for_user(&$user, $reportsettings = null, $useroptions = null) {
         global $DB;
-        static $CMCACHE = array();
 
         $totalitems = 0;
         $totaloptionalitems = 0;
@@ -1001,6 +1000,8 @@ class learningtimecheck_class {
                 $mandatories['time'] += $checkitem->credittime;
             }
 
+            $checkitem->course = $this->course;
+
             if (!report_learningtimecheck_meet_report_conditions($checkitem, $reportsettings, $useroptions,
                                                                  $user, $idnumbernotused)) {
                 $discards[] = $checkitem->id." because outside report conditions";
@@ -1037,9 +1038,10 @@ class learningtimecheck_class {
             }
         }
 
-        if (optional_param('debug', false, PARAM_BOOL)) {
+        $syscontext = context_system::instance();
+        if (optional_param('debug', false, PARAM_BOOL) && has_capability('moodle/config:site', $syscontext)) {
             echo '<pre>';
-            echo "For USERID $user->id\n\n";
+            echo "For USERID $user->id in LTC {$this->learningtimecheck->id} in course {$this->course->id}\n\n";
             echo implode("\n", $discards);
             echo '</pre>';
         }
@@ -1903,11 +1905,15 @@ class learningtimecheck_class {
         $now = time();
 
         $cap = 'mod/learningtimecheck:updateown';
-        $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
-        if (!$users) {
-            return;
+        if ($this->userid) {
+            $userids = $this->userid;
+        } else {
+            $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
+            if (!$users) {
+                return;
+            }
+            $userids = implode(',', array_keys($users));
         }
-        $userids = implode(',',array_keys($users));
 
         // Get a list of all the learningtimecheck items with a module linked to them (ignoring headings).
         $sql = "
@@ -1944,9 +1950,10 @@ class learningtimecheck_class {
                 if ($using_completion && $item->completion) {
                     $fakecm = new stdClass;
                     $fakecm->id = $item->cmid;
-    
+
                     foreach ($users as $user) {
                         $comp_data = $completion->get_data($fakecm, false, $user->id);
+
                         if ($comp_data->completionstate == COMPLETION_COMPLETE ||
                                 $comp_data->completionstate == COMPLETION_COMPLETE_PASS) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
