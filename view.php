@@ -66,7 +66,6 @@ require_login($course, true, $cm);
 
 $PAGE->set_title($course->fullname);
 $PAGE->set_heading(format_string($learningtimecheck->name));
-$PAGE->set_button($OUTPUT->update_module_button($cm->id, 'learningtimecheck'));
 
 $context = context_module::instance($cm->id);
 
