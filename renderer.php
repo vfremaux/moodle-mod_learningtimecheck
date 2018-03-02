@@ -409,7 +409,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 if ($isheading) {
                     $optional = ' class="itemheading" ';
-                    $spacerimg = $this->output->pix_url('check_spacer', 'learningtimecheck');
+                    $spacerimg = $this->output->image_url('check_spacer', 'learningtimecheck');
                 } else if ($item->itemoptional == LTC_OPTIONAL_YES) {
                     $optional = ' class="itemoptional" ';
                     $checkclass = ' itemoptional';
@@ -438,7 +438,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $mandatorypix = ($item->itemoptional == LTC_OPTIONAL_YES) ? 'optional' : 'mandatory';
                         $checkedpix = ($item->checked) ? 'marked' : 'unmarked';
                         $pixname = 'item_'.$checkedpix.'_'.$mandatorypix;
-                        $pixurl = $this->output->pix_url($pixname, 'mod_learningtimecheck');
+                        $pixurl = $this->output->image_url($pixname, 'mod_learningtimecheck');
                         $itemstr .= '&nbsp;<img src="'.$pixurl.'" class="learningtimecheck-item-pix" />';
                     }
                 }
@@ -457,7 +457,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 if (isset($item->modulelink)) {
                     $alt = get_string('linktomodule','learningtimecheck');
-                    $pix = '<img src="'.$this->output->pix_url('follow_link','learningtimecheck').'" alt="'.$alt.'" />';
+                    $pix = $this->output->pix_icon('follow_link', $alt, 'learningtimecheck');
                     $itemstr .= '&nbsp;<a href="'.$item->modulelink.'" title"'.$gotomodulestr.'">'.$pix.'</a>';
                 }
 
@@ -571,8 +571,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $params = array('itemid' => $item->id, 'sesskey' => sesskey(), 'what' => 'startadditem');
                     $itemstr .= '&nbsp;<a href="'.$thispage->out(true, $params).'">';
                     $title = '"'.get_string('additemalt', 'learningtimecheck').'"';
-                    $pixurl = $this->output->pix_url('add','learningtimecheck');
-                    $itemstr .= '<img src="'.$pixurl.'" alt='.$title.' title='.$title.' /></a>';
+                    $itemstr .= $this->output->pix_icon('add', $title, 'learningtimecheck').'</a>';
                 }
 
                 if ($showcompletiondates) {
@@ -696,13 +695,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                                     $baseurl = $thispage.'&amp;itemid='.$useritem->id.'&amp;sesskey='.sesskey().'&amp;action=';
                                     $itemstr .= '&nbsp;<a href="'.$baseurl.'edititem">';
                                     $title = '"'.get_string('edititem','learningtimecheck').'"';
-                                    $pixurl = $this->output->pix_url('/t/edit');
-                                    $itemstr .= '<img src="'.$pixurl.'" alt='.$title.' title='.$title.' /></a>';
+                                    $itemstr .= $this->output->pix_icon('/t/edit', $title).'</a>';
 
                                     $itemstr .= '&nbsp;<a href="'.$baseurl.'deleteitem" class="deleteicon">';
                                     $title = '"'.get_string('deleteitem','learningtimecheck').'"';
-                                    $pixurl = $this->output->pix_url('remove', 'learningtimecheck');
-                                    $itemstr .= '<img src="'.$pixurl.'" alt='.$title.' title='.$title.' /></a>';
+                                    $itemstr .= $this->output->pix_icon('remove', $title, 'learningtimecheck').'</a>';
                                 }
                                 if ($note != '') {
                                     $itemstr .= '<div class="note">'.$note.'</div>';
@@ -1018,9 +1015,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
         $str .= '<div class="sideblock"><div class="header"><h2>'.$completionliststr.'</h2></div></div>';
         $str .= '<table class="learningtimecheck-own-report" width="100%"><tr valign="top">';
-        $pixurl = $this->output->pix_url('tick_amber_big', 'learningtimecheck');
-        $studentimg = array(0 => '<img src="'.$this->output->pix_url('spacer').'" alt="'.get_string('studentmarkno', 'learningtimecheck').'" />',
-                            1 => '<img src="'.$pixurl.'" alt="'.get_string('studentmarkyes', 'learningtimecheck').'" />');
+        $altno = get_string('studentmarkno', 'learningtimecheck');
+        $altyes = get_string('studentmarkyes', 'learningtimecheck');
+        $studentimg = array(0 => $this->output->pix_icon('spacer', $altno),
+                            1 => $this->output->pix_icon('tick_amber_big', $altyes, 'mod_learningtimecheck'));
         $i = 0;
         foreach ($checkstates as $cs) {
 
@@ -1153,9 +1151,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
         $str .= '<div class="sideblock"><div class="header"><h2>'.$completionliststr.'</h2></div></div>';
         $str .= '<table class="learningtimecheck-report" cellspacing="4"><tr valign="top">';
-        $pixurl = $this->output->pix_url('tick_amber_big', 'learningtimecheck');
-        $studentimg = array(0 => '<img src="'.$this->output->pix_url('spacer').'" alt="'.get_string('studentmarkno', 'learningtimecheck').'" />',
-                            1 => '<img src="'.$pixurl.'" alt="'.get_string('studentmarkyes', 'learningtimecheck').'" />');
+        $alt = get_string('studentmarkyes', 'learningtimecheck');
+        $pixurl = $this->output->pix_icon('tick_amber_big', $alt, 'mod_learningtimecheck');
+        $studentimg = array(0 => $this->output->pix_icon('spacer', get_string('studentmarkno', 'learningtimecheck')),
+                            1 => $pix);
         $i = 0;
         if (!empty($checkstates)) {
             foreach ($checkstates as $cs) {
@@ -1693,16 +1692,18 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $lastlink = 'lastasc';
                 $firstarrow = '';
                 $lastarrow = '';
+                $asc = get_string('asc');
+                $desc = get_string('desc');
                 if ($reportsettings->sortby == 'firstasc') {
                     $firstlink = 'firstdesc';
-                    $firstarrow = '<img src="'.$this->output->pix_url('/t/down').'" alt="'.get_string('asc').'" />';
+                    $firstarrow = $this->output->pix_icon('/t/down', $asc);
                 } else if ($reportsettings->sortby == 'lastasc') {
                     $lastlink = 'lastdesc';
-                    $lastarrow = '<img src="'.$this->output->pix_url('/t/down').'" alt="'.get_string('asc').'" />';
+                    $lastarrow = $this->output->pix_icon('/t/down', $asc);
                 } else if ($reportsettings->sortby == 'firstdesc') {
-                    $firstarrow = '<img src="'.$this->output->pix_url('/t/up').'" alt="'.get_string('desc').'" />';
+                    $firstarrow = $this->output->pix_icon('/t/up', $desc);
                 } else if ($reportsettings->sortby == 'lastdesc') {
-                    $lastarrow = '<img src="'.$this->output->pix_url('/t/up').'" alt="'.get_string('desc').'" />';
+                    $lastarrow = $this->output->pix_icon('/t/up', $desc);
                 }
                 $firstlink = new moodle_url($thispage, array('sortby' => $firstlink));
                 $lastlink = new moodle_url($thispage, array('sortby' => $lastlink));
@@ -1907,16 +1908,18 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $firstarrow = '';
         $lastarrow = '';
 
+        $asc = get_string('asc');
+        $desc = get_string('desc');
         if ($reportsettings->sortby == 'firstasc') {
             $firstlink = 'firstdesc';
-            $firstarrow = '<img src="'.$this->output->pix_url('/t/down').'" alt="'.get_string('asc').'" />';
+            $firstarrow = $this->output->pix_icon('/t/down', $asc);
         } else if ($reportsettings->sortby == 'lastasc') {
             $lastlink = 'lastdesc';
-            $lastarrow = '<img src="'.$this->output->pix_url('/t/down').'" alt="'.get_string('asc').'" />';
+            $lastarrow = $this->output->pix_icon('/t/down', $asc);
         } else if ($reportsettings->sortby == 'firstdesc') {
-            $firstarrow = '<img src="'.$this->output->pix_url('/t/up').'" alt="'.get_string('desc').'" />';
+            $firstarrow = $this->output->pix_icon('/t/up', $desc);
         } else if ($reportsettings->sortby == 'lastdesc') {
-            $lastarrow = '<img src="'.$this->output->pix_url('/t/up').'" alt="'.get_string('desc').'" />';
+            $lastarrow = $this->output->pix_icon('/t/up', $desc);
         }
 
         $firstlink = new moodle_url($thispage, array('sortby' => $firstlink));
@@ -1972,7 +1975,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $table->head[] = '<a href="'.$itemurl.'">'.$icon.'</a> '.s($item->displaytext);
             } else {
                 if ($reportsettings->showheaders) {
-                    $table->head[] = '<div title="'.s($item->displaytext).'"><img src="'.$this->output->pix_url('t/switch_plus').'"/></div>';
+                    $table->head[] = '<div title="'.s($item->displaytext).'">'.$this->output->pix_icon('t/switch_plus', get_string('visible')).'</div>';
                 }
             }
             // $table->level[] = ($item->indent < 3) ? $item->indent : 2;
@@ -1989,8 +1992,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $userlink = '<a href="'.$userurl.'">'.fullname($auser).'</a>';
 
                 $vslink = ' <a href="'.$thispage->out(true, array('view' => 'view', 'studentid' => $auser->id) ).'" ';
-                $vslink .= 'alt="'.get_string('viewsinglereport','learningtimecheck').'" title="'.get_string('viewsinglereport','learningtimecheck').'">';
-                $vslink .= '<img src="'.$this->output->pix_url('/t/preview').'" /></a>';
+                $vslink .= 'alt="'.get_string('viewsinglereport', 'learningtimecheck').'" title="'.get_string('viewsinglereport', 'learningtimecheck').'">';
+                $vslink .= $this->output->pix_icon('/t/preview').'</a>';
 
                 $row[] = $userlink.$vslink;
 
@@ -2130,8 +2133,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '</div>';
                 $str .= '<div id="learningtimecheck-progress-required">';
                 $str .= '<div class="learningtimecheck-progress-outer">';
-                $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress1_big','learningtimecheck').');" >&nbsp;</div>';
-                $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+                $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->image_url('progress1_big','learningtimecheck').');" >&nbsp;</div>';
+                $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->image_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
                 $str .= '</div>';
                 $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $percentcomplete).'% </span>';
                 $str .= '</div>';
@@ -2145,8 +2148,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '</div>';
                 $str .= '<div id="learningtimecheck-progress-required-time">';
                 $str .= '<div class="learningtimecheck-progress-outer">';
-                $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress2_big','learningtimecheck').');" >&nbsp;</div>';
-                $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+                $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->image_url('progress2_big','learningtimecheck').');" >&nbsp;</div>';
+                $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$percentcomplete.'%; background-image: url('.$this->output->image_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
                 $str .= '</div>';
                 $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $percentcomplete).'% </span>';
                 $str .= '</div>';
@@ -2160,8 +2163,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $str .= '</div>';
             $str .= '<div id="learningtimecheck-progress-all">';
             $str .= '<div class="learningtimecheck-progress-outer">';
-            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->pix_url('progress1_big','learningtimecheck').');" >&nbsp;</div>';
-            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->image_url('progress1_big','learningtimecheck').');" >&nbsp;</div>';
+            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$allpercentcomplete.'%; background-image: url('.$this->output->image_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
             $str .= '</div>';
             $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d',$allpercentcomplete).'% </span>';
             $str .= '</div>';
@@ -2174,8 +2177,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $str .= '</div>';
             $str .= '<div id="learningtimecheck-progress-all-time">';
             $str .= '<div class="learningtimecheck-progress-outer">';
-            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$alltimepercentcomplete.'%; background-image: url('.$this->output->pix_url('progress2_big','learningtimecheck').');" >&nbsp;</div>';
-            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$alltimepercentcomplete.'%; background-image: url('.$this->output->pix_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
+            $str .= '<div class="learningtimecheck-progress-inner" style="width:'.$alltimepercentcomplete.'%; background-image: url('.$this->output->image_url('progress2_big','learningtimecheck').');" >&nbsp;</div>';
+            $str .= '<div class="learningtimecheck-progress-anim" style="width:'.$alltimepercentcomplete.'%; background-image: url('.$this->output->image_url('progress-fade', 'learningtimecheck').');" >&nbsp;</div>';
             $str .= '</div>';
             $str .= '<span class="learningtimecheck-progress-percent">&nbsp;'.sprintf('%0d', $alltimepercentcomplete).'% </span>';
             $str .= '</div>';
@@ -2197,12 +2200,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str = '<div class="learningtimecheck-progressthin-outer">';
         if (!is_null($percentcomplete1)) {
             $percentcomplete1 = round($percentcomplete1);
-            $pixurl = $OUTPUT->pix_url('progress1','learningtimecheck');
+            $pixurl = $OUTPUT->image_url('progress1','learningtimecheck');
             $str .= '<div class="learningtimecheck-progressthin-inner progress1 '.$class.'" style="width:'.$percentcomplete1.'%; background-image: url('.$pixurl.');" >&nbsp;</div>';
         }
         if (!is_null($percentcomplete2)) {
             $percentcomplete2 = round($percentcomplete2);
-            $pixurl = $OUTPUT->pix_url('progress2','learningtimecheck');
+            $pixurl = $OUTPUT->image_url('progress2','learningtimecheck');
             $str .= '<div class="learningtimecheck-progressthin-inner progress2 '.$class.'" style="width:'.$percentcomplete2.'%; background-image: url('.$pixurl.');" >&nbsp;</div>';
         }
         $str .= '</div>';
@@ -2361,35 +2364,35 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 // Here user still has control over hidden status.
                 if ($item->hidden == LTC_HIDDEN_MANUAL) {
                     $title = '"'.get_string('itemenable', 'learningtimecheck').'"';
-                    $img = '<img src="'.$this->output->pix_url('/t/show').'" alt='.$title.' title='.$title.' />';
+                    $img = $this->output->pix_icon('/t/show', $title);
                     $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'showitem')).'">'.$img.'</a>';
                 } else {
                     $title = '"'.get_string('itemdisable', 'learningtimecheck').'"';
-                    $img = '<img src="'.$this->output->pix_url('/t/hide').'" alt='.$title.' title='.$title.' />';
+                    $img = $this->output->pix_icon('/t/hide', $title);
                     $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'hideitem')).'">'.$img.'</a>';
                 }
             } else {
                 $title = '"'.get_string('hiddenbymodule', 'learningtimecheck').'"';
-                $str .= '&nbsp;<img src="'.$this->output->pix_url('hiddenbymodule', 'learningtimecheck').'" alt='.$title.' title='.$title.' /></a>';
+                $str .= '&nbsp;'.$this->output->pix_icon('hiddenbymodule', $title, 'learningtimecheck').'</a>';
             }
         } else {
             /*
             // Edit command (for non automatic items).
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'edititem')).'">';
             $title = '"'.get_string('edititem', 'learningtimecheck').'"';
-            $str .= '<img src="'.$this->output->pix_url('/t/edit').'"  alt='.$title.' title='.$title.' /></a>&nbsp;';
+            $str .= $this->output->pix_icon('/t/edit', $title).'</a>&nbsp;';
 
             // Delete command.
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'deleteitem')).'">';
             $title = '"'.get_string('deleteitem', 'learningtimecheck').'"';
-            $str .= '<img src="'.$this->output->pix_url('/t/delete').'" alt='.$title.' title='.$title.' /></a>';
+            $str .= $this->output->pix_icon('/t/delete', $title).'</a>';
             */
         }
 
         // Add non auto item after this one.
         /*
         $title = '"'.get_string('additemhere', 'learningtimecheck').'"';
-        $img = '<img src="'.$this->output->pix_url('add', 'learningtimecheck').'" alt='.$title.' title='.$title.' />';
+        $img = $this->output->pix_icon('add', $title, 'learningtimecheck');
         $str .= '&nbsp;&nbsp;&nbsp;<a href="javascript:load_add_item_form(\''.$CFG->wwwroot.'\', \''.$this->instance->cm->id.'\', \''.$item->id.'\')">'.$img.'</a>';
         */
 
@@ -2698,8 +2701,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $ruleops = learningtimecheck_class::get_ruleop_options();
 
-        $pluspixurl = $OUTPUT->pix_url('t/switch_plus');
-        $minuspixurl = $OUTPUT->pix_url('t/switch_minus');
+        $pluspixurl = $OUTPUT->image_url('t/switch_plus');
+        $minuspixurl = $OUTPUT->image_url('t/switch_minus');
 
         $str = '';
         $str .= '<div id="learningtimecheck-event-filter">';
@@ -2740,14 +2743,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $deleteurl = clone($thispage);
                 $params = array('what' => 'deleterule', 'ruleid' => $filterrule->id);
                 $deleteurl->params($params);
-                $str .= '<a href="'.$deleteurl.'"><img src="'.$OUTPUT->pix_url('t/delete').'"></a>';
+                $str .= '<a href="'.$deleteurl.'">'.$OUTPUT->pix_icon('t/delete').'</a>';
 
                 $str .= '</div>';
             }
         }
 
         // Will ajax load a new rule form.
-        $str .= '<a href="javascript:load_filter_rule_form(\''.$CFG->wwwroot.'\', \''.$thispage->get_param('id').'\', \''.$component.'\', \''.$thispage->get_param('view').'\', \''.$itemid.'\')"><img src="'.$OUTPUT->pix_url('add', 'learningtimecheck').'" /></a>';
+        $str .= '<a href="javascript:load_filter_rule_form(\''.$CFG->wwwroot.'\', \''.$thispage->get_param('id').'\', \''.$component.'\', \''.$thispage->get_param('view').'\', \''.$itemid.'\')">'.$OUTPUT->pix_icon('add', 'learningtimecheck').'</a>';
         $str .= '</form>';
         $str .= '<div id="learningtimecheck-filter-new-rule" class="hidden"></div>';
         $str .= '</div>';
@@ -2962,8 +2965,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= $this->table_head_row($table);
 
         // Output the data.
-        $pixurl = $this->output->pix_url('tick_green_big', 'learningtimecheck');
-        $tickimg = '<img src="'.$pixurl.'" alt="'.get_string('itemcomplete', 'learningtimecheck').'" />';
+        $tickimg = $this->output->pix_icon('tick_green_big', get_string('itemcomplete', 'learningtimecheck'), 'mod_learningtimecheck');
         $teacherimgs = $this->teachermark_pixs();
 
         $oddeven = 1;
@@ -3079,8 +3081,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $userfirstletter = substr($userlastname, 0, 1);
                 $params = array('action' => 'grading', 'id' => $modinfo->id, 'thide' => 'email', 'tilast' => $userfirstletter);
                 $assigncheckurl = new moodle_url('/mod/assign/view.php', $params);
-                $pixurl = $this->output->pix_url('t/hide');
-                $str = '<a href="'.$assigncheckurl.'&thide=picture&thide=grade&thide=userid" target="_blank"><img src="'.$pixurl.'"></a>';
+                $pix = $this->output->pix_icon('t/hide');
+                $str = '<a href="'.$assigncheckurl.'&thide=picture&thide=grade&thide=userid" target="_blank">'.$pix.'</a>';
             }
         }
 
@@ -3120,16 +3122,16 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      */
     public function teachermark_pixs() {
 
-        $pixurl = $this->output->pix_url('empty_box','learningtimecheck');
-        $piximg = '<img src="'.$pixurl.'" alt="'.get_string('teachermarkundecided', 'learningtimecheck').'" />';
+        $alt = get_string('teachermarkundecided', 'learningtimecheck');
+        $piximg = $this->output->pix_icon('empty_box', $alt, 'learningtimecheck');
         $pixarray[LTC_TEACHERMARK_UNDECIDED] = $piximg;
 
-        $pixurl = $this->output->pix_url('tick_green_big', 'learningtimecheck');
-        $piximg = '<img src="'.$pixurl.'" alt="'.get_string('teachermarkyes', 'learningtimecheck').'" />';
+        $alt = get_string('teachermarkyes', 'learningtimecheck');
+        $piximg = $this->output->pix_icon('tick_green_big', $alt, 'learningtimecheck');
         $pixarray[LTC_TEACHERMARK_YES] = $piximg;
 
-        $pixurl = $this->output->pix_url('wrong_red_big', 'learningtimecheck');
-        $piximg = '<img src="'.$pixurl.'" alt="'.get_string('teachermarkno', 'learningtimecheck').'" />';
+        $alt = get_string('teachermarkno', 'learningtimecheck');
+        $piximg = $this->output->pix_icon('wrong_red_big', $alt, 'learningtimecheck');
         $pixarray[LTC_TEACHERMARK_NO] = $piximg;
 
         return $pixarray;

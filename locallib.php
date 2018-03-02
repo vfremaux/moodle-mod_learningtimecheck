@@ -872,15 +872,15 @@ class learningtimecheck_class {
         switch ($this->items[$itemid]->teachermark) {
             case LTC_TEACHERMARK_YES:
                 $str = get_string('teachermarkyes', 'learningtimecheck');
-                return array($OUTPUT->pix_url('tick_box', 'learningtimecheck'), $str);
+                return array($OUTPUT->image_url('tick_box', 'learningtimecheck'), $str);
     
             case LTC_TEACHERMARK_NO:
                 $str = get_string('teachermarkno', 'learningtimecheck');
-                return array($OUTPUT->pix_url('cross_box', 'learningtimecheck'), $str);
+                return array($OUTPUT->image_url('cross_box', 'learningtimecheck'), $str);
     
             default:
                 $str = get_string('teachermarkundecided', 'learningtimecheck');
-                return array($OUTPUT->pix_url('empty_box', 'learningtimecheck'), $str);
+                return array($OUTPUT->image_url('empty_box', 'learningtimecheck'), $str);
         }
     }
 
@@ -2190,7 +2190,7 @@ class learningtimecheck_class {
 
         // TODO - fix this now that styles.css is included.
         $output = '<div class="learningtimecheck_progress_outer" style="width: '.$width.';" >';
-        $style = 'width:'.$percent.'%; background-image: url('.$OUTPUT->pix_url('progress','learningtimecheck').');';
+        $style = 'width:'.$percent.'%; background-image: url('.$OUTPUT->image_url('progress','learningtimecheck').');';
         $output .= '<div class="learningtimecheck_progress_inner" title="'.$percent.'%" style="'.$style.'" >&nbsp;</div>';
         $output .= '</div>';
         if ($showpercent) {
