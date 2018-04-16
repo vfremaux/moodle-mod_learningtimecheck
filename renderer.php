@@ -71,6 +71,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
         }
 
+        // View or preview.
         if ($this->instance->canpreview()) {
             $params['view'] = 'preview';
             $taburl = new moodle_url('/mod/learningtimecheck/view.php', $params);
@@ -82,6 +83,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         if ($this->instance->canviewreports()) {
+            // Progress report.
             $params['view'] = 'report';
             $taburl = new moodle_url('/mod/learningtimecheck/view.php', $params);
             $tabs[0][] = new tabobject('report', $taburl, get_string('report', 'learningtimecheck'));
