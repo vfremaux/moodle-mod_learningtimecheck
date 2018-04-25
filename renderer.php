@@ -2120,7 +2120,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         $allpercentcomplete = round(($allcompleteitems * 100) / $totalitems);
-        $alltimepercentcomplete = round(($allcompletetime * 100) / $totaltime);
+        $alltimepercentcomplete = ($totaltime) ? round(($allcompletetime * 100) / $totaltime) : 0;
 
         $str .= '<div class="learningtimecheck-progressbar">';
         if ($requireditems > 0 && $totalitems > $requireditems) {
