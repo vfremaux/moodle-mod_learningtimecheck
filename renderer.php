@@ -71,6 +71,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
         }
 
+        // View or preview.
         if ($this->instance->canpreview()) {
             $params['view'] = 'preview';
             $taburl = new moodle_url('/mod/learningtimecheck/view.php', $params);
@@ -82,6 +83,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         if ($this->instance->canviewreports()) {
+            // Progress report.
             $params['view'] = 'report';
             $taburl = new moodle_url('/mod/learningtimecheck/view.php', $params);
             $tabs[0][] = new tabobject('report', $taburl, get_string('report', 'learningtimecheck'));
@@ -104,11 +106,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $taburl = new moodle_url('/mod/learningtimecheck/pro/coursecalibrationreport.php', $params);
                     $tabs[0][] = new tabobject('reports', $taburl, get_string('allreports', 'learningtimecheck'));
                 }
-            } else {
-                if ($canviewr) {
-                    $taburl = new moodle_url('/mod/learningtimecheck/pro/index.php', $params);
-                    $tabs[0][] = new tabobject('reports', $taburl, get_string('allreports', 'learningtimecheck'));
-                }
+            }
+            if ($canviewr) {
+                $params = array('id' => $COURSE->id, 'output' => 'course');
+                $taburl = new moodle_url('/report/learningtimecheck/index.php', $params);
+                $tabs[0][] = new tabobject('reports', $taburl, get_string('allreports', 'learningtimecheck'));
             }
 
             if (in_array($currenttab, array('reports', 'tutorboard', 'calibrationreport'))) {
@@ -2121,7 +2123,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         $allpercentcomplete = round(($allcompleteitems * 100) / $totalitems);
-        $alltimepercentcomplete = round(($allcompletetime * 100) / $totaltime);
+        $alltimepercentcomplete = ($totaltime) ? round(($allcompletetime * 100) / $totaltime) : 0;
 
         $str .= '<div class="learningtimecheck-progressbar">';
         if ($requireditems > 0 && $totalitems > $requireditems) {
