@@ -50,9 +50,21 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
         $learningtimecheck = $learningtimecheckorid;
     }
 
+    $params = array();
+
     $learningtimecheckclause = ($learningtimecheck->id) ? " AND ci.learningtimecheck = {$learningtimecheck->id} " : '';
-    $cmclause = ($cmid) ? " AND cm.id = $cmid " : '';
-    $userclause = ($userid) ? " AND cc.userid = $userid " : '';
+    $cmclause = '';
+    if ($cmid) {
+        $cmclause = " AND cm.id = ? ";
+        $params[] = $cmid;
+    };
+
+    $userclause = '';
+    if ($userid) {
+        $userclause = " cc.userid = ? AND ";
+        $params[] = $userid;
+    }
+
     $teachermarkclause = '';
     if ($learningtimecheck->teacheredit == LTC_MARKING_TEACHER || $learningtimecheck->teacheredit == LTC_MARKING_BOTH) {
         $markvalue = 'teachermark as ismarked,';
@@ -64,7 +76,7 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
     $sql = "
         SELECT
             ci.id,
-            cc.userid,
+            cc.userid as userid,
             ci.moduleid AS cmid,
             ci.credittime * 60 AS credittime,
             $markvalue
@@ -74,9 +86,7 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
         LEFT JOIN
             {learningtimecheck_check} cc
         ON
-            ci.id = cc.item AND
-            ci.userid = cc.userid
-            $userclause
+            ci.id = cc.item
         LEFT JOIN
             {course_modules} cm
         ON
@@ -86,12 +96,14 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
         ON
             m.id = cm.module
         WHERE
+            $userclause
             ci.enablecredit = 1
             $cmclause
             $learningtimecheckclause
     ";
 
-    return $DB->get_records_sql($sql);
+    $results = $DB->get_records_sql($sql, $params);
+    return $results;
 }
 
 /**
