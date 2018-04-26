@@ -42,7 +42,12 @@ $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local
 
 // Non Moodle attributes.
 <<<<<<< HEAD
+<<<<<<< HEAD
 $plugin->codeincrement = '3.3.0007';
 =======
 $plugin->codeincrement = '3.4.0007';
+>>>>>>> MOODLE_34_STABLE
+=======
+$plugin->codeincrement = '3.4.0008';
+$plugin->privacy = "dualrelease";
 >>>>>>> MOODLE_34_STABLE

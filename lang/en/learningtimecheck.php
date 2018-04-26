@@ -116,6 +116,8 @@ $string['eithercheck'] = 'Either';
 $string['emailoncomplete'] = 'Email when learningtimecheck is complete:';
 $string['emailoncompletesubject'] = 'User {$a->user} has completed checklist \'{$a->learningtimecheck}\'';
 $string['emailoncompletesubjectown'] = 'You have completed checklist \'{$a->learningtimecheck}\'';
+$string['emulatecommunity'] = 'Emulate the community version.';
+$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['enablecredit'] = 'Enable credit time report(*)';
 $string['enablecredit_desc'] = ' (*) If enabled, this time will be used in Training Session Report (add-on), in place of the measured time from user logs.';
 $string['errorbadinstance'] = 'The learningtimecheck instance is missing : cmid {$a} ';
@@ -165,6 +167,10 @@ $string['learningtimecheckfor'] = 'Checklist for';
 $string['learningtimecheckintro'] = 'Introduction';
 $string['learningtimechecksettings'] = 'Settings';
 $string['learningvelocities'] = 'Learning Velocity';
+$string['licenseprovider'] = 'Pro License provider';
+$string['licenseprovider_desc'] = 'Input here your provider key';
+$string['licensekey'] = 'Pro license key';
+$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['linktomodule'] = 'Link to this module';
 $string['listpreview'] = 'Preview of the checklist';
 $string['lockteachermarks'] = 'Lock teacher marks';
@@ -190,6 +196,7 @@ $string['percentcompleteall'] = 'All items';
 $string['timepercentcomplete'] = 'Required time';
 $string['timepercentcompleteall'] = 'All time';
 $string['pluginadministration'] = 'Checklist administration';
+$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'Learning Time Check';
 $string['pluginname_desc'] = 'This plugin is based on the checklist plugin and has been transformed to assess the time based contract between teacher and student.';
 $string['preview'] = 'Preview';
@@ -322,3 +329,11 @@ Note: it can take up to 60 seconds for a student\'s activity to be reflected in 
 
 $string['configstrictcredits_desc'] = 'When enabled, credit times will be used in replacement of measured time in all cases. If not, credit time will be used only if
 it is is higher to the effectively measured time. This protects smart students justification on assessed training.';
+
+$string['plugindist_desc'] = '
+<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
+core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
+and improvement effort.</p>
+<p>Note that both components local_sharedresources and mod_sharedresource must work using the same distribution level.</p>
+<p>Please contact one of our distributors to get "Pro" version support.</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';

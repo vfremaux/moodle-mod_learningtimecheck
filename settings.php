@@ -118,4 +118,13 @@ if ($ADMIN->fulltree) {
         $desc = get_string('configstrictcredits_desc', 'mod_learningtimecheck');
         $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
     }
+
+    if (learningtimecheck_supports_feature('emulate/community') == 'pro') {
+        include_once($CFG->dirroot.'/mod/learningtimecheck/pro/prolib.php');
+        \mod_learningtimecheck\pro_manager::add_settings($ADMIN, $settings);
+    } else {
+        $label = get_string('plugindist', 'mod_learningtimececk');
+        $desc = get_string('plugindist_desc', 'mod_learningtimecheck');
+        $settings->add(new admin_setting_heading('plugindisthdr', $label, $desc));
+    }
 }

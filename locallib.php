@@ -1907,6 +1907,7 @@ class learningtimecheck_class {
         $cap = 'mod/learningtimecheck:updateown';
         if ($this->userid) {
             $userids = $this->userid;
+            $users = $DB->get_records('user', array('id' => $userids));
         } else {
             $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
             if (!$users) {
@@ -2354,63 +2355,6 @@ class learningtimecheck_class {
     public static function get_reader_source() {
         return '\core\log\sql_select_reader';
     }
-}
-
-/**
- * Tells wether a feature is supported or not. Gives back the 
- * implementation path where to fetch resources.
- * @param string $feature a feature key to be tested.
- */
-function learningtimecheck_supports_feature($feature) {
-    global $CFG;
-    static $supports;
-
-    $config = get_config('learningtimecheck');
-
-    if (!isset($supports)) {
-        $supports = array(
-            'pro' => array(
-                'format' => array('xls', 'csv', 'pdf', 'json'),
-                'time' => array('student', 'tutor'),
-                'calculation' => array('coupling')
-            ),
-            'community' => array(
-                'format' => array('xls', 'csv'),
-                'time' => array('student'),
-            ),
-        );
-    }
-
-    // Check existance of the 'pro' dir in plugin.
-    if (is_dir(__DIR__.'/pro')) {
-        if ($feature == 'emulate/community') {
-            return 'pro';
-        }
-        if (empty($config->emulatecommunity)) {
-            $versionkey = 'pro';
-        } else {
-            $versionkey = 'community';
-        }
-    } else {
-        $versionkey = 'community';
-    }
-
-    list($feat, $subfeat) = explode('/', $feature);
-
-    if (!array_key_exists($feat, $supports[$versionkey])) {
-        return false;
-    }
-
-    if (!in_array($subfeat, $supports[$versionkey][$feat])) {
-        return false;
-    }
-
-    // Special condition for pdf dependencies.
-    if (($feature == 'format/pdf') && !is_dir($CFG->dirroot.'/local/vflibs')) {
-        return false;
-    }
-
-    return $versionkey;
 }
 
 function learningtimecheck_itemcompare($item1, $item2) {
