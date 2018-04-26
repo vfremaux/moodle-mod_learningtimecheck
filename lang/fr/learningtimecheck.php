@@ -108,6 +108,8 @@ $string['eithercheck'] = 'L\'un ou l\'autre';
 $string['emailoncomplete'] = 'Notifier les enseignants quand la liste est complète';
 $string['emailoncompletebody'] = 'L\'utilisateur {$a->user} a terminé le marquage de la liste \'$a->learningtimecheck\' Consulter la liste ici :';
 $string['emailoncompletesubject'] = 'L\'apprenant {$a->user} a complété sa liste \'{$a->learningtimecheck}\'';
+$string['emulatecommunity'] = 'Emuler la version communautaire';
+$string['emulatecommunity_desc'] = 'Bascule le code sur la version communautaire. Le résultat est plus compatible avec d\'autres installations, mais certaines fonctionnalités avancées ne seront plus disponibles.';
 $string['enablecredit'] = ' Imposer le temps forfaitaire (*) ';
 $string['enablecredit_desc'] = ' (*) si activé, le crédit temps est imposé dans les rapports de session de formation (add-on) au lieu du temps constaté.';
 $string['estimated'] = 'Déclaré (auto-estimé)';
@@ -142,6 +144,10 @@ $string['items'] = 'Items';
 $string['time'] = 'Temps';
 $string['itemstodo'] = 'Activités à réaliser';
 $string['learningvelocities'] = 'Vélocité d\'apprentissage';
+$string['licenseprovider'] = 'Fournisseur version Pro';
+$string['licenseprovider_desc'] = 'Entrez la clef de votre distributeur.';
+$string['licensekey'] = 'Clef de license pro';
+$string['licensekey_desc'] = 'Entrez ici la clef de produit que vous avez reçu de votre distributeur.';
 $string['uservelocity'] = 'Vélocité';
 $string['days'] = 'Jours';
 $string['hours'] = 'Heures';
@@ -178,6 +184,7 @@ $string['optionalitem'] = 'Cet élément est facultatif';
 $string['optionalshow'] = 'Montrer les éléments facultatifs';
 $string['percentcomplete'] = 'Eléments obligatoires';
 $string['percentcompleteall'] = 'Tous les items';
+$string['plugindist'] = 'Distribution du plugin';
 $string['timepercentcomplete'] = 'Temps obligatoires';
 $string['timepercentcompleteall'] = 'Temps total à réaliser';
 $string['pluginadministration'] = 'Admministration de la liste d\'avancement';
@@ -369,3 +376,10 @@ Voir la liste ici :';
 $string['configstrictcredits_desc'] = 'Si actif, les temps crédités sont utilisés dans tous les cas à la place. Sinon, le crédit temps ne sera affecté que
  si il est supérieur au temps mesuré réel.';
 
+$string['plugindist_desc'] = '
+<p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
+correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugin existe et est distribuée
+sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
+<p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
+<p>Notez que les deux composant local_sharedresources et mod_sharedresource doivent fonctionner au même niveau de distribution</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
