@@ -100,17 +100,27 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $canviewr = $this->instance->canviewreports();
 
         if ($canviewcc || $canviewtb || $canviewr) {
-            unset($params['view']);
             if (learningtimecheck_supports_feature('time/tutor')) {
                 if ($canviewcc) {
+                    $params = array('id' => $this->instance->cm->id);
                     $taburl = new moodle_url('/mod/learningtimecheck/pro/coursecalibrationreport.php', $params);
                     $tabs[0][] = new tabobject('reports', $taburl, get_string('allreports', 'learningtimecheck'));
+                } else if ($canviewtb) {
+                    $params = array('id' => $this->instance->cm->id);
+                    $taburl = new moodle_url('/mod/learningtimecheck/pro/coursetutorboard.php', $params);
+                    $label = get_string('tutorboard', 'learningtimecheck');
+                    $tabs[0][] = new tabobject('tutorboard', $taburl, $label);
+                } else {
+                    if ($canviewr) {
+                        $globalparams = array('id' => $COURSE->id);
+                    } else {
+                        $globalparams = array('id' => $COURSE->id,
+                                        'itemid' => $USER->id,
+                                        'view' => 'user');
+                    }
+                    $taburl = new moodle_url('/report/learningtimecheck/index.php', $globalparams);
+                    $tabs[0][] = new tabobject('globalreports', $taburl, get_string('reports', 'learningtimecheck'));
                 }
-            }
-            if ($canviewr) {
-                $params = array('id' => $COURSE->id, 'output' => 'course');
-                $taburl = new moodle_url('/report/learningtimecheck/index.php', $params);
-                $tabs[0][] = new tabobject('reports', $taburl, get_string('allreports', 'learningtimecheck'));
             }
 
             if (in_array($currenttab, array('reports', 'tutorboard', 'calibrationreport'))) {
@@ -118,13 +128,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if (learningtimecheck_supports_feature('time/tutor')) {
                     if ($canviewcc) {
                         unset($params['view']);
+                        $params = array('id' => $this->instance->cm->id);
                         $taburl = new moodle_url('/mod/learningtimecheck/pro/coursecalibrationreport.php', $params);
                         $label = get_string('coursecalibrationreport', 'learningtimecheck');
                         $tabs[1][] = new tabobject('calibrationreport', $taburl, $label);
                     }
-    
+
                     if ($canviewtb) {
-                        unset($params['view']);
+                        $params = array('id' => $this->instance->cm->id);
                         $taburl = new moodle_url('/mod/learningtimecheck/pro/coursetutorboard.php', $params);
                         $label = get_string('tutorboard', 'learningtimecheck');
                         $tabs[1][] = new tabobject('tutorboard', $taburl, $label);
