@@ -230,7 +230,7 @@ $string['teachercredittimeperuser'] = 'Per user teacher time:';
 $string['teacherdate'] = 'Date a teacher last updated this item';
 $string['teacheredit'] = 'Updates by';
 $string['teacherid'] = 'The teacher who last updated this mark';
-$string['teachermark'] = 'Teacher mark: ';
+$string['teachermark'] = 'Teacher mark:';
 $string['teachermarkno'] = 'Teacher states that you have NOT completed this';
 $string['teachermarkundecided'] = 'Teacher has not yet marked this';
 $string['teachermarkyes'] = 'Teacher states that you have completed this';
@@ -262,7 +262,7 @@ $string['userdate'] = 'Date the user last updated this item';
 $string['useritemsallowed'] = 'User can add their own items';
 $string['useritemsdeleted'] = 'User items deleted';
 $string['uservelocity'] = 'Learner Velocity';
-$string['usetimecounterpart'] = 'Use activity standard time counterpart: ';
+$string['usetimecounterpart'] = 'Use activity standard time counterpart:';
 $string['validate'] = 'Validate';
 $string['view'] = 'View learningtimecheck';
 $string['view_pageitem_progress'] = 'View as own progressbar for students';
@@ -296,39 +296,63 @@ $string['firstcoursestarted'] = 'First course started';
 $string['firstcoursecompleted'] = 'First course completed';
 $string['usercohortaddition'] = 'User added in cohort';
 
-$string['emailoncompletebody'] = 'User {$a->user} has completed checklist \'{$a->learningtimecheck}\' in the course \'{$a->coursename}\' 
+$string['privacy:metadata:check:userid'] = '';
+$string['privacy:metadata:check:usertimestamp'] = '';
+$string['privacy:metadata:check:declaredtime'] = '';
+$string['privacy:metadata:check:teacherid'] = '';
+$string['privacy:metadata:check:teachermark'] = '';
+$string['privacy:metadata:check:teachertimestamp'] = '';
+$string['privacy:metadata:check:teacherdeclaredtime'] = '';
+
+$string['privacy:metadata:comment:userid'] = '';
+$string['privacy:metadata:comment:itemid'] = '';
+$string['privacy:metadata:comment:commentby'] = '';
+$string['privacy:metadata:comment:text'] = '';
+
+$string['emailoncompletebody'] = 'User {$a->user} has completed checklist \'{$a->learningtimecheck}\' in the course \'{$a->coursename}\'
 View the learningtimecheck here:';
 
-$string['configautoupdateusecron_desc'] = 'If enabled, the cron will process the autoupdate of checks with some little delay. If you can accept this delay, this avoids user interface to compile those check states that may
+$string['pluginname_desc'] = 'This plugin is based on the checklist plugin and has been transformed to assess the time
+based contract between teacher and student.';
+
+$string['configautoupdateusecron_desc'] = 'If enabled, the cron will process the autoupdate of checks with some little delay.
+If you can accept this delay, this avoids user interface to compile those check states that may
 take some while, when browsing inside the learningtimecheck activity.';
 
-$string['emailoncomplete_help'] = 'When a checklist is complete, a notification email can be sent: to the student who completed it, to all the teachers on the course or to both.<br />
-An administrator can control who receives this email using the capability \'mod:learningtimecheck/emailoncomplete\' - by default all teachers and non-editing teachers have this capability.';
+$string['emailoncomplete_help'] = 'When a checklist is complete, a notification email can be sent: to the student who completed
+it, to all the teachers on the course or to both.<br /> An administrator can control who receives this email using the capability
+\'mod:learningtimecheck/emailoncomplete\' - by default all teachers and non-editing teachers have this capability.';
 
-$string['emailoncompletebodyown'] = 'You have completed checklist \'{$a->learningtimecheck}\' in the course \'{$a->coursename}\' 
+$string['emailoncompletebodyown'] = 'You have completed checklist \'{$a->learningtimecheck}\' in the course \'{$a->coursename}\'
 View the checklist here:';
 
-$string['modulename_help'] = 'This module help teachers and students to mark activites and to assess job done, while feeding course objectives with standard credit time or 
-declared credit time. Off line checkable items can be added, also student declared offline tasks can be added to the marking board. Times validated by teachers will be 
-sent to Training Session reports to appear as required in course time reports.
+$string['modulename_help'] = 'This module help teachers and students to mark activites and to assess job done, while feeding
+course objectives with standard credit time or declared credit time. Off line checkable items can be added, also student
+declared offline tasks can be added to the marking board. Times validated by teachers will be sent to Training Session reports
+to appear as required in course time reports.
 ';
-$string['lockteachermarks_help'] = 'When this setting is enabled, once a teacher has saved a \'Yes\' mark, they will be unable to change it. 
-Users with the capability \'mod/learningtimecheck:updatelocked\' will still be able to change the mark.
+$string['lockteachermarks_help'] = 'When this setting is enabled, once a teacher has saved a \'Yes\' mark, they will be unable
+to change it. Users with the capability \'mod/learningtimecheck:updatelocked\' will still be able to change the mark.
 ';
-$string['autopopulate_help'] = 'This will automatically add a list of all the resources and activities in the current course into the LT Checklist.<br />
-This list will be updated with any changes in the course, whenever you visit the \'Edit\' page for the checklist.<br />
-Items can be hidden from the list, by clicking on the \'hide\' icon beside them.<br />
-To remove the automatic items from the list, change this option back to \'No\', then click on \'Remove course module items\' on the \'Edit\' page.
+
+$string['autopopulate_help'] = 'This will automatically add a list of all the resources and activities in the current course
+into the LT Checklist.<br /> This list will be updated with any changes in the course, whenever you visit the \'Edit\'
+page for the checklist.<br /> Items can be hidden from the list, by clicking on the \'hide\' icon beside them.<br />
+To remove the automatic items from the list, change this option back to \'No\', then click on \'Remove course module items\'
+on the \'Edit\' page.
 ';
-$string['autoupdate_help'] = 'This will automatically check-off items in your LT Checklist when you complete the relevant activity in the course.<br />
-\'Completing\' an activity varies from one activity to another - \'view\' a resource, \'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc.<br />
-If a Moodle 2.0 completion tracking is switched on for a particular activity, that will be used to tick-off the item in the list<br />
-For details of exactly what causes an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/learningtimecheck/autoupdatelib.php\'<br />
+
+$string['autoupdate_help'] = 'This will automatically check-off items in your LT Checklist when you complete the relevant
+activity in the course.<br /> \'Completing\' an activity varies from one activity to another - \'view\' a resource,
+\'submit\' a quiz or assignment, \'post\' to a forum or join in with a chat, etc.<br /> If a Moodle 2.0 completion tracking is
+switched on for a particular activity, that will be used to tick-off the item in the list<br /> For details of exactly what causes
+an activity to be marked as \'complete\', ask your site administrator to look in the file \'mod/learningtimecheck/autoupdatelib.php\'<br />
 Note: it can take up to 60 seconds for a student\'s activity to be reflected in their LT Checklist
 ';
 
-$string['configstrictcredits_desc'] = 'When enabled, credit times will be used in replacement of measured time in all cases. If not, credit time will be used only if
-it is is higher to the effectively measured time. This protects smart students justification on assessed training.';
+$string['configstrictcredits_desc'] = 'When enabled, credit times will be used in replacement of measured time in all cases.
+If not, credit time will be used only if it is is higher to the effectively measured time. This protects smart students
+justification on assessed training.';
 
 $string['plugindist_desc'] = '
 <p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
