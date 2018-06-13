@@ -1904,6 +1904,7 @@ class learningtimecheck_class {
 
         $now = time();
 
+        $users = array();
         $cap = 'mod/learningtimecheck:updateown';
         if ($this->userid) {
             $userids = $this->userid;
