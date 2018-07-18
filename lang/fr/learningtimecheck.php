@@ -291,6 +291,21 @@ $string['firstcoursestarted'] = 'Premier cours démarré ';
 $string['firstcoursecompleted'] = 'Premier cours complété';
 $string['usercohortaddition'] = 'Ajout de l\'utilisateur dans la cohorte ';
 
+$string['privacy:metadata:check:userid'] = 'Identificateur de l\'utilisateur';
+$string['privacy:metadata:check:usertimestamp'] = 'Date de la marque par l\'utilisateur';
+$string['privacy:metadata:check:declaredtime'] = 'Temps déclaré';
+$string['privacy:metadata:check:teacherid'] = 'Identifiant de l\'enseignant';
+$string['privacy:metadata:check:teachermark'] = 'Marque de l\'enseignant (statut de validation)';
+$string['privacy:metadata:check:teachertimestamp'] = 'Date de la validation de l\'enseignant';
+$string['privacy:metadata:check:teacherdeclaredtime'] = 'Temps de tutorat déclaré par l\'enseignant';
+$string['privacy:metadata:check'] = 'Information sur les marques de validation des items pédagogiques';
+
+$string['privacy:metadata:comment:userid'] = 'Utilisateur propriétaire de l\'item commenté';
+$string['privacy:metadata:comment:itemid'] = 'Item commenté';
+$string['privacy:metadata:comment:commentby'] = 'Utilisateur source du commentaire';
+$string['privacy:metadata:comment:text'] = 'Texte du commentaire';
+$string['privacy:metadata:comment'] = 'Commentaire sur les marques pédagogiques';
+
 $string['pluginname_desc'] = 'Ce plugin est basé sur le plugin Checklist et est transformé pour gérer le contrat pédagogique basé sur
 des affectations de crédit temps aux activités';
 
