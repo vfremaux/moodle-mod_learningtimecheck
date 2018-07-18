@@ -26,6 +26,8 @@
 namespace mod_learningtimecheck\privacy;
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
+
 use context;
 use context_helper;
 use context_module;
@@ -174,20 +176,228 @@ class provider implements
         global $DB;
 
         $user = $contextlist->get_user();
-        $userid = $user->id;
-        $ltcids = array_reduce($contextlist->get_contexts(), function($carry, $context) {
-            if ($context->contextlevel == CONTEXT_MODULE) {
-                $ltcid = $DB->get_field('course_module', 'instance', array('id' => $context->instanceid));
-                $carry[] = $ltcid;
+
+        foreach ($contextlist->get_contexts() as $ctx) {
+
+            $ltc = self::export_learningtimecheck($ctx, $user);
+
+            $sql = "
+                SELECT
+                    ltcc.id as checkid,
+                    ltcc.userid as userid,
+                    ltcc.usertimestamp as markedon,
+                    ltcc.declaredtime as userid,
+                    ltcc.teacherid as assessedby,
+                    ltcc.teachermark as assessmark,
+                    ltcc.teacherdeclaredtime as coachingtime,
+                    ltcc.teachertimestamp as assessedon,
+                    ltci.itemoptional,
+                    ltci.credittime,
+                    ltcc.teachertimestamp as assessedon,
+                    m.name as modname,
+                    cm.instanceid
+                FROM
+                    {learningtimecheck_check} ltcc,
+                    {learningtimecheck_item} ltci,
+                    {course_modules} cm, ". /* as check related referred module, not LTC module itself */ "
+                    {modules} m
+                WHERE
+                    ltcc.item = ltci.id AND
+                    ltci.moduleid = cm.id AND
+                    cm.module = m.id AND
+                    ltcc.userid = :userid AND
+                    ltci.learningtimecheck = :ltcid
+            ";
+
+            $userchecks = $DB->get_records_sql($sql, ['userid' => $user->id, 'ltcid' => $ltc->id]);
+            if ($userchecks) {
+                foreach ($userchecks as $check) {
+                    self::export_learningtimecheck_check($ctx, $user, $check);
+                }
             }
-            return $carry;
-        }, []);
-        if (empty($ltcids)) {
+
+            $sql = "
+                SELECT
+                    ltcm.text as comment,
+                    ltcm.commentby as commentedby,
+                    ltci.id as itemid,
+                    ltci.displaytext as itemname,
+                    ltcm.userid as userid,
+                    m.name as modname,
+                    cm.instanceid
+                FROM
+                    {learningtimecheck_item} ltci,
+                    {learningtimecheck_comment} ltcm,
+                    {course_modules} cm, ". /* as item related referred module, not LTC module itself */ "
+                    {modules} m
+                WHERE
+                    ltcm.itemid = ltci.id AND
+                    ltcm.userid = :userid
+                    ltci.moduleid = cm.id AND
+                    cm.module = m.id AND
+                    ltci.learningtimecheck = :ltcid
+            ";
+
+            $usercommentonme = $DB->get_records_sql($sql, ['userid' => $user->id, 'ltcid' => $ltc->id]);
+            if ($usercommentonme) {
+                foreach ($usercommentonme as $comment) {
+                    self::export_learningtimecheck_comment($ctx, $user, $comment);
+                }
+            }
+
+            // Teacher role.
+
+            $sql = "
+                SELECT
+                    ltcc.id as checkid,
+                    ltcc.userid as userid,
+                    ltcc.usertimestamp as markedon,
+                    ltcc.declaredtime as userid,
+                    ltcc.teacherid as assessedby,
+                    ltcc.teachermark as assessmark,
+                    ltcc.teacherdeclaredtime as coachingtime,
+                    ltcc.teachertimestamp as assessedon,
+                    ltci.itemoptional,
+                    ltci.credittime,
+                    ltcc.teachertimestamp as assessedon,
+                    m.name as modname,
+                    cm.instanceid
+                FROM
+                    {learningtimecheck_check} ltcc,
+                    {learningtimecheck_item} ltci,
+                    {course_modules} cm, ". /* as check related referred module, not LTC module itself */ "
+                    {modules} m
+                WHERE
+                    ltcc.item = ltci.id AND
+                    ltci.moduleid = cm.id AND
+                    cm.module = m.id AND
+                    ltcc.teacherid = :userid AND
+                    ltci.learningtimecheck = :ltcid
+            ";
+
+            $userassessments = $DB->get_records_sql($sql, ['userid' => $user->id, 'ltcid' => $ltc->id]);
+            if ($userassessments) {
+                foreach ($userassessments as $check) {
+                    self::export_learningtimecheck_check($ctx, $user, $check);
+                }
+            }
+
+            $sql = "
+                SELECT
+                    ltcm.text as comment,
+                    ltcm.commentby as commentedby,
+                    ltcm.userid as commenton,
+                    ltci.id as itemid,
+                    ltci.displaytext as itemname,
+                    m.name as modname,
+                    cm.instanceid
+                FROM
+                    {learningtimecheck_item} ltci,
+                    {learningtimecheck_comment} ltcm,
+                    {course_modules} cm, ". /* as item related referred module, not LTC module itself */ "
+                    {modules} m
+                WHERE
+                    ltcm.itemid = ltci.id AND
+                    ltcm.commentby = :userid
+                    ltci.moduleid = cm.id AND
+                    cm.module = m.id AND
+                    ltci.learningtimecheck = :ltcid
+            ";
+
+            $usercommentonothers = $DB->get_records_sql($sql, ['userid' => $user->id, 'ltcid' => $ltc->id]);
+            if ($usercommentonothers) {
+                foreach ($usercommentonothers as $comment) {
+                    self::export_check_comment($ctx, $user, $comment);
+                }
+            }
+        }
+    }
+
+    protected static function export_check_records($context, $user, $recordobj) {
+        global $DB;
+
+        if (!$recordobj) {
             return;
         }
 
-        // Now export data.
+        $recordobj->userid = transform::user($user->id);
+        $recordobj->declaredtime = self::transform_duration($recordobj->declaredtime);
+        $recordobj->markedon = transform::datetime($recordobj->markedon);
+        $recordobj->teacherid = transform::user($recordobj->teacherid);
+        $recordobj->coachingtime = self::transform_duration($recordobj->coachingtime);
+        $recordobj->assessedon = transform::datetime($recordobj->assessedon);
+        $recordobj->itemoptional = self::transform_optional($recordobj->itemoptional);
 
+        $recordobj->name = $DB->get_field($recordobj->modname, 'name', ['id' => $recordobj->instanceid]);
+
+        // Data about the record.
+        writer::with_context($context)->export_data([$recordobj->id], (object)$recordobj);
+    }
+
+    protected static function export_check_comments($context, $user, $recordobj) {
+        global $DB;
+
+        if (!$recordobj) {
+            return;
+        }
+
+        $recordobj->userid = transform::user($recordobj->userid);
+        $recordobj->commenton = transform::user($recordobj->commenton);
+
+        $data->name = $DB->get_field($data->modname, 'name', ['id' => $data->instanceid]);
+
+        // Data about the record.
+        writer::with_context($context)->export_data([$recordobj->id], (object)$data);
+    }
+
+    protected static function transform_duration($duration) {
+        return $duration;
+    }
+
+    protected static function transform_optional($itemoptional) {
+        return transform::yesno($itemoptional == LTC_OPTIONAL_YES);
+    }
+
+    protected static function export_learningtimecheck($context, $user) {
+        global $DB;
+
+        if (!$context) {
+            return;
+        }
+
+        $contextdata = helper::get_context_data($context, $user);
+        writer::with_context($context)->export_data([], $contextdata);
+
+        $sql = "
+            SELECT
+                cm.id,
+                ".self::get_fields()."
+            FROM
+                {context} ctx,
+                {course_modules} cm,
+                {modules} m,
+                {learningtimecheck} ltc
+            WHERE
+                cm.module = m.id AND
+                m.name = 'learningtimecheck' AND
+                cm.instance = mg.id AND
+                ctx.contextlevel = ? AND
+                ctx.instanceid = cm.id AND
+                ctx.id = ?
+        ";
+
+        $ltc = $DB->get_record_sql($sql, [CONTEXT_MODULE, $context->id]);
+        $ltc->emailoncomplete = transform::yesno($ltc->emailoncomplete);
+        $ltc->lockteachermarks = transform::yesno($ltc->lockteachermarks);
+        $ltc->usetimecounterparts = transform::yesno($ltc->usetimecounterparts);
+
+        writer::with_context($context)->export_data([], $ltc);
+
+        return $ltc;
+    }
+
+    protected static function get_fields() {
+        return " ltc.name, ltc.intro, maxgrade, emailoncomplete, lockteachermarks, usetimecounterpart ";
     }
 
     /**

@@ -43,6 +43,7 @@
  *             See lib/weblib.php Constants and the format_text()
  *             function for more info
  */
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
