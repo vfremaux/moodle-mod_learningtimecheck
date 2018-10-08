@@ -2006,7 +2006,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 $vslink = ' <a href="'.$thispage->out(true, array('view' => 'view', 'studentid' => $auser->id) ).'" ';
                 $vslink .= 'alt="'.get_string('viewsinglereport', 'learningtimecheck').'" title="'.get_string('viewsinglereport', 'learningtimecheck').'">';
-                $vslink .= $this->output->pix_icon('/t/preview').'</a>';
+                $vslink .= $this->output->pix_icon('/t/preview', get_string('preview', 'learningtimecheck')).'</a>';
 
                 $row[] = $userlink.$vslink;
 
