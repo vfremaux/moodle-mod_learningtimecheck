@@ -572,6 +572,7 @@ class learningtimecheck_class {
             $params = array('learningtimecheck' => $this->learningtimecheck->id, 'position' => $nextpos);
             while ($DB->get_field('learningtimecheck_item', 'moduleid', $params)) {
                 $nextpos++;
+                $params = array('learningtimecheck' => $this->learningtimecheck->id, 'position' => $nextpos);
             }
 
             foreach ($section as $cmid) {
@@ -583,8 +584,23 @@ class learningtimecheck_class {
 
                 // Discard all label type modules.
                 try {
-                    if (preg_match('/label$/', $mods->get_cm($cmid)->modname)) {
+                    // if (preg_match('/label$/', $mods->get_cm($cmid)->modname)) {
+                    if ($mods->get_cm($cmid)->modname == 'label') {
                         continue;
+                    }
+
+                    /*
+                     * Special case for customlabels : need check if they have some completion enabled, 
+                     * otherwise they will be considered as simple labels.
+                     */
+                    $cm = $mods->get_cm($cmid);
+                    if ($cm->modname == 'customlabel') {
+                        $instance = $DB->get_record('customlabel', array('id' => $cm->instance));
+                        if (empty($instance->completion1enabled) &&
+                                empty($instance->completion2enabled) &&
+                                        empty($instance->completion3enabled)) {
+                            continue;
+                        }
                     }
                 } catch (Exception $e) {
                     continue;
@@ -645,6 +661,7 @@ class learningtimecheck_class {
                 $params = array('learningtimecheck' => $this->learningtimecheck->id, 'position' => $nextpos);
                 while ($DB->get_field('learningtimecheck_item', 'moduleid', $params)) {
                     $nextpos++;
+                    $params = array('learningtimecheck' => $this->learningtimecheck->id, 'position' => $nextpos);
                 }
             }
         }
