@@ -1165,9 +1165,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= '<div class="sideblock"><div class="header"><h2>'.$completionliststr.'</h2></div></div>';
         $str .= '<table class="learningtimecheck-report" cellspacing="4"><tr valign="top">';
         $alt = get_string('studentmarkyes', 'learningtimecheck');
-        $pixurl = $this->output->pix_icon('tick_amber_big', $alt, 'mod_learningtimecheck');
+        $pixicon = $this->output->pix_icon('tick_amber_big', $alt, 'mod_learningtimecheck');
         $studentimg = array(0 => $this->output->pix_icon('spacer', get_string('studentmarkno', 'learningtimecheck')),
-                            1 => $pix);
+                            1 => $pixicon);
         $i = 0;
         if (!empty($checkstates)) {
             foreach ($checkstates as $cs) {
@@ -1841,7 +1841,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $averagedonenum = round($sums['mandatory']['ticked'] / $sums['mandatory']['items'] * 100);
                 $averagedone = ($sums['mandatory']['items']) ? sprintf('%0d', $averagedonenum).' %' : '0 %';
                 if ($reportsettings->showoptional) {
-                    $averagedonenumoptional = round($sums['optional']['ticked'] / $sums['optional']['items'] * 100);
+                    $sumoptionals = $sums['optional']['items'];
+                    if ($sumoptionals > 0) {
+                        $averagedonenumoptional = round($sums['optional']['ticked'] / $sums['optional']['items'] * 100);
+                    } else {
+                        $averagedonenumoptional = 0;
+                    }
                     $averagedone .= ($sums['optional']['items']) ? '<span class="learningtimecheck-optional"> +'.sprintf('%0d', $averagedonenumoptional). ' %</span>' : '';
                 }
                 $cell2->text = $averagedone.' '.get_string('average', 'learningtimecheck');
