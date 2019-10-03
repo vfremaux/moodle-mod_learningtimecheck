@@ -368,6 +368,25 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         upgrade_mod_savepoint($result, 2017081001, 'learningtimecheck');
     }
 
+    if ($oldversion < 2019040600) {
+
+        $table = new xmldb_table('learningtimecheck');
+        $field = new xmldb_field('lockstudentinput', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, null, null, '0', 'lockteachermarks');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('declaredoverridepolicy', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, null, null, '0', 'lockstudentinput');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Learningtimecheck savepoint reached.
+        upgrade_mod_savepoint($result, 2019040600, 'learningtimecheck');
+    }
+
     return $result;
 
 }

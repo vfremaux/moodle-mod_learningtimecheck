@@ -1,0 +1,99 @@
+
+
+<!-- mod_learningtimecheck/edit_items_form -->
+<form action="{{{thispageurl}}}" method="POST">
+<input type="hidden" name="id" value="{{cmid}}" />
+<input type="hidden" name="what" value="update_complete_scores" />
+{{{hiddenparams}}}
+{{{autoupdateadvice}}}
+
+<table id="ltc-edit" width="100%">
+
+    <tr>
+        <th>
+            {{#str}}ismandatory, learningtimecheck{{/str}}
+        </th>
+
+        <th>
+            {{{timesettingsform}}}
+        </th>
+
+        <th></th>
+    </tr>
+
+    {{#items}}
+    <tr valign="top">
+        <td id="ltc-opt-controls-{{id}}">
+            {{{optionalcontrols}}}
+            <input type="hidden" name="items[]" value="{{item->id}}" />
+        </td>
+
+        {{#isheading}}
+        <td class="{{hideclass}} heading">
+            <h2>{{{displaytext}}}</h2>
+        </td>
+        {{/isheading}}
+
+        {{^isheading}}
+        <td class="{{hideclass}}">
+            <h4>
+                {{#hasicon}}
+                {{icon}}
+                {{/hasicon}}
+                {{displaytext}}
+            </h4>
+        </td>
+
+        <td>
+            {{{items_edit_commands}}}
+        </td>
+
+    </tr>
+
+    <tr class="{{hideclass}}" valign="top">
+        <td id="ltc-due-signal-{{id}}">
+            {{{item_due_signal}}}
+        </td>
+
+        <td id="ltc-time-settings-{{id}}" class="ltc-time-settings {{isdeclarative}}">
+            {{#hastimesettings}}
+            {{{timesettings_form}}}
+            {{/hastimesettings}}
+        </td>
+
+        <td></td>
+    </tr>
+    {{#items}}
+
+</table>
+
+
+<div class="ltc-submitter" style="height:60px;clear:both">
+    <div class="ltc-submitter-element" style="text-align:right;height:40px">
+        <input type="submit" name="update_complete_score" value="'.get_string('saveall', 'learningtimecheck').'" />
+    </div>
+</div>
+
+</form>
+
+<form action="'.$thispage->out_omit_querystring().'" method="get" name="editoptions">
+{{{hiddenparams}}}
+{{{pagedparams}}}
+<input type="hidden" name="sesskey" value="'.sesskey().'" />
+
+<fieldset class="ltc-box">
+<legend>{{#str}}editingoptions, learningtimecheck{{/str}}</legend>
+
+{{#hasauto}}
+<div class="ltc-globalsetting-cell">
+    <input type="submit" value="{{#str}}removeauto, learningtimecheck{{/str}}" name="removeauto" />
+</div>
+{{/hasauto}}
+
+{{#usetimecounterpart}}
+{{{timesettingglobals_form_additions}}}
+{{/usetimecounterpart}}
+
+</fieldset>
+</form>
+<!-- /mod_learningtimecheck/edit_items_form -->
