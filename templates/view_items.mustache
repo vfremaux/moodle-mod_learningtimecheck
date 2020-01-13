@@ -1,0 +1,141 @@
+
+
+<!-- mod_learningtimecheck::output/view_items -->
+<div class="generalbox boxwidthwide boxaligncenter ltc-item-list">
+
+<div id="learningtimecheckspinner"></div>
+
+    {{#viewother}}
+    <h2>{{#str}}learningtimecheckfor, learningtimecheck{{/str}} {{fullname}}</h2>
+
+    <div class="ltc-useredit-commands">
+        {{{prevbutton}}}
+        {{{editcommentsbutton}}}
+        {{{userdetailpdfbutton}}}
+        {{{nextbutton}}}
+    </div>
+    {{/viewother}}
+
+    {{#hasintro}}
+    <div class="ltc-box">
+    {{{intro}}}
+    </div>
+    {{/hasintro}}
+
+    {{#hasprogress}}
+    {{{progressbars}}}
+    {{/hasprogress}}
+
+    {{^hasitems}}
+        {{#str}}noitems, learningtimecheck{{/str}}
+    {{/hasitems}}
+    {{#hasitems}}
+
+    {{^viewother}}
+    {{#canaddown}}
+    {{{addownform}}}
+    {{/canaddown}}
+    {{/viewother}}
+
+    <form action="{{{formurl}}}" method="post">
+        <input type="hidden" name="view" value="{{realview}}">
+        <input type="hidden" name="id" value="{{id}}">
+        <input type="hidden" name="studentid" value="{{userid}}" >
+        {{{pagedparams}}}
+        <input type="hidden" name="what" value="{{action}}" />
+        <input type="hidden" name="sesskey" value="{{sesskey}}" />
+
+        {{#teachermarklocked}}
+        <p style="ltc-warning">{{#str}}lockteachermarkswarning, learningtimecheck{{/str}}</p>
+        {{/teachermarklocked}}
+
+        <ol class="ltc" id="ltc-outer">
+
+            {{#items}}
+            <li class="ltc-item {{itemclass}}">
+                <div class="ltc-item-desc">
+
+                    {{^isheading}}
+                    {{#showcheckbox}}
+                    <input class="ltc-item{{checkclass}}" type="checkbox" name="items[]" id="{{itemname}}{{checked}}" value="{{id}}" />
+                    {{/showcheckbox}}
+                    {{^showcheckbox}}
+                    <img src="{{{pixurl}}}" class="ltc-item-pix" />
+                    {{/showcheckbox}}
+                    {{#hasicon}}
+                    &nbsp;{{{modiconimage}}}
+                    {{/hasicon}}
+                    {{/isheading}}
+
+                    &nbsp;<label for="{{itemname}}{{optional}}">{{{displaytext}}}</label>
+
+                    {{#haslink}}
+                    &nbsp;<a href="{{{modulelink}}}" title"{{#str}}gotomodule, learningtimecheck{{/str}}">{{{modulepix}}}</a>
+                    {{/haslink}}
+
+                    {{#hascredittime}}
+                    <div class="ltc-credittime">{{creditstr}}</div>
+                    {{/hascredittime}}
+
+                    {{#hasdeclaredtime}}
+                    <div class="ltc-declaredtime">{{{declaredstr}}}</div>
+                    {{/hasdeclaredtime}}
+
+                </div>
+
+                {{#hascollectform}}
+                    {{> mod_learningtimecheck/collectform }}
+                {{/hascollectform}}
+
+                {{#canaddown}}
+                    &nbsp;<a href="{{{addownurl}}}" title="{{addowntitle}}">{{{addownicon}}}</a>
+                {{/canaddown}}
+
+                {{#showcompletiondates}}
+                {{#isheading}}
+                {{#hasteachermark}}
+                <span class="itemteachername" title="{{teachername}}">{{teachername}}</span>
+                <span class="itemteacherdate"">{{teacherdate}}</span>
+                {{/hasteachermark}}
+                {{#hasmark}}
+                <span class="itemuserdate" title="{{userdate}}">{{userdate}}</span>
+                {{/hasmark}}
+                {{/isheading}}
+                {{/showcompletiondates}}
+
+                {{#usecomments}}
+                <div class="teachercomment">
+                    <a href="{{{commenteruserurl}}}">{{commenterfullname}}</a>:
+                    {{#cancomment}}
+                    <input type="text" name="teachercomment{{id}}" value="{{{commenttext}}}" id="" />
+                    {{/cancomment}}
+                    {{^cancomment}}
+                    {{{commenttext}}}
+                    {{/cancomment}}
+                </div>
+                {{/usecomments}}
+
+            </li>
+
+            {{/items}}
+        </ol>
+
+        {{#useritems}}
+        <!-- At the moment useritems are out of scope -->
+        {{/useritems}}
+        </ol>
+
+        {{#viewother}}
+        <input type="submit" name="viewprev" value="{{#str}}previous{{/str}}" />
+        &nbsp;<input type="submit" name="save" value="{{#str}}save{{/str}}" />
+        &nbsp;<input type="submit" name="savenext" value="{{#str}}saveandnext{{/str}}" />
+        &nbsp;<input type="submit" name="viewnext" value="{{#str}}next{{/str}}" />
+        {{/viewother}}
+        {{^viewother}}
+        <input id="ltc-savechecks" type="submit" name="submit" value="{{#str}}save{{/str}}" />
+        {{/viewother}}
+    </form>
+
+    {{/hasitems}}
+</div>
+<!-- /mod_learningtimecheck::output/view_items -->

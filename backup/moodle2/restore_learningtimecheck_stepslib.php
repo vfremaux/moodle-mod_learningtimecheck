@@ -115,20 +115,11 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
     protected function after_execute() {
         global $DB;
 
-        // We need post remap the coursemoduleids  pointed by the items
-        $courseid = $this->get_courseid();
-        if ($ltcs = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
-            foreach ($ltcs as $ltc) {
-                if ($items = $DB->get_records('learningtimecheck_item', array('learningtimecheck' => $ltc->id))) {
-                    foreach ($items as $it) {
-                        $it->moduleid = $this->get_mappingid('coursemodule', $it->moduleid);
-                        $DB->update_record('learningtimecheck_item', $it);
-                    }
-                }
-            }
-        }
-
         // Add learningtimecheck related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_learningtimecheck', 'intro', null);
+
+        /*
+         * Do NOT Trye to remap CMs here. this is done in task.
+         */
     }
 }

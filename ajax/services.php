@@ -63,7 +63,7 @@ $renderer->set_instance($chk);
 if ($action == 'getadditemform') {
     $itemid = required_param('itemid', PARAM_INT);
     $item = $DB->get_record('learningtimecheck_item', array('id' => $itemid));
-    echo '<div class="learningtimecheck-newitem">';
+    echo '<div class="ltc-newitem">';
     echo $renderer->edit_item_form($editurl, $item);
     echo '</div>';
 }

@@ -1,62 +1,61 @@
-/* -*-CSS-*- */
 
-ol.learningtimecheck {
+ol.ltc {
     margin-top: 0;
     margin-bottom: 0;
 }
 
-ol.learningtimecheck li {
+ol.ltc li {
     list-style-type: none;
     line-height:2em;
 }
 
-ol.learningtimecheck li.heading {
-    background-color:#f9f9f9;
-    line-height:2.8em;
+ol.ltc li.heading {
+    line-height: 1.2em;
     padding:8px;
+    margin-bottom: 5px;
 }
 
-ol.learningtimecheck .useritem {
+ol.ltc .useritem {
     font-style: italic;
     color: #404090;
 }
 
-ol.learningtimecheck .note {
+ol.ltc .note {
     font-style: italic;
     color: #a0a0e0;
     padding: 0 0 0 20px;
 }
 
-ol.learningtimecheck .itemoptional {
+ol.ltc .itemoptional {
     font-style: italic;
 }
 
-.learningtimecheck-optional{
+.ltc-optional {
     color:#B0B0B0 !important;
     font-style: italic !important;
 }
 
-ol.learningtimecheck .itemheading {
+ol.ltc .itemheading {
     font-weight: bold;
 }
 
-ol.learningtimecheck .teachercomment {
+ol.ltc .teachercomment {
     color: black;
     background-color: #ffffb0;
     border: solid black 1px;
     margin: 0 0 0 20px;
 }
 
-ol.learningtimecheck .itemauto.itemdisabled {
+ol.ltc .itemauto.itemdisabled {
     text-decoration: line-through;
     background-color: #bcc4c4;
 }
 
-ol.learningtimecheck .itemauto {
+ol.ltc .itemauto {
     background-color: #d6e6e7;
 }
 
-ol.learningtimecheck li .itemuserdate {
+ol.ltc li .itemuserdate {
     background-color: #b0ffb0;
     position: absolute;
     width: 10em;
@@ -64,7 +63,7 @@ ol.learningtimecheck li .itemuserdate {
     z-index: 100;
 }
 
-ol.learningtimecheck li .itemteacherdate {
+ol.ltc li .itemteacherdate {
     background-color: #b0ffb0;
     position: absolute;
     width: 10em;
@@ -72,7 +71,7 @@ ol.learningtimecheck li .itemteacherdate {
     z-index: 100;
 }
 
-ol.learningtimecheck li .itemteachername {
+ol.ltc li .itemteachername {
     background-color: #b0ffb0;
     position: absolute;
     width: 10em;
@@ -80,12 +79,12 @@ ol.learningtimecheck li .itemteachername {
     z-index: 100;
 }
 
-.learningtimecheck-itemdue {
+.ltc-itemdue {
     font-style: italic;
     color: #90d090;
 }
 
-.learningtimecheck-itemoverdue {
+.ltc-itemoverdue {
     font-style: italic;
     color: #f09090;
 }
@@ -98,79 +97,82 @@ ol.learningtimecheck li .itemteachername {
     background-color:#E1F2FB;
 }
 
-.totalizer{
+.totalizer {
     font-weight:bold;
 }
 
-.learningtimecheck-report{
+.ltc-report {
     width:100%;
     border-width:3px;
     border-collapse:separate;
     border-spacing:10px;
 }
 
-.learningtimecheck-result{
+.ltc-result {
     background-color:#47B33C;
 }
 
-.learningtimecheck-remain-result{
+.ltc-remain-result {
     background-color:#B9282C !important;
     color:white;
 }
 
-.learningtimecheck-report .header {
+.ltc-report .header {
     background-color: #e1e1df;
 }
 
-.learningtimecheck-report .head0 {
+.ltc-report .head0 {
     font-weight: bold;
 }
 
-.learningtimecheck-report .head1 {
+.ltc-report .head1 {
     font-weight: normal;
 }
 
-.learningtimecheck-report .head2 {
+.ltc-report .head2 {
     font-weight: normal;
     font-style: italic;
 }
 
-.learningtimecheck-report-columns{
+.ltc-report-columns{
     overflow:auto;
 }
 
-.learningtimecheck-report .cell.reportheading {
+.ltc-report .cell.reportheading {
     background-color: transparent;
     border-radius:0px;
     border:none;
 }
 
-.learningtimecheck-report .cell{
+.ltc-report .cell{
     border-radius: 10px 10px 10px 10px;
-    padding:10px;
-    border-radius:10px;
+    padding:5px;
     -moz-border-radius:10px;
 }
 
-.learningtimecheck-report .cell {
+.ltc-report .cell {
     background-color: #e7e7e7;
     border:1px solid #c7c7c7;
 }
 
-.learningtimecheck-report .cell.optional {
+.ltc-report .cell.optional {
     background-color: #e7e7e7;
     border:1px dashed #c7c7c7;
 }
 
-.learningtimecheck-report .cell-checked {
+.ltc-report .cell-checked {
     background-color: #00ff00;
 }
 
-.learningtimecheck-report .cell-unchecked {
+.ltc-report .cell-unchecked {
     background-color: #ff0000;
 }
 
-.learningtimecheck-progress-outer {
+.ltc-progress-required {
+    display: flex;
+}
+
+.ltc-progress-outer {
     border-width: 1px;
     border-style: solid;
     border-color: black;
@@ -184,11 +186,15 @@ ol.learningtimecheck li .itemteachername {
     border-radius: 5px;
 }
 
-.learningtimecheck-progressbar {
+.ltc-progressbar {
     padding: 15px 0px 25px 0px;
 }
 
-.learningtimecheck-credittime {
+.ltc-bar-box {
+    margin: 20px 10px;
+    /* display: flex; */
+}
+.ltc-credittime {
     font-size:0.8em;
     color: #fff;
     border:1px solid #808080;
@@ -198,7 +204,7 @@ ol.learningtimecheck li .itemteachername {
     background-color:#9D98C0;
 }
 
-.learningtimecheck-declaredtime {
+.ltc-declaredtime {
     font-size:0.8em;
     color: #000;
     border:1px solid #808080;
@@ -208,7 +214,7 @@ ol.learningtimecheck li .itemteachername {
     background-color:#bbf4bb;
 }
 
-.learningtimecheck-progress-inner {
+.ltc-progress-inner {
     background-color: #229b15;
     background-position: top;
     background-repeat: repeat-x;
@@ -223,7 +229,7 @@ ol.learningtimecheck li .itemteachername {
     z-index: 10;
 }
 
-.learningtimecheck-progressthin-outer {
+.ltc-progressthin-outer {
     border-width: 1px;
     border-style: solid;
     border-color: black;
@@ -237,7 +243,7 @@ ol.learningtimecheck li .itemteachername {
     border-radius: 5px;
 }
 
-.learningtimecheck-progressthin-inner {
+.ltc-progressthin-inner {
     background-color: #229b15;
     height: 100%;
     width: 100%;
@@ -252,15 +258,15 @@ ol.learningtimecheck li .itemteachername {
     border-radius: 2px;
 }
 
-.learningtimecheck-progressthin-inner.both {
+.ltc-progressthin-inner.both {
     height: 50%;
 }
 
-.learningtimecheck-progressthin-inner.both.progress2 {
+.ltc-progressthin-inner.both.progress2 {
     top: 7px;
 }
 
-.learningtimecheck-progress-anim {
+.ltc-progress-anim {
     background-color: #98c193;
     height: 25px;
     width: 0;
@@ -275,26 +281,26 @@ ol.learningtimecheck li .itemteachername {
     border-radius: 2px;
 }
 
-.learningtimecheckimportexport {
+.ltc-importexport {
     text-align: right;
     width: 90%;
 }
 
-p.learningtimecheckwarning {
+p.ltc-warning {
     margin-top: 1em;
     color: #800000;
     font-weight: bold;
 }
 
-.learningtimecheck-progress-percent {
+.ltc-progress-percent {
     padding-left: 0.5em;
 }
 
-.jsenabled #learningtimechecksavechecks {
+.jsenabled #ltc-savechecks {
     display: none;
 }
 
-#learningtimecheckspinner {
+#ltc-spinner {
     display: none;
     position: absolute;
     top: 5px;
@@ -304,113 +310,114 @@ p.learningtimecheckwarning {
     background-image: url([[pix:i/loading_small]]);
 }
 
-.learningtimecheckbox {
+.ltc-box {
     position: relative;
     top: 0;
     left: 0;
 }
 
-li.learningtimecheck-item {
+#ltc-outer {
+    margin-bottom: 10px;
+}
+
+li.ltc-item {
     display:table-row;
     width:100%;
     margin-bottom:5px;
 }
 
-div.learningtimecheck-data-desc {
+div.ltc-data-desc {
     display:table-cell;
     width:70%;
     padding-right:15px;
 }
 
-.learningtimecheck-item-desc {
-    border-top: 1px solid #efefef;
+.ltc-item-desc {
     display: table-cell;
     vertical-align: top;
-    width:50%;
-    padding-right:15px;
+    width: 100%;
+    padding-right: 15px;
 }
 
-div.learningtimecheck-data-collect {
-    text-align:right;
-    display:table-cell;
-    width:50%;
-    font-size:80%;
-    background-color:#f0f0f0;
-    border-radius:4px;
-    margin:2px;
-    border-bottom: 10px solid #e0e0e0;
+div.ltc-data-collect {
+    text-align: right;
+    display: table-cell;
+    width: 50%;
+    font-size: 80%;
+    border-radius: 4px;
+    margin: 2px;
 }
 
-div.learningtimecheck-data-collect div {
+div.ltc-data-collect div {
     float:right;
 }
 
-.learningtimecheck-timesettings{
+.ltc-timesettings{
     display:table-cell;
     width:100%;
     clear:both;
     font-size:80%;
 }
 
-table.learningtimecheck-timesettings{
+table.ltc-timesettings{
     display:table;
 }
 
-table.learningtimecheck-timesettings select {
+table.ltc-timesettings select {
     width:initial;
 }
 
-table.learningtimecheck-timesettings .c2,
-table.learningtimecheck-timesettings .c3 {
+table.ltc-timesettings .c2,
+table.ltc-timesettings .c3 {
     background-color:#e5e5e5 !important;
 }
 
-table.learningtimecheck-coursecalibration-table .c3,
-table.learningtimecheck-coursecalibration-table .c4,
-table.learningtimecheck-coursecalibration-table .c5,
-table.learningtimecheck-coursecalibration-table .c6 {
+table.ltc-coursecalibration-table .c3,
+table.ltc-coursecalibration-table .c4,
+table.ltc-coursecalibration-table .c5,
+table.ltc-coursecalibration-table .c6 {
     background-color:#e5e5e5 !important;
 }
 
-table.learningtimecheck-timesettings{
+table.ltc-timesettings{
     display:table;
 }
 
-#learningtimecheck-edit .smalltext {
+#ltc-edit .smalltext {
     font-size: 10px;
 }
 
-#learningtimecheck-edit .heading {
+#ltc-edit .heading {
     background-color:#C0C0C0;
 }
 
-#learningtimecheck-edit .heading h2{
+#ltc-edit .heading h2{
     padding:0px 10px 0px 10px;
     margin:2px 0px 2px 0px;
     font-size:1.5em;
 }
 
-#learningtimecheck-edit .shadow {
+#ltc-edit .shadow {
     opacity:0.5;
     -moz-opacity:0.5;
 }
 
-.learningtimecheck-data-collect-element{
+.ltc-data-collect-element{
     display:table-cell;
     padding:5px 10px 5px 10px;
 }
 
-.learningtimecheck-data-collect-element.teachermarks{
-    background-color:#e5e5e5;
+.ltc-data-collect-element.teachermarks{
+/*    background-color:#e5e5e5; */
 }
 
-.learningtimecheck-timesetting-cell{
+.ltc-timesetting-cell{
     display:table-cell;
     width:22%;
     padding:5px 10px 5px 10px;
 }
 
-.learningtimecheck-globalsetting-cell{
+.ltc-globalsetting-cell{
     float:left;
     display:table-cell;
     width:22%;
@@ -419,16 +426,16 @@ table.learningtimecheck-timesettings{
     vertical-align:bottom;
 }
 
-.learningtimecheck-item-caption{
+.ltc-item-caption{
     padding-top:10px;
 }
 
-.learningtimecheck-box{
+.ltc-box{
     border:1px solid #d0d0d0;
     padding:10px;
 }
 
-.learningtimecheck-useredit-commands{
+.ltc-useredit-commands{
     margin:10px;
 }
 
@@ -436,20 +443,20 @@ table.learningtimecheck-timesettings{
     margin-bottom:20px;
 }
 
-.learningtimecheck-advice {
+.ltc-advice {
     border:1px solid #e0e0e0;
     margin:5px;
     margin-left:10px;
     padding:20px;
 }
 
-.learningtimecheck-timesettings select {
+.ltc-timesettings select {
     font-size:0.85em;
     height:2em;
     padding:0px;
 }
 
-#learningtimecheck-event-filter {
+#ltc-event-filter {
     background-color:#d0d0d0;
     margin:2px;
     padding:2px;
@@ -459,11 +466,11 @@ table.learningtimecheck-timesettings{
     margin-bottom:10px;
 }
 
-#learningtimecheck-event-filter select,#learningtimecheck-event-filter  input {
+#ltc-event-filter select,#ltc-event-filter  input {
     font-size:0.8em !important;
 }
 
-.learningtimecheck-filter {
+.ltc-filter {
     display:table;
     background-color:#e0e0e0;
     padding:2px;
@@ -472,27 +479,27 @@ table.learningtimecheck-timesettings{
     margin:1px 5px 1px 5px;
 }
 
-.learningtimecheck-filter div {
+.ltc-filter div {
     display:table-cell;
     padding:2px 10px;
 }
 
-.learningtimecheck-filter-logop {
+.ltc-filter-logop {
     font-weight:bold;
     background-color:#F1F2DB;
 }
 
-.learningtimecheck-filter-ruleop {
+.ltc-filter-ruleop {
     font-weight:bold;
     background-color:#F1F2DB;
 }
 
-.learningtimecheck-event-filter-error {
+.ltc-event-filter-error {
     font-style:italic;
     color:red;
 }
 
-.learningtimecheck-mark {
+.ltc-mark {
     display:inline-block;
     padding:4px;
     border:solid 1px #e0e0e0;
@@ -500,40 +507,53 @@ table.learningtimecheck-timesettings{
     min-width:20px
 }
 
-.learningtimecheck-mark.studentmark {
+.ltc-mark.studentmark {
     background-color:#eeeeee;
 }
 
-.learningtimecheck-mark.teachermark {
-    background-color:#cecece;
+.ltc-mark.teachermark {
+/*    background-color:#cecece; */
 }
 
 .ltc-time-settings.isdeclarative .c0 {
     background-color:#f9f9f9;
 }
 
-.learningtimecheck-mark.studentcheck-checked {
+.ltc-mark.studentcheck-checked {
     background-color:#8AFF9C;
 }
 
-.learningtimecheck-mark.teachercheck-checked {
+.ltc-mark.teachercheck-checked {
     background-color:#5BFA34;
 }
 
-.learningtimecheck-mark.teachercheck-unchecked {
+.ltc-mark.teachercheck-unchecked {
     background-color:#FFB08A;
 }
 
-#learningtimechecksavechecks {
+#ltc-savechecks {
     margin:4px auto;
 }
 
-.learningtimecheck-item-pix {
+.ltc-item-pix {
     width:20px;
     height:40px;
 }
 
-.learningtimecheck-icon-medium {
+.ltc-report .activityicon {
+    margin: auto;
+    margin-bottom: 10px;
+}
+
+.ltc-icon-medium {
     max-width:400px;
     max-height:40px;
+}
+
+.cltc-header .vertical-text {
+    writing-mode:   vertical-rl;
+}
+
+.cltc-header:first-child .vertical-text {
+    writing-mode:   initial;
 }

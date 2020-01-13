@@ -104,11 +104,11 @@ $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(format_string($learningtimecheck->name));
-
 $renderer = $PAGE->get_renderer('learningtimecheck');
 $renderer->set_instance($chk);
 $renderer->view_tabs('edit');
+
+echo $OUTPUT->heading(get_string('editchecks', 'learningtimecheck'));
 
 $chk->view_import_export();
 

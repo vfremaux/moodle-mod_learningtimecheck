@@ -56,6 +56,17 @@ if ($ADMIN->fulltree) {
     $desc = get_string('configinitialautocapture_desc', 'mod_learningtimecheck');
     $settings->add(new admin_setting_configselect($key, $label, $desc, LTC_AUTOPOPULATE_COURSE, $autopopulateoptions));
 
+    $overrideoptions = array(
+        LTC_OVERRIDE_CREDIT => get_string('credit', 'learningtimecheck'),
+        LTC_OVERRIDE_DECLAREDOVERCREDITIFHIGHER => get_string('declaredovercreditifhigher', 'learningtimecheck'),
+        LTC_OVERRIDE_DECLAREDCAPEDBYCREDIT => get_string('declaredcapedbycredit', 'learningtimecheck'),
+        LTC_OVERRIDE_DECLARED => get_string('declared', 'learningtimecheck')
+    );
+    $key = 'learningtimecheck/declaredoverridepolicy';
+    $label = get_string('configinitialdeclaredoverridepolicy', 'mod_learningtimecheck');
+    $desc = get_string('configinitialdeclaredoverridepolicy_desc', 'mod_learningtimecheck');
+    $settings->add(new admin_setting_configselect($key, $label, $desc, LTC_OVERRIDE_CREDIT, $overrideoptions));
+
     $key = 'learningtimecheck/lastcompiled';
     $label = get_string('configlastcompiled', 'learningtimecheck');
     $desc = get_string('configlastcompiled_desc', 'learningtimecheck');
@@ -113,10 +124,16 @@ if ($ADMIN->fulltree) {
         $desc = get_string('configallowoverrideusestats_desc', 'mod_learningtimecheck');
         $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
 
+        $options = array(
+            0 => get_string('applynever', 'mod_learningtimecheck'),
+            1 => get_string('applyifcredithigher', 'mod_learningtimecheck'),
+            2 => get_string('applyifcreditlower', 'mod_learningtimecheck'),
+            3 => get_string('applyalways', 'mod_learningtimecheck'),
+        );
         $key = 'learningtimecheck/strictcredits';
         $label = get_string('configstrictcredits', 'mod_learningtimecheck');
         $desc = get_string('configstrictcredits_desc', 'mod_learningtimecheck');
-        $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
+        $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $options));
     }
 
     if (learningtimecheck_supports_feature('emulate/community') == 'pro') {
