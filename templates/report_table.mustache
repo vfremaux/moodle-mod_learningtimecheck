@@ -1,0 +1,58 @@
+
+
+<!-- mod_learningtimecheck/report_table -->
+<table summary="{{#str}}reporttablesummary, learningtimecheck{{/str}}" class="generaltable boxaligncenter ltc-report">
+
+    <tr>
+        {{#headers}}
+        <th style="vertical-align:top; align: center; width:{{size}}" class="header c{{key}}{{levelclass}}" scope="col">
+            <div class="vertical-text">{{{heading}}}</div>
+        </th>
+        {{/headers}}
+    </tr>
+
+    {{#rows}}
+
+    <tr class="r{{oddeven}}{{class}}">
+        {{#items}}
+        {{#isfirst}}
+        <td style=" text-align: left; width: {{size}}" class="cell c0">{{{item}}}</td>
+        {{/isfirst}}
+
+        {{#ischeck}}
+            <td style=" text-align: left; width: {{size}}" class="cell c0">
+                {{#showstudentmark}}
+                <div class="ltc-mark studentmark studentcheck{{checkedstate}}">
+                    {{{studenttickimg}}}
+                </div>
+                {{/showstudentmark}}
+
+                {{#showteachermark}}
+                <div class="ltc-mark teachermark{{teachercellclass}}">
+                    {{{teachertickimg}}}
+
+                    {{#isediting}}
+                    <select name="items_{{userid}}[{{checkid}}]" {{editdisabled}}>
+                        <option value="{{opt_undecided}}" {{{selu}}}></option>
+                        <option value="{{opt_yes}}" {{{sely}}}>{{#str}}yes{{/str}}</option>
+                        <option value="{{opt_no}}" {{{seln}}}>{{#str}}no{{/str}}</option>
+                    </select>
+                    {{/isediting}}
+
+                    <div class="cm_complement">{{{cmcomplement}}}</div>
+                {{/showteachermark}}
+                </div>
+            </td>
+        {{/ischeck}}
+
+        {{#isheading}}
+            <td style=" text-align: left; width: {{size}}" class="cell c0 null-content">
+            &nbsp;
+            </td>
+        {{/isheading}}
+        {{/items}}
+    </tr>
+    {{/rows}}
+</table>
+
+<!-- /mod_learningtimecheck/report_table -->

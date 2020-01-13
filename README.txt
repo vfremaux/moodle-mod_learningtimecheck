@@ -102,3 +102,9 @@ Any enquiries about custom development to Synergy Learning: http://www.synergy-l
 =================================
 
 Renormalise completion storage with explicit enablers to rip off value confusion.
+
+2019040600 - XXXX.009
+=================================
+
+Adds lockstudentinput to freeze declarative time from student changes
+Adds declaredoverridepolicy to drive how declarative time will combine into reports and output.

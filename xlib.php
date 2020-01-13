@@ -74,7 +74,7 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
 
     // get only teacher validated marks to assess the credit time
     $sql = "
-        SELECT
+        SELECT DISTINCT
             ci.id,
             cc.userid as userid,
             ci.moduleid AS cmid,
@@ -97,9 +97,10 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
             m.id = cm.module
         WHERE
             $userclause
-            ci.enablecredit = 1
+            1 = 1
             $cmclause
-            $learningtimecheckclause
+            $learningtimecheckclause AND
+            cm.deletioninprogress = 0
     ";
 
     $results = $DB->get_records_sql($sql, $params);
@@ -212,14 +213,14 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
 /**
  * Get concerned checklists for a user or a course
  */
-function learningtimecheck_get_checklists($uid, $courseid = 0) {
+function learningtimecheck_get_checklists($uid, $courseid = 0, $userlist = []) {
     global $DB;
-    
+
     if ($courseid) {
         if ($records = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
             foreach($records as $r) {
                 $cm = get_coursemodule_from_instance('learningtimecheck', $r->id);
-                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r);
+                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r, $cm, null, $userlist);
             }
             return $checklists;
         }

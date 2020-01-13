@@ -33,7 +33,7 @@ if (!confirm_sesskey()) {
 
 $itemid = optional_param('itemid', 0, PARAM_INT);
 
-switch($action) {
+switch ($action) {
     case 'updatechecks':
         $newchecks = optional_param_array('items', array(), PARAM_INT);
         $chk->updatechecks($newchecks);
@@ -42,6 +42,15 @@ switch($action) {
     case 'teacherupdatechecks':
         $newchecks = optional_param_array('items', array(), PARAM_INT);
         $jumpnext = false;
+        $jumpprev = false;
+
+        if (optional_param('viewprev', '', PARAM_TEXT)) {
+            // Do not save but direct jump to next.
+            $prevuser = learningtimecheck_get_prev_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
+            $params = array('id' => $id, 'view' => 'view', 'studentid' => $prevuser->id, 'sesskey' => sesskey());
+            redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
+        }
+
         if (optional_param('viewnext', '', PARAM_TEXT)) {
             $jumpnext = true;
         } else {

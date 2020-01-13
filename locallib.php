@@ -25,6 +25,9 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
 
+// Valid even if format page not installed and not included.
+use \format\page\course_page;
+
 /**
  * Stores all the functions for manipulating a learningtimecheck
  */
@@ -42,7 +45,7 @@ define ('LTC_DECLARATIVE_STUDENTS', 1);
 define ('LTC_DECLARATIVE_TEACHERS', 2);
 define ('LTC_DECLARATIVE_BOTH', 3);
 
-define('LTC_HPAGE_SIZE', 11);
+define('LTC_HPAGE_SIZE', 30);
 
 class learningtimecheck_class {
     public $cm;
@@ -60,7 +63,11 @@ class learningtimecheck_class {
     public $groupings;
     public $counters = array();
 
-    public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null) {
+    /**
+     *
+     * @param array $updateusers an array of users ids to update.
+     */
+    public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null, $updateusers = []) {
         global $COURSE, $DB, $CFG;
 
         if ($cmid == 'staticonly') {
@@ -73,7 +80,7 @@ class learningtimecheck_class {
 
         if ($cm) {
             $this->cm = $cm;
-        } elseif (!$this->cm = get_coursemodule_from_id('learningtimecheck', $cmid)) {
+        } else if (!$this->cm = get_coursemodule_from_id('learningtimecheck', $cmid)) {
             print_error('invalidcoursemodule');
         }
 
@@ -116,7 +123,7 @@ class learningtimecheck_class {
                  * the constructor from another course context.
                  * Some inner calls may make a mistake and mess the item list.
                  */
-                $this->update_items_from_course();
+                $this->update_items_from_course($updateusers);
             }
         }
     }
@@ -389,7 +396,7 @@ class learningtimecheck_class {
      * are in the current learningtimecheck (in the right order)
      *
      */
-    public function update_items_from_course() {
+    public function update_items_from_course($userlist = []) {
         global $DB, $CFG;
         static $reloaded = false;
 
@@ -681,7 +688,7 @@ class learningtimecheck_class {
         }
 
         $this->get_items();
-        $this->update_all_autoupdate_checks();
+        $this->update_all_autoupdate_checks($userlist);
     }
 
     public function removeauto() {
@@ -819,9 +826,9 @@ class learningtimecheck_class {
                 $this->learningtimecheck->usetimecounterpart;
     }
 
-    public function only_view_mentee_reports() {
-        return has_capability('mod/learningtimecheck:viewmenteereports', $this->context) &&
-                !has_capability('mod/learningtimecheck:viewreports', $this->context);
+    public static function only_view_mentee_reports($context) {
+        return has_capability('mod/learningtimecheck:viewmenteereports', $context) &&
+                !has_capability('mod/learningtimecheck:viewreports', $context);
     }
 
     /**
@@ -945,7 +952,7 @@ class learningtimecheck_class {
 
     /**
      * get total count in instance of items, validated items, total time and acquired time against
-     * marking rules. 
+     * marking rules.
      * @param int $userid examined user ID
      * @param object $reportsettings some settings comming from reporting requirements (f.e. workingtime)
      * @param object $useroptions some options from the user configuration
@@ -962,10 +969,13 @@ class learningtimecheck_class {
         $mandatories = array(
             'items' => 0,
             'time' => 0,
+            'credittime' => 0,
             'ticked' => 0,
             'tickedtime' => 0,
+            'tickedcredittime' => 0,
             'percentcomplete' => 0,
             'percenttimecomplete' => 0,
+            'percentcredittimecomplete' => 0,
             'timeleft' => 0,
             'percenttimeleft' => 1,
             'firstcheckid' => 0,
@@ -974,10 +984,13 @@ class learningtimecheck_class {
         $optionals = array(
             'items' => 0,
             'time' => 0,
+            'credittime' => 0,
             'ticked' => 0,
             'tickedtime' => 0,
+            'tickedcredittime' => 0,
             'percentcomplete' => 0,
             'percenttimecomplete' => 0,
+            'percentcredittimecomplete' => 0,
             'timeleft' => 0,
             'percenttimeleft' => 1,
             'firstcheckid' => 0,
@@ -1008,18 +1021,22 @@ class learningtimecheck_class {
                 continue;
             }
 
+            $checktime = $this->get_report_time($checkitem);
+
             // Absolute pedagogic requirement.
             if ($checkitem->itemoptional == LTC_OPTIONAL_YES) {
                 $optionals['items']++;
-                $optionals['time'] += $checkitem->credittime;
+                $optionals['time'] += $checktime;
+                $optionals['credittime'] += $checkitem->credittime;
             } else {
                 $mandatories['items']++;
-                $mandatories['time'] += $checkitem->credittime;
+                $mandatories['time'] += $checktime;
+                $mandatories['credittime'] += $checkitem->credittime;
             }
 
             $checkitem->course = $this->course;
 
-            if (!report_learningtimecheck_meet_report_conditions($checkitem, $reportsettings, $useroptions,
+            if (!report_learningtimecheck::meet_report_conditions($checkitem, $reportsettings, $useroptions,
                                                                  $user, $idnumbernotused)) {
                 $discards[] = $checkitem->id." because outside report conditions";
                 continue;
@@ -1029,7 +1046,8 @@ class learningtimecheck_class {
             if ($checkitem->itemoptional == LTC_OPTIONAL_YES) {
                 if ($this->is_checked($checkitem)) {
                     $optionals['ticked']++;
-                    $optionals['tickedtime'] += $checkitem->credittime;
+                    $optionals['tickedtime'] += $checktime;
+                    $optionals['tickedcredittime'] += $checkitem->credittime;
                     if ($checkitem->usertimestamp > $lastevent['optionals']) {
                         $lastevent['optionals'] = $checkitem->usertimestamp;
                         $optionals['lastcheckid'] = $checkitem->id;
@@ -1042,7 +1060,8 @@ class learningtimecheck_class {
             } else {
                 if ($this->is_checked($checkitem)) {
                     $mandatories['ticked']++;
-                    $mandatories['tickedtime'] += $checkitem->credittime;
+                    $mandatories['tickedtime'] += $checktime;
+                    $mandatories['tickedcredittime'] += $checkitem->credittime;
                     if ($checkitem->usertimestamp > $lastevent['mandatories']) {
                         $lastevent['mandatories'] = $checkitem->usertimestamp;
                         $mandatories['lastcheckid'] = $checkitem->id;
@@ -1056,7 +1075,8 @@ class learningtimecheck_class {
         }
 
         $syscontext = context_system::instance();
-        if (optional_param('debug', false, PARAM_BOOL) && has_capability('moodle/config:site', $syscontext)) {
+
+        if (optional_param('debug', false, PARAM_BOOL)) {
             echo '<pre>';
             echo "For USERID $user->id in LTC {$this->learningtimecheck->id} in course {$this->course->id}\n\n";
             echo implode("\n", $discards);
@@ -1066,6 +1086,7 @@ class learningtimecheck_class {
         if ($mandatories['items']) {
             $mandatories['percentcomplete'] = ($mandatories['items']) ? $mandatories['ticked'] / $mandatories['items'] : 0;
             $mandatories['percenttimecomplete'] = ($mandatories['time']) ? $mandatories['tickedtime'] / $mandatories['time'] : 0;
+            $mandatories['percentcredittimecomplete'] = ($mandatories['credittime']) ? $mandatories['tickedcredittime'] / $mandatories['credittime'] : 0;
             $mandatories['timeleft'] = ($mandatories['time']) - $mandatories['tickedtime'];
             $mandatories['percenttimeleft'] = ($mandatories['time']) ? $mandatories['timeleft'] / $mandatories['time'] : 0;
         }
@@ -1073,10 +1094,39 @@ class learningtimecheck_class {
         if ($optionals['items']) {
             $optionals['percentcomplete'] = ($optionals['items']) ? $optionals['ticked'] / $optionals['items'] : 0;
             $optionals['percenttimecomplete'] = ($optionals['time']) ? $optionals['tickedtime'] / $optionals['time'] : 0;
+            $optionals['percentcredittimecomplete'] = ($optionals['credittime']) ? $optionals['tickedcredittime'] / $optionals['credittime'] : 0;
             $optionals['timeleft'] = ($optionals['time']) - $optionals['tickedtime'];
             $optionals['percenttimeleft'] = ($optionals['time']) ? $optionals['timeleft'] / $optionals['time'] : 0;
         }
         return array('mandatory' => $mandatories, 'optional' => $optionals);
+    }
+
+    public function get_report_time($check) {
+        switch ($this->learningtimecheck->declaredoverridepolicy) {
+
+            case LTC_OVERRIDE_CREDIT : {
+                return $check->credittime;
+            }
+
+            case LTC_OVERRIDE_DECLAREDOVERCREDITIFHIGHER : {
+                if ($check->declaredtime > 0 && $check->declaredtime > $check->credittime) {
+                    return $check->declaredtime;
+                }
+                return $check->credittime;
+            }
+
+            case LTC_OVERRIDE_DECLAREDCAPEDBYCREDIT : {
+                if ($check->declaredtime > 0 && $check->declaredtime < $check->credittime) {
+                    return $check->declaredtime;
+                }
+                return $check->credittime;
+            }
+
+            case LTC_OVERRIDE_DECLARED : {
+                return $check->declaredtime;
+            }
+
+        }
     }
 
     /**
@@ -1084,9 +1134,21 @@ class learningtimecheck_class {
      */
     public function is_checked($itemcheck) {
         if ($this->learningtimecheck->teacheredit == LTC_MARKING_STUDENT) {
-            if ($itemcheck->usertimestamp) return true;
+            if ($itemcheck->usertimestamp) {
+                return true;
+            }
+        } else if ($this->learningtimecheck->teacheredit == LTC_MARKING_EITHER) {
+            if (!empty($itemcheck->usertimestamp) || !empty($itemcheck->teachertimestamp)) {
+                return true;
+            }
+        } else if ($this->learningtimecheck->teacheredit == LTC_MARKING_BOTH) {
+            if (!empty($itemcheck->usertimestamp) && !empty($itemcheck->teachertimestamp)) {
+                return true;
+            }
         } else {
-            if ($itemcheck->teachertimestamp) return true;
+            if ($itemcheck->teachertimestamp) {
+                return true;
+            }
         }
         return false;
     }
@@ -1107,16 +1169,18 @@ class learningtimecheck_class {
         redirect(new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $this->cm->id)));
     }
 
-    public function get_report_settings() {
+    public static function get_report_settings() {
         global $SESSION;
 
         if (!isset($SESSION->learningtimecheck_report) || !is_object($SESSION->learningtimecheck_report)) {
-            $settings = new stdClass;
-            $settings->showcompletiondates = false;
-            $settings->showoptional = true;
-            $settings->showprogressbars = false;
-            $settings->showheaders = false;
-            $SESSION->learningtimecheck_report = $settings;
+
+            $settings = report_learningtimecheck::get_user_options();
+            $settings['startrange'] = 0;
+            $settings['endrange'] = time();
+            $settings['showoptional'] = true;
+            $settings['showprogressbars'] = false;
+            $settings['showcompletiondates'] = false;
+            $SESSION->learningtimecheck_report = (object) $settings;
         }
 
         $SESSION->learningtimecheck_report->sortby = optional_param('sortby', 'lastasc', PARAM_TEXT);
@@ -1128,7 +1192,7 @@ class learningtimecheck_class {
     public function set_report_settings($settings) {
         global $SESSION, $CFG;
 
-        $currsettings = $this->get_report_settings();
+        $currsettings = learningtimecheck_class::get_report_settings();
         foreach ($currsettings as $key => $currval) {
             if (isset($settings->$key)) {
                 // Only set values if they already exist.
@@ -1631,14 +1695,76 @@ class learningtimecheck_class {
     public function updateteachermarks() {
         global $USER, $DB, $CFG;
 
-        $newchecks = optional_param_array('items', array(), PARAM_TEXT);
-        if (!is_array($newchecks)) {
+        $teacherdeclaredtimes = optional_param_array('teacherdeclaredtime', array(), PARAM_INT);
+        $teacherdeclaredtimesperuser = optional_param_array('teacherdeclaredtimeperuser', array(), PARAM_INT);
+        $teachercomments = optional_param_array('teachercomment', array(), PARAM_TEXT);
+
+        if (empty($teacherdeclaredtimes) && empty($teacherdeclaredtimesperuser) && empty($teachercomments)) {
             // Something has gone wrong, so update nothing.
             return;
         }
 
         $updategrades = false;
+
+        // Process global tutoring time.
+        foreach ($teacherdeclaredtimes as $itemid => $newval) {
+
+            if (array_key_exists($itemid, $this->items)) {
+                // Should always exit.
+                $this->items[$itemid]->teacherdeclaredtime = $newval;
+            }
+
+            $needsupdategrades = true;
+            $params = ['userid' => $USER->id, 'item' => $itemid];
+            $oldcheck = $DB->get_record('learningtimecheck_check', $params);
+            if ($oldcheck) {
+                $oldcheck->teacherdeclaredtime = $newval;
+                $DB->update_record('learningtimecheck_check', $oldcheck);
+            } else {
+                $newcheck = new StdClass;
+                $newcheck->item = $itemid;
+                $newcheck->userid = $USER->id;
+                $newcheck->usertimestamp = 0;
+                $newcheck->teachertimestamp = time();
+                $newcheck->teacherid = $USER->id;
+                $newcheck->teacherdeclaredtime = $newval;
+                $newcheck->id = $DB->insert_record('learningtimecheck_check', $newcheck);
+            }
+        }
+
+
+        $studentid = required_param('studentid', PARAM_INT);
+
+        // Process user assigned tutoring time.
+        foreach ($teacherdeclaredtimesperuser as $itemid => $newval) {
+
+            if (array_key_exists($itemid, $this->items)) {
+                // Should always exit.
+                $this->items[$itemid]->teacherdeclaredtime = $newval;
+            }
+
+            $needsupdategrades = true;
+            $params = ['userid' => $USER->id, 'item' => $itemid];
+            $oldcheck = $DB->get_record('learningtimecheck_check', $params);
+            if ($oldcheck) {
+                $oldcheck->teacherdeclaredtime = $newval;
+                $oldcheck->studentid = $studentid;
+                $DB->update_record('learningtimecheck_check', $oldcheck);
+            } else {
+                $newcheck = new StdClass;
+                $newcheck->item = $itemid;
+                $newcheck->userid = $studentid;
+                $newcheck->usertimestamp = 0;
+                $newcheck->teachertimestamp = time();
+                $newcheck->teacherid = $USER->id;
+                $newcheck->teacherdeclaredtime = $newval;
+                $newcheck->id = $DB->insert_record('learningtimecheck_check', $newcheck);
+            }
+        }
+
         if ($this->learningtimecheck->teacheredit != LTC_MARKING_STUDENT) {
+            // Do not process any teacher mark when student marking only.
+
             if (!$this->userid || !$student = $DB->get_record('user', array('id' => $this->userid))) {
                 print_error('erronosuchuser', 'learningtimecheck');
             }
@@ -1656,95 +1782,58 @@ class learningtimecheck_class {
 
             $teachermarklocked = $this->learningtimecheck->lockteachermarks &&
                     !has_capability('mod/learningtimecheck:updatelocked', $this->context);
-            $teacherdeclaredtimesperuser = optional_param_array('teacherdeclaredtimeperuser', '', PARAM_INT);
 
-            foreach ($newchecks as $itemid => $newval) {
-                if (isset($this->items[$itemid])) {
-
-                    $item = $this->items[$itemid];
-
-                    if ($newval != $item->teachermark || $teacherdeclaredtimesperuser != $item->teacherdeclaredtime) {
-                        $updategrades = true;
-
-                        $newcheck = new stdClass;
-                        $newcheck->teachertimestamp = time();
-                        $newcheck->teacherdeclaredtime = 0 + @$teacherdeclaredtimesperuser[$itemid];
-                        if (!$teachermarklocked || $item->teachermark != LTC_TEACHERMARK_YES) {
-                            $newcheck->teachermark = $newval;
-                        } else {
-                            $newcheck->teachermark = true;
-                        }
-                        $newcheck->teacherid = $USER->id;
-
-                        $item->teachermark = $newcheck->teachermark;
-                        $item->teachertimestamp = $newcheck->teachertimestamp;
-                        $item->teacherdeclaredtime = 0 + @$teacherdeclaredtimesperuser[$itemid];
-                        $item->teacherid = $newcheck->teacherid;
-
-                        $params = array('item' => $item->id, 'userid' => $this->userid);
-                        $oldcheck = $DB->get_record('learningtimecheck_check', $params);
-                        if ($oldcheck) {
-                            $newcheck->id = $oldcheck->id;
-                            $DB->update_record('learningtimecheck_check', $newcheck);
-                        } else {
-                            $newcheck->item = $itemid;
-                            $newcheck->userid = $this->userid;
-                            $newcheck->id = $DB->insert_record('learningtimecheck_check', $newcheck);
-                        }
-                    }
-                }
-            }
             if ($updategrades) {
                 learningtimecheck_update_grades($this->learningtimecheck, $this->userid);
             }
         }
 
-        $newcomments = optional_param_array('teachercomment', false, PARAM_TEXT);
-        if (!$this->learningtimecheck->teachercomments || !$newcomments || !is_array($newcomments)) {
-            return;
-        }
+        // Process all comments.
+        if ($this->learningtimecheck->teachercomments && !empty($teachercomments)) {
 
-        list($isql, $iparams) = $DB->get_in_or_equal(array_keys($this->items));
-        $select = "
-            userid = ? AND
-            itemid $isql
-        ";
-        $params = array_merge(array($this->userid), $iparams);
-        $commentsunsorted = $DB->get_records_select('learningtimecheck_comment', $select, $params);
-        $comments = array();
-        foreach ($commentsunsorted as $comment) {
-            $comments[$comment->itemid] = $comment;
-        }
-        foreach ($newcomments as $itemid => $newcomment) {
-            $newcomment = trim($newcomment);
-            if ($newcomment == '') {
-                if (array_key_exists($itemid, $comments)) {
-                    $DB->delete_records('learningtimecheck_comment', array('id' => $comments[$itemid]->id) );
-                    unset($comments[$itemid]); // Should never be needed, but just in case...
-                }
-            } else {
-                if (array_key_exists($itemid, $comments)) {
-                    if ($comments[$itemid]->text != $newcomment) {
-                        $updatecomment = new stdClass;
-                        $updatecomment->id = $comments[$itemid]->id;
-                        $updatecomment->userid = $this->userid;
-                        $updatecomment->itemid = $itemid;
-                        $updatecomment->commentby = $USER->id;
-                        $updatecomment->text = $newcomment;
-
-                        $DB->update_record('learningtimecheck_comment',$updatecomment);
+            list($isql, $iparams) = $DB->get_in_or_equal(array_keys($this->items));
+            $select = "
+                userid = ? AND
+                itemid $isql
+            ";
+            $params = array_merge(array($this->userid), $iparams);
+            $commentsunsorted = $DB->get_records_select('learningtimecheck_comment', $select, $params);
+            $comments = array();
+            foreach ($commentsunsorted as $comment) {
+                $comments[$comment->itemid] = $comment;
+            }
+            foreach ($newcomments as $itemid => $newcomment) {
+                $newcomment = trim($newcomment);
+                if ($newcomment == '') {
+                    if (array_key_exists($itemid, $comments)) {
+                        $DB->delete_records('learningtimecheck_comment', array('id' => $comments[$itemid]->id) );
+                        unset($comments[$itemid]); // Should never be needed, but just in case...
                     }
                 } else {
-                    $addcomment = new stdClass;
-                    $addcomment->itemid = $itemid;
-                    $addcomment->userid = $this->userid;
-                    $addcomment->commentby = $USER->id;
-                    $addcomment->text = $newcomment;
+                    if (array_key_exists($itemid, $comments)) {
+                        if ($comments[$itemid]->text != $newcomment) {
+                            $updatecomment = new stdClass;
+                            $updatecomment->id = $comments[$itemid]->id;
+                            $updatecomment->userid = $this->userid;
+                            $updatecomment->itemid = $itemid;
+                            $updatecomment->commentby = $USER->id;
+                            $updatecomment->text = $newcomment;
 
-                    $DB->insert_record('learningtimecheck_comment',$addcomment);
+                            $DB->update_record('learningtimecheck_comment',$updatecomment);
+                        }
+                    } else {
+                        $addcomment = new stdClass;
+                        $addcomment->itemid = $itemid;
+                        $addcomment->userid = $this->userid;
+                        $addcomment->commentby = $USER->id;
+                        $addcomment->text = $newcomment;
+
+                        $DB->insert_record('learningtimecheck_comment',$addcomment);
+                    }
                 }
             }
         }
+
     }
 
     public function updateallteachermarks() {
@@ -1915,8 +2004,9 @@ class learningtimecheck_class {
     /**
      * Allows a learningtimecheck instance bound refresh (not optimized for cron)
      * for an interactive cleanup.
+     * @param array $userlist allow restrict update to an interesting subset of users. f.e. the displayed one.
      */
-    public function update_all_autoupdate_checks() {
+    public function update_all_autoupdate_checks($userlist = []) {
         global $DB;
 
         $now = time();
@@ -1926,6 +2016,9 @@ class learningtimecheck_class {
         if ($this->userid) {
             $userids = $this->userid;
             $users = $DB->get_records('user', array('id' => $userids));
+        } else if (!empty($userlist)) {
+            $userids = implode(',', array_keys($userlist));
+            $users = $DB->get_records_list('user', 'id', array_keys($userlist));
         } else {
             $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
             if (!$users) {
@@ -1981,7 +2074,7 @@ class learningtimecheck_class {
                                 if ($check->usertimestamp) {
                                     continue;
                                 }
-                                if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                                if (report_learningtimecheck::is_valid($check, $reportconfig, $context)) {
                                     $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified ;
                                     $DB->update_record('learningtimecheck_check', $check);
                                 }
@@ -1993,7 +2086,7 @@ class learningtimecheck_class {
                                 $check->teachertimestamp = 0;
                                 $check->teachermark = LTC_TEACHERMARK_UNDECIDED;
 
-                                if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                                if (report_learningtimecheck::is_valid($check, $reportconfig, $context)) {
                                     $check->id = $DB->insert_record('learningtimecheck_check', $check);
                                 }
                             }
@@ -2116,7 +2209,7 @@ class learningtimecheck_class {
                             continue;
                         }
                         $check->usertimestamp = 0 + @$entry->time;
-                        if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                        if (report_learningtimecheck::is_valid($check, $reportconfig, $context)) {
                             $DB->update_record('learningtimecheck_check', $check);
                         }
                     } else {
@@ -2127,7 +2220,7 @@ class learningtimecheck_class {
                         $check->teachertimestamp = 0;
                         $check->teachermark = LTC_TEACHERMARK_UNDECIDED;
 
-                        if (report_learningtimecheck_is_valid($check, $reportconfig, $context)) {
+                        if (report_learningtimecheck::is_valid($check, $reportconfig, $context)) {
                             $check->id = $DB->insert_record('learningtimecheck_check', $check);
                         }
                     }
@@ -2150,7 +2243,7 @@ class learningtimecheck_class {
         global $DB;
 
         $activegroup = groups_get_activity_group($this->cm, true);
-        $settings = $this->get_report_settings();
+        $settings = learningtimecheck_class::get_report_settings();
         switch ($settings->sortby) {
             case 'firstdesc':
                 $orderby = 'ORDER BY u.firstname DESC';
@@ -2373,6 +2466,113 @@ class learningtimecheck_class {
     public static function get_reader_source() {
         return '\core\log\sql_select_reader';
     }
+
+    /**
+     * Calculates all counters.
+     */
+    public function calculate() {
+
+        $teacherdrivenprogress = (($this->learningtimecheck->teacheredit != LTC_MARKING_STUDENT) &&
+            ($this->learningtimecheck->teacheredit != LTC_MARKING_EITHER));
+
+        $result['requireditems'] = 0;
+        $result['requiredcompleteitems'] = 0;
+
+        $result['requiredtime'] = 0;
+        $result['requiredcompletetime'] = 0;
+
+        $result['optionalitems'] = 0;
+        $result['optionalcompleteitems'] = 0;
+
+        $result['optionaltime'] = 0;
+        $result['optionalcompletetime'] = 0;
+
+        $result['allitems'] = 0;
+        $result['alltime'] = 0;
+
+        $result['allcompleteitems'] = 0;
+        $result['allcompletetime'] = 0;
+
+        if (empty($this->items)) {
+            return $result;
+        }
+
+        $checkgroupings = $this->learningtimecheck->autopopulate && ($this->groupings !== false);
+
+        foreach ($this->items as $item) {
+
+            $reporttime = $this->get_report_time($item);
+
+            if (($item->itemoptional == LTC_OPTIONAL_HEADING)||($item->hidden)) {
+                // Eliminate all headings.
+                continue;
+            }
+
+            if ($checkgroupings && !empty($item->grouping)) {
+                if (!in_array($item->grouping, $this->groupings)) {
+                    // Current user is not a member of this item's grouping.
+                    continue;
+                }
+            }
+
+            if ($item->itemoptional == LTC_OPTIONAL_NO) {
+                if ($teacherdrivenprogress) {
+                    if ($item->teachermark == LTC_TEACHERMARK_YES) {
+                        $result['requiredcompleteitems']++;
+                        $result['requiredcompletetime'] += $reporttime;
+                        $result['allcompleteitems']++;
+                        $result['allcompletetime'] += $reporttime;
+                    }
+                } else if ($item->checked) {
+                    $result['requiredcompleteitems']++;
+                    $result['requiredcompletetime'] += $reporttime;
+                    $result['allcompleteitems']++;
+                    $result['allcompletetime'] += $reporttime;
+                }
+                $result['requireditems']++;
+                $result['requiredtime'] += $reporttime;
+            } else {
+                if ($teacherdrivenprogress) {
+                    if ($item->teachermark == LTC_TEACHERMARK_YES) {
+                        $result['allcompleteitems']++;
+                        $result['allcompletetime'] += $reporttime;
+                        $result['optionalcompleteitems']++;
+                        $result['optionalcompletetime'] += $reporttime;
+                    }
+                } else if ($item->checked) {
+                    $result['allcompleteitems']++;
+                    $result['allcompletetime'] += $reporttime;
+                    $result['optionalcompleteitems']++;
+                    $result['optionalcompletetime'] += $reporttime;
+                }
+                $result['optionalitems']++;
+                $result['optionaltime'] += $reporttime;
+            }
+            $result['allitems']++;
+            $result['alltime'] += $reporttime;
+        }
+
+        // Process additional user items. Check for DEPRECATION.
+        if (!empty($this->useritems)) {
+            if (!$teacherdrivenprogress) {
+                foreach ($this->useritems as $item) {
+                    if ($item->checked) {
+                        $result['allcompleteitems']++;
+                        $result['allcompletetime'] += $reporttime;
+                        // User items are always optional (user items may be deprecated).
+                        $result['optionalcompleteitems']++;
+                        $result['optionalcompletetime'] += $reporttime;
+                        $result['allitems']++;
+                        $result['alltime'] += $reporttime;
+                    }
+                    $result['allitems']++;
+                    $result['alltime'] += $reporttime;
+                }
+            }
+        }
+
+        return $result;
+    }
 }
 
 function learningtimecheck_itemcompare($item1, $item2) {
@@ -2517,7 +2717,7 @@ function learningtimecheck_add_paged_params() {
 /**
  * Counts all evaluable items forgetting headings
  */
-function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $showhidden = false) {
+function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehidden = false) {
     global $DB, $COURSE, $USER;
 
     $courseclause = ($courseid) ? ' l.course =  $courseid ' : '';
@@ -2532,7 +2732,7 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $showhi
 
     $module = $DB->get_record('modules', array('name' => 'learningtimecheck'));
 
-    $showhiddenclause = ($showhidden) ? ' AND li.hidden = 0 ' : '';
+    $showhiddenclause = ($hidehidden) ? ' AND li.hidden = 0 ' : '';
 
     $sql = "
         SELECT
@@ -2629,7 +2829,7 @@ function learningtimecheck_get_next_user($ltc, $context, $userid, $orderby) {
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
-        if ($ltc->only_view_mentee_reports()) {
+        if ($ltc->only_view_mentee_reports($context)) {
             // Filter to only show reports for users who this user mentors (ie they have been assigned to them in a context).
             $ltc->filter_mentee_users($fullusers);
         }
@@ -2648,13 +2848,48 @@ function learningtimecheck_get_next_user($ltc, $context, $userid, $orderby) {
 }
 
 /**
+ * Fetches next user id in enrolled iusers or group membders
+ */
+function learningtimecheck_get_prev_user($ltc, $context, $userid, $orderby) {
+
+    $modinfo = get_fast_modinfo($ltc->course);
+    $cm = $modinfo->get_cm($context->instanceid);
+    $activegroup = groups_get_activity_group($cm);
+
+    $cap = 'mod/learningtimecheck:updateown';
+    $fields = 'u.id,'.get_all_user_name_fields(true, 'u');
+    if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
+        learningtimecheck_apply_rules($fullusers);
+        learningtimecheck_apply_namefilters($fullusers);
+        if ($ltc->only_view_mentee_reports($context)) {
+            // Filter to only show reports for users who this user mentors (ie they have been assigned to them in a context).
+            $ltc->filter_mentee_users($fullusers);
+        }
+    }
+
+    $found = false;
+    $prev = 0;
+    foreach ($fullusers as $user) {
+        if ($user->id == $userid) {
+            if ($prev) {
+                return $fullusers[$prev];
+            }
+            return $fullusers[$user->id];
+            // Keep on same if unique.
+        }
+        $prev = $user->id;
+    }
+    return array_shift($fullusers);
+}
+
+/**
  * Fetch all required users for a report screen
  */
-function learningtimecheck_get_report_users($ltc, $page, $perpage, $orderby, &$totalusers) {
+function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$totalusers) {
     global $DB;
 
-    $context = context_module::instance($ltc->cm->id);
-    $activegroup = groups_get_activity_group($ltc->cm);
+    $context = context_module::instance($cm->id);
+    $activegroup = groups_get_activity_group($cm);
 
     $ausers = false;
     $cap = 'mod/learningtimecheck:updateown';
@@ -2662,9 +2897,9 @@ function learningtimecheck_get_report_users($ltc, $page, $perpage, $orderby, &$t
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
-        if ($ltc->only_view_mentee_reports()) {
+        if (learningtimecheck_class::only_view_mentee_reports($context)) {
             // Filter to only show reports for users who this user mentors (ie they have been assigned to them in a context).
-            $ltc->filter_mentee_users($fullusers);
+            learningtimecheck_class::filter_mentee_users($fullusers);
         }
     }
     $users = array_keys($fullusers);

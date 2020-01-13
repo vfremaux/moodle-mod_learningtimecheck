@@ -38,34 +38,39 @@
  *     actions across all modules.
  */
 
-define("LTC_EMAIL_NO", 0);
-define("LTC_EMAIL_STUDENT", 1);
-define("LTC_EMAIL_TEACHER", 2);
-define("LTC_EMAIL_BOTH", 3);
+define('LTC_EMAIL_NO', 0);
+define('LTC_EMAIL_STUDENT', 1);
+define('LTC_EMAIL_TEACHER', 2);
+define('LTC_EMAIL_BOTH', 3);
 
-define("LTC_TEACHERMARK_NO", 2);
-define("LTC_TEACHERMARK_YES", 1);
-define("LTC_TEACHERMARK_UNDECIDED", 0);
+define('LTC_TEACHERMARK_NO', 2);
+define('LTC_TEACHERMARK_YES', 1);
+define('LTC_TEACHERMARK_UNDECIDED', 0);
 
-define("LTC_MARKING_STUDENT", 0);
-define("LTC_MARKING_TEACHER", 1);
-define("LTC_MARKING_BOTH", 2);
-define("LTC_MARKING_EITHER", 3);
+define('LTC_MARKING_STUDENT', 0);
+define('LTC_MARKING_TEACHER', 1);
+define('LTC_MARKING_BOTH', 2);
+define('LTC_MARKING_EITHER', 3);
 
-define("LTC_AUTOUPDATE_CRON_NO", 0);
-define("LTC_AUTOUPDATE_CRON_YES", 2);
+define('LTC_AUTOUPDATE_CRON_NO', 0);
+define('LTC_AUTOUPDATE_CRON_YES', 2);
 
-define("LTC_AUTOUPDATE_NO", 0);
-define("LTC_AUTOUPDATE_YES", 2);
+define('LTC_AUTOUPDATE_NO', 0);
+define('LTC_AUTOUPDATE_YES', 2);
 
-define("LTC_AUTOPOPULATE_NO", 0);
-define("LTC_AUTOPOPULATE_SECTION", 2);
-define("LTC_AUTOPOPULATE_CURRENT_PAGE", 2);
-define("LTC_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS", 3);
-define("LTC_AUTOPOPULATE_CURRENT_TOP_PAGE", 4);
-define("LTC_AUTOPOPULATE_COURSE", 1);
+define('LTC_AUTOPOPULATE_NO', 0);
+define('LTC_AUTOPOPULATE_SECTION', 2);
+define('LTC_AUTOPOPULATE_CURRENT_PAGE', 2);
+define('LTC_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS', 3);
+define('LTC_AUTOPOPULATE_CURRENT_TOP_PAGE', 4);
+define('LTC_AUTOPOPULATE_COURSE', 1);
 
-define("LTC_MAX_INDENT", 10);
+define('LTC_OVERRIDE_CREDIT', 0);
+define('LTC_OVERRIDE_DECLAREDOVERCREDITIFHIGHER', 1);
+define('LTC_OVERRIDE_DECLAREDCAPEDBYCREDIT', 2);
+define('LTC_OVERRIDE_DECLARED', 3);
+
+define('LTC_MAX_INDENT', 10);
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/lib/completionlib.php');

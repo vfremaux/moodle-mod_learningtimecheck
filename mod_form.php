@@ -107,6 +107,7 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
 
         $mform->addElement('select', 'autopopulate', get_string('autopopulate', 'learningtimecheck'), $autopopulateoptions);
         $mform->setDefault('autopopulate', 0 + @$config->initialautocapture);
+        $mform->setAdvanced('autopopulate');
         $mform->addHelpButton('autopopulate', 'autopopulate', 'learningtimecheck');
 
         $mform->addElement('selectyesno', 'lockteachermarks', get_string('lockteachermarks', 'learningtimecheck'));
@@ -114,8 +115,22 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
         $mform->setAdvanced('lockteachermarks');
         $mform->addHelpButton('lockteachermarks', 'lockteachermarks', 'learningtimecheck');
 
+        $mform->addElement('selectyesno', 'lockstudentinput', get_string('lockstudentinput', 'learningtimecheck'));
+        $mform->setDefault('lockstudentinput', 0);
+        $mform->setAdvanced('lockstudentinput');
+        $mform->addHelpButton('lockstudentinput', 'lockstudentinput', 'learningtimecheck');
+
         $mform->addElement('select', 'usetimecounterpart', get_string('usetimecounterpart', 'learningtimecheck'), $ynoptions);
         $mform->setDefault('usetimecounterpart', 0 + @$config->initialcredittimeon);
+
+        $overrideoptions = array(
+            LTC_OVERRIDE_CREDIT => get_string('credit', 'learningtimecheck'),
+            LTC_OVERRIDE_DECLAREDOVERCREDITIFHIGHER => get_string('declaredovercreditifhigher', 'learningtimecheck'),
+            LTC_OVERRIDE_DECLAREDCAPEDBYCREDIT => get_string('declaredcapedbycredit', 'learningtimecheck'),
+            LTC_OVERRIDE_DECLARED => get_string('declared', 'learningtimecheck'),
+        );
+        $mform->addElement('select', 'declaredoverridepolicy', get_string('declaredoverridepolicy', 'learningtimecheck'), $overrideoptions);
+        $mform->setDefault('declaredoverridepolicy', 0 + @$config->initialdeclaredoverridepolicy);
 
         $mform->addElement('date_time_selector', 'lastcompiledtime', get_string('lastcompiledtime', 'learningtimecheck'));
         $mform->setAdvanced('lastcompiledtime');

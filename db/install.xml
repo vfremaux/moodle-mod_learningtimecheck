@@ -26,6 +26,8 @@
         <FIELD NAME="cplmandatoryenabled" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If set, mandatory completion rule is enabled"/>
         <FIELD NAME="emailoncomplete" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not to email teachers when a learningtimecheck is completed"/>
         <FIELD NAME="lockteachermarks" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, then teachers will be unable to change marks after saving a 'yes'"/>
+        <FIELD NAME="lockstudentinput" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, then then students cannot change declared time any more."/>
+        <FIELD NAME="declaredoverridepolicy" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Defines how declared time override credit in reports."/>
         <FIELD NAME="usetimecounterpart" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, we use credit times" />
         <FIELD NAME="lastcompiledtime" TYPE="int" LENGTH="11" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="If true, we use credit times"/>
       </FIELDS>

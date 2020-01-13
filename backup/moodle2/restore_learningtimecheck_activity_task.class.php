@@ -96,7 +96,8 @@ class restore_learningtimecheck_activity_task extends restore_activity_task {
         global $DB;
 
         // Find all the items that have a 'moduleid' but are not headings and match them up to the newly-restored activities.
-        $items = $DB->get_records_select('learningtimecheck_item', 'learningtimecheck = ? AND moduleid > 0 AND itemoptional <> 2', array($this->get_activityid()));
+        $select = 'learningtimecheck = ? AND moduleid > 0 AND itemoptional <> 2';
+        $items = $DB->get_records_select('learningtimecheck_item', $select, array($this->get_activityid()));
 
         foreach ($items as $item) {
             $modulemapping = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'course_module', $item->moduleid);

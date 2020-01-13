@@ -23,7 +23,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$settings = $chk->get_report_settings();
+$settings = learningtimecheck_class::get_report_settings();
 
 if ($sortby = optional_param('sortby', false, PARAM_TEXT)) {
     $settings->sortby = $sortby;
