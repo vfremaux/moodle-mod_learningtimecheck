@@ -29,13 +29,12 @@ require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
 
-$PAGE->requires->jquery();
+$PAGE->requires->css('/mod/learningtimecheck/css/icons.css');
+$PAGE->requires->js('/mod/learningtimecheck/teacherupdatechecks.js');
+$PAGE->requires->js_call_amd('mod_learningtimecheck/report', 'init');
 $PAGE->requires->js('/mod/learningtimecheck/js/jquery.easyui.min.js');
 $PAGE->requires->js('/mod/learningtimecheck/js/locale/easyui-lang-'.current_language().'.js');
 $PAGE->requires->css('/mod/learningtimecheck/css/default/easyui.css');
-$PAGE->requires->css('/mod/learningtimecheck/css/icons.css');
-$PAGE->requires->js('/mod/learningtimecheck/js/jquery.report.js');
-$PAGE->requires->js('/mod/learningtimecheck/teacherupdatechecks.js');
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {

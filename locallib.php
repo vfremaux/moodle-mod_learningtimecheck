@@ -18,7 +18,6 @@
  * @package mod_learningtimecheck
  * @category mod
  * @author Valery Fremaux
- * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 defined('MOODLE_INTERNAL') || die;
@@ -45,7 +44,7 @@ define ('LTC_DECLARATIVE_STUDENTS', 1);
 define ('LTC_DECLARATIVE_TEACHERS', 2);
 define ('LTC_DECLARATIVE_BOTH', 3);
 
-define('LTC_HPAGE_SIZE', 11);
+define('LTC_HPAGE_SIZE', 12);
 
 class learningtimecheck_class {
     public $cm;
@@ -142,6 +141,31 @@ class learningtimecheck_class {
         } else {
             throw new coding_exception('Unknown property ' . $name . ' in learningtimecheck instance.');
         }
+    }
+
+    /**
+     * Get an array of the items in a learningtimecheck
+     *
+     */
+    public function get_items_from_db($showoptionals = true, $hideheading = true) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $this->id];
+        $select = ' learningtimecheck = :learningtimecheckid ';
+
+        $optionalclause = '';
+        $optionals[] = ' itemoptional = 0 ';
+        if ($showoptionals) {
+            $optionals[] = ' itemoptional = 1 ';
+        }
+
+        if (empty($hideheadings)) {
+            $optionals[] = ' itemoptional = 2 ';
+        }
+        $optionalclause = ' AND ('.implode(' OR ', $optionals).')';
+
+        $items = $DB->get_records_select('learningtimecheck_item', $select.$optionalclause, $params);
+        return $items;
     }
 
     /**
@@ -391,6 +415,76 @@ class learningtimecheck_class {
     }
 
     /**
+     * Get all check/marks information for a user in the current learningtimecheck.
+     * @param int $userid the user ID
+     * @param int $hpage if null, get all checks available. If not null, a page number to get a slice of results.
+     * @param string $orderby if 'position', get them by sortorder, you may use 'usertimestamp' or 'teachertimestamp'
+     */
+    public function get_checks_for_items($itemlist, $userorid, $orderby = 'position') {
+        global $DB;
+
+        $params = [$userorid, $this->learningtimecheck->id];
+
+        $insql = '';
+        if ($itemlist) {
+            list($insql, $inparams) = $DB->get_in_or_equal($itemlist);
+            foreach ($inparams as $p) {
+                $params[] = $p;
+            }
+        }
+
+        if (!in_array($orderby, array('position', 'usertimestamp', 'teachertimestamp'))) {
+            $orderby = 'i.position';
+        }
+
+        if ($orderby == 'position') {
+            $orderby = 'i.position';
+        } elseif ($orderby != 'i.position') {
+            $orderby = 'c.'.$orderby;
+        }
+
+        $sql = "
+            SELECT
+                i.id,
+                i.moduleid,
+                i.displaytext,
+                i.itemoptional,
+                i.credittime,
+                i.hidden,
+                c.userid,
+                c.usertimestamp,
+                c.declaredtime,
+                c.teachermark,
+                c.teacherid,
+                c.teacherdeclaredtime,
+                c.teachertimestamp
+            FROM
+                {learningtimecheck_item} i
+            LEFT JOIN
+                {learningtimecheck_check} c
+            ON
+                i.id = c.item AND
+                c.userid = ?
+            WHERE
+                i.learningtimecheck = ? AND
+                i.userid = 0 AND
+                i.id $insql
+            ORDER BY
+                {$orderby}
+        ";
+
+        if (is_object($userorid)) {
+            $userid = $userorid->id;
+        } else {
+            $userid = $userorid;
+        }
+
+        $checks = $DB->get_records_sql($sql, $params);
+
+        return $checks;
+    }
+
+    /**
      * Redraw this function
      * Loop through all activities / resources in course and check they
      * are in the current learningtimecheck (in the right order)
@@ -422,7 +516,7 @@ class learningtimecheck_class {
             WHERE
                 ltci.learningtimecheck = ? AND
                 ltci.itemoptional <> ".LTC_OPTIONAL_HEADING." AND
-                cm.id IS NULL
+                (cm.id IS NULL OR cm.deletioninprogress != 0)
         ";
         $lostcms = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
         if (!empty($lostcms)) {
@@ -2044,6 +2138,7 @@ class learningtimecheck_class {
             WHERE
                 m.id = cm.module AND
                 cm.id = i.moduleid AND
+                cm.deletioninprogress = 0 AND
                 l.id = i.learningtimecheck AND
                 i.moduleid > 0 AND
                 i.learningtimecheck = ? AND
@@ -2746,6 +2841,7 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehi
             cm.instance = l.id AND
             cm.module = ? AND
             cm.visible = 1 AND
+            cm.deletioninprogress = 0 AND
             l.course = ? AND
             li.itemoptional <> ".LTC_OPTIONAL_HEADING."
             $showhiddenclause

@@ -6,7 +6,7 @@
     <tr>
         {{#headers}}
         <th style="vertical-align:top; align: center; width:{{size}}" class="header c{{key}}{{levelclass}}" scope="col">
-            {{{heading}}}
+            <div class="vertical-text">{{{heading}}}</div>
         </th>
         {{/headers}}
     </tr>
@@ -46,7 +46,8 @@
         {{/ischeck}}
 
         {{#isheading}}
-            <td style=" text-align: left; width: 5px" class="cell c0 null-content" title="{{headingname}}">
+            <td style=" text-align: left; width: {{size}}" class="cell c0 null-content">
+            &nbsp;
             </td>
         {{/isheading}}
         {{/items}}

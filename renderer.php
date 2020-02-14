@@ -1367,7 +1367,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str = '';
 
         if ($learningtimecheck->autopopulate && $learningtimecheck->autoupdate) {
-    
+
             $formsubmit = '<input type="submit"
                                   name="update_complete_score"
                                   value="'.get_string('updatecompletescore', 'learningtimecheck').'" /> ';
@@ -1733,7 +1733,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Displays full activity table of a user with or without teacher controls
+     * Displays full activity table for users with or without teacher controls
      */
     public function print_activity_detailed_list($users, $reportsettings, $thispage, $editchecks, $isteacher = false) {
         global $CFG, $COURSE, $DB, $OUTPUT;
@@ -1771,7 +1771,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $table->level = array(-1);
         $table->size = array('100px');
         $table->skip = array(false);
-        $printableitems = array_slice($this->instance->items, $hpage * LTC_HPAGE_SIZE, LTC_HPAGE_SIZE, true);
+        $items = $this->instance->get_items_from_db($reportsettings->showoptional, $reportsettings->hideheadings);
+        $printableitems = array_slice($items, $hpage * LTC_HPAGE_SIZE, LTC_HPAGE_SIZE, true);
 
         $modinfo = get_fast_modinfo($COURSE);
         $cms = $modinfo->get_cms();
@@ -1819,6 +1820,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $table->head[] = '<a href="'.$itemurl.'" data-cmid="'.$mod->id.'">'.$icon.'</a> '.s($item->displaytext);
                 $table->size[] = '80px';
             } else {
+                /*
                 if (!$reportsettings->hideheadings) {
                     $table->head[] = '<div title="'.s($item->displaytext).'" alt="'.s($item->displaytext).'"></div>';
                     $table->size[] = '5px';
@@ -1826,8 +1828,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     debug_trace("No showing header item as not showing headers.. ");
                     continue;
                 }
+                */
             }
             // $table->level[] = ($item->indent < 3) ? $item->indent : 2;
+            $table->size[] = '80px';
             $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
 
@@ -1845,8 +1849,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 $row[] = $userlink.$vslink;
 
-                // Get all checks for the user.
-                $checks = $this->instance->get_checks($auser->id, $hpage);
+                // Get all checks for the user for the items to print on board.
+                $checks = $this->instance->get_checks_for_items(array_keys($printableitems), $auser->id);
 
                 foreach ($checks as $check) {
                     if ($check->hidden) {
@@ -1855,12 +1859,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                     if ($check->itemoptional == LTC_OPTIONAL_HEADING) {
                         if (!$reportsettings->hideheadings) {
-                            $row[] = array(false, false, true, 0, 0, null);
+                            // $row[] = array(false, false, true, 0, 0, null);
+                            continue;
                         }
                     } else {
                         if ($check->usertimestamp > 0) {
+                            // Check->id is the itemid.
                             $row[] = array($check->teachermark, true, false, $auser->id, $check->id, @$ITEMMODS[$check->id]);
                         } else {
+                            // Check->id is the itemid.
                             $row[] = array($check->teachermark, false, false, $auser->id, $check->id, @$ITEMMODS[$check->id]);
                         }
                     }
@@ -1998,29 +2005,20 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $class = ' both';
         }
 
-        $str = '<div class="ltc-progressthin-outer">';
         if (!is_null($percentcomplete1)) {
-            $percentcomplete1 = round($percentcomplete1);
-            $pixurl = $OUTPUT->image_url('progress1','learningtimecheck');
-            $str .= '<div class="ltc-progressthin-inner progress1 '.$class.'" style="width:'.$percentcomplete1.'%; background-image: url('.$pixurl.');" >&nbsp;</div>';
+            $template = new StdClass;
+            $template->percentcomplete1 = new StdClass;
+            $template->percentcomplete1->value = round($percentcomplete1);
+            $template->pixurl = $OUTPUT->image_url('progress1', 'learningtimecheck');
         }
-        if (!is_null($percentcomplete2)) {
-            $percentcomplete2 = round($percentcomplete2);
-            $pixurl = $OUTPUT->image_url('progress2','learningtimecheck');
-            $str .= '<div class="ltc-progressthin-inner progress2 '.$class.'" style="width:'.$percentcomplete2.'%; background-image: url('.$pixurl.');" >&nbsp;</div>';
-        }
-        $str .= '</div>';
-        $str .= '<br>';
-        $str .= '<div style="text-align:center">';
-        if (!is_null($percentcomplete1)) {
-            $str .= sprintf('%0d%%', $percentcomplete1).' ('.get_string('items', 'learningtimecheck').')';
-        }
-        if (!is_null($percentcomplete2)) {
-            $str .= ' '.sprintf('%0d%%', $percentcomplete2).' ('.get_string('time', 'learningtimecheck').')';
-        }
-        $str .= '</div>';
 
-        return $str;
+        if (!is_null($percentcomplete2)) {
+            $template->percentcomplete2 = new StdClass;
+            $template->percentcomplete2->value = round($percentcomplete2);
+            $template->percentcomplete2->pixurl = $OUTPUT->image_url('progress2', 'learningtimecheck');
+        }
+
+        return $OUTPUT->render_from_template('mod_learningtimecheck/progressthin', $template);
     }
 
     /**
@@ -2498,105 +2496,80 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * @param string $url if not set, will return to main learningtimecheck view. If set, diverts return to 
      * an alternate URL.
      */
-    public static function print_event_filter($thispage, $url = null, $component = 'mod', $itemid = 0) {
+    public function print_event_filter($thispage, $url = null, $component = 'mod', $itemid = 0) {
         global $SESSION, $CFG, $OUTPUT;
-
-        $actionurl = (!is_null($url)) ? $url : new moodle_url('/mod/learningtimecheck/view.php');
 
         $ruleops = learningtimecheck_class::get_ruleop_options();
 
-        $pluspixurl = $OUTPUT->image_url('t/switch_plus');
-        $minuspixurl = $OUTPUT->image_url('t/switch_minus');
-
-        $str = '';
-        $str .= '<div id="ltc-event-filter">';
+        $template = new StdClass;
+        $template->actionurl = (!is_null($url)) ? $url : new moodle_url('/mod/learningtimecheck/view.php');
 
         $filtererror = optional_param('filtererror', '', PARAM_CLEANHTML);
         if ($filtererror) {
-            $str .= '<div class="ltc-event-filter-error">'.get_string($filtererror, 'learningtimecheck').'</div>';
+            $template->filtererror = get_string($filtererror, 'learningtimecheck');
+            $template->haserrors = true;
         }
 
-        $str .= '<div id="ltc-event-filter-reduced"><a href="javascript:rule_filter_toggle(\''.$pluspixurl.'\', \''.$minuspixurl.'\')"><img id="ltc-rule-filter-toggle" src="'.$pluspixurl.'"></a> '.get_string('filtering', 'learningtimecheck').' </div>';
-        $str .= '<div id="ltc-event-filter-form" style="display:none">';
-        $str .= '<form action="'.$actionurl.'" method="get">';
-        $str .= html_writer::input_hidden_params($thispage);
+        $template->hiddenparams = html_writer::input_hidden_params($thispage);
 
         if (!empty($SESSION->learningtimecheck->filterrules)) {
             foreach ($SESSION->learningtimecheck->filterrules as $filterrule) {
-                $str .= '<div class="ltc-filter">';
+                $filterruletpl = new StdClass;
 
-                $str .= '<div class="ltc-filter-logop">';
                 if (!empty($filterrule->logop)) {
-                    $str .= get_string($filterrule->logop, 'learningtimecheck');
+                    $filterruletpl->haslogop = true;
+                    $filterruletpl->logopstr = get_string($filterrule->logop, 'learningtimecheck');
                 }
-                $str .= '</div>';
 
-                $str .= '<div class="ltc-filter-rule">';
-                $str .= get_string($filterrule->rule, 'learningtimecheck');
-                $str .= '</div>';
+                $filterruletpl->rulestr = get_string($filterrule->rule, 'learningtimecheck');
 
-                $str .= '<div class="ltc-filter-ruleop">';
-                $str .= $ruleops[$filterrule->ruleop];
-                $str .= '</div>';
+                $filterruletpl->ruleop = $ruleops[$filterrule->ruleop];
 
-                $str .= '<div class="ltc-filter-date-time">';
-                $str .= $filterrule->datetime;
-                $str .= '</div>';
+                $filterruletpl->ruledate = $filterrule->datetime;
 
                 // Makes url more contextual from where it is called.
                 $deleteurl = clone($thispage);
                 $params = array('what' => 'deleterule', 'ruleid' => $filterrule->id);
-                $deleteurl->params($params);
-                $str .= '<a href="'.$deleteurl.'">'.$OUTPUT->pix_icon('t/delete').'</a>';
-
-                $str .= '</div>';
+                $filterruletpl->deleteurl = $deleteurl->params($params);
             }
+            $template->filterrules[] = $filterruletpl;
         }
 
         // Will ajax load a new rule form.
-        $str .= '<a href="javascript:load_filter_rule_form(\''.$CFG->wwwroot.'\', \''.$thispage->get_param('id').'\', \''.$component.'\', \''.$thispage->get_param('view').'\', \''.$itemid.'\')">'.$OUTPUT->pix_icon('add', 'learningtimecheck').'</a>';
-        $str .= '</form>';
-        $str .= '<div id="ltc-filter-new-rule" class="hidden"></div>';
-        $str .= '</div>';
-        $str .= '</div>';
+        $template->id = $thispage->get_param('id');
+        $template->component = $component;
+        $template->view = $thispage->get_param('view');
+        $template->itemid = $itemid;
 
-        return $str;
+        return $this->output->render_from_template('mod_learningtimecheck/event_filter', $template);
     }
 
     /**
      * Used by ajax call to add a new rule form
      */
-    public static function filter_rule_form($url, $view = 'course') {
+    public function filter_rule_form($url, $view = 'course') {
         global $SESSION;
 
-        $str = '';
+        $template = new Stdclass;
 
         $logopoptions = learningtimecheck_class::get_logop_options();
         $ruleoptions = learningtimecheck_class::get_rule_options($view);
         $ruleopoptions = learningtimecheck_class::get_ruleop_options();
 
-        $str .= '<form name="newfilterruleform" action="'.$url->out_omit_querystring().'" >';
-        $str .= '<input type="hidden" name="what" value="newfilterrule" />';
-        $str .= html_writer::input_hidden_params($url);
+        $template->newruleurl = $url->out_omit_querystring();
+        $template->hiddenparams = html_writer::input_hidden_params($url);
 
+        $template->isfirst = true;
         if (!empty($SESSION->learningtimecheck->filterrules)) {
+            $template->isfirst = false;
             // Do not set any preoperator for the first rule.
-            $str .= html_writer::select($logopoptions, 'logop');
+            $template->logopselect = html_writer::select($logopoptions, 'logop');
         }
 
-        $str .= html_writer::select($ruleoptions, 'rule');
-        $str .= html_writer::select($ruleopoptions, 'ruleop');
-        $str .= '<input id="ltc-time" name="datetime" type="text" />';
-        $str .= '
-            <script type="text/javascript">
-            $(\'#ltc-time\').datetimebox({required:true});
-            </script>
-        ';
-        $str .= '<input type="submit" name="go-filter" value="'.get_string('save', 'learningtimecheck').'" />';
-        $str .= '<input type="button" name="cancel-filter" value="'.get_string('cancel').'" onclick="cancel_filter_rule_form()" />';
-        $str .= '</form>';
+        $template->ruleselect = html_writer::select($ruleoptions, 'rule');
+        $template->ruleopselect = html_writer::select($ruleopoptions, 'ruleop');
 
-        return $str;
+        return $this->output->render_from_template('mod_learningtimecheck/filter_rule_form', $template);
     }
 
     public function print_global_counters() {
@@ -2755,7 +2728,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= '<form style="display:inline;" action="'.$thispage->out_omit_querystring().'" method="get">';
         $str .= html_writer::input_hidden_params($thispage);
         $str .= '<input type="hidden" name="useredit" value="on" />';
-        $str .= '<input type="submit" name="submit" value="'.get_string('addownitems','learningtimecheck').'" />';
+        $str .= '<input type="submit" name="submit" value="'.get_string('addownitems', 'learningtimecheck').'" />';
         $jshandler = 'cancel_add_item_form(\''.$addafteritem->id.'\')';
         $label = get_string('canceledititem', 'learningtimecheck');
         $str .= '<input type="button" name="canceledititem" value="'.$label.'" onclick="'.$jshandler.'" />';
@@ -2826,6 +2799,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     // This is a check cell.
                     list($teachermark, $studentmark, $heading, $userid, $checkid, $modinfo) = $item;
                     $itemtpl->cellclass = ($heading) ? 'reportheading cell c'.$key : ' cell c'.$key;
+                    $itemtpl->itemid = $checkid;
+                    if (!empty($modinfo)) {
+                        $itemtpl->cmid = $modinfo->id;
+                    }
 
                     if ($heading) {
                         $itemtpl->isheading = true;
@@ -2952,59 +2929,59 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $pixarray;
     }
 
+    /**
+     * Renders a name filter for filtering on first or last name.
+     * @param moodle_url ref &$thispageurl the current url of the page with all quiery string params.
+     */
     public function namefilter(&$thispageurl) {
-        $str = '';
+        $template = new Stdclass;
 
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-        $firstnamefilter = optional_param('filterfirstname', false, PARAM_TEXT);
+        $template->firstnamefilter = optional_param('filterfirstname', false, PARAM_TEXT);
 
-        $str .= get_string('firstname').': ';
         for ($i = 0; $i < strlen($letters); $i++) {
-            $letter = $letters[$i];
-            if ($firstnamefilter == $letter) {
-                $str .= $letter.'&nbsp';
+            $lettertpl = new StdClass;
+            $lettertpl->letter = $letters[$i];
+            if ($template->firstnamefilter == $lettertpl->letter) {
+                $lettertpl->current = true;
             } else {
-                $str .= '<a href="'.$thispageurl.'&filterfirstname='.$letter.'" >'.$letter.'</a>&nbsp';
+                $lettertpl->thisurl = $thispageurl.'&filterfirstname='.$lettertpl->letter;
+                $lettertpl->current = false;
             }
+            $template->fnletters[] = $lettertpl;
         }
-        if (!$firstnamefilter) {
-            $str .= get_string('all').'&nbsp';
-        } else {
-            $str .= '<a href="'.$thispageurl.'&filterfirstname=" >'.get_string('all').'</a>&nbsp';
-        }
+        $template->allfnurl = $thispageurl.'&filterfirstname=';
 
-        $str .= '<br/>';
+        $template->lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
 
-        $lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
-
-        $str .= get_string('lastname').': ';
         for ($i = 0; $i < strlen($letters); $i++) {
-            $letter = $letters[$i];
-            if ($lastnamefilter == $letter) {
-                $str .= $letter.'&nbsp';
+            $lettertpl = new StdClass;
+            $lettertpl->letter = $letters[$i];
+            if ($template->lastnamefilter == $lettertpl->letter) {
+                $lettertpl->current = true;
             } else {
-                $str .= '<a href="'.$thispageurl.'&filterlastname='.$letter.'" >'.$letter.'</a>&nbsp';
+                $lettertpl->thisurl = $thispageurl.'&filterlastname='.$lettertpl->letter;
+                $lettertpl->current = false;
             }
+            $template->lnletters[] = $lettertpl;
         }
-        if (!$lastnamefilter) {
-            $str .= get_string('all').'&nbsp';
-        } else {
-            $str .= '<a href="'.$thispageurl.'&filterlastname=" >'.get_string('all').'</a>&nbsp';
-        }
+        $template->alllnurl = $thispageurl.'&filterlastname=';
 
         $params = array();
-        if ($firstnamefilter) {
-            $params['filterfirstname'] = $firstnamefilter;
+        if ($template->firstnamefilter) {
+            $params['filterfirstname'] = $template->firstnamefilter;
         }
-        if ($lastnamefilter) {
-            $params['filterlastname'] = $lastnamefilter;
+        if ($template->lastnamefilter) {
+            $params['filterlastname'] = $template->lastnamefilter;
         }
-        $thispageurl->params();
+        $thispageurl->params($params);
 
-        return $str;
+        return $this->output->render_from_template('mod_learningtimecheck/namefilter', $template);
     }
 
+    // Seems being an obsolete function.
+    /*
     public function summary($learningtimecheck, $cm) {
         global $DB;
 
@@ -3064,6 +3041,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         return $str;
     }
+    */
 
     /**
      * Renders a JQPlot graph showing compared progress of students in a given population.
