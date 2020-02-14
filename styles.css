@@ -536,11 +536,33 @@ table.ltc-timesettings{
 }
 
 .ltc-item-pix {
-    width:20px;
-    height:40px;
+    width: 20px;
+    height: 40px;
+}
+
+.ltc-report .activityicon {
+    margin: auto;
+    margin-bottom: 10px;
 }
 
 .ltc-icon-medium {
-    max-width:400px;
-    max-height:40px;
+    max-width: 400px;
+    max-height: 40px;
+}
+
+.cltc-header .vertical-text {
+    writing-mode: vertical-rl;
+}
+
+.cltc-header:first-child .vertical-text {
+    writing-mode: initial;
+}
+
+#ltc-name-filter .firstname-selected,
+#ltc-name-filter .name-selected {
+    display: inline-block;
+    padding: 3px;
+    border-radius: 10px;
+    color: white;
+    background-color: #888;
 }
