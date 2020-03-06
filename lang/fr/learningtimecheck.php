@@ -256,7 +256,6 @@ $string['totalestimatedtime'] = 'Dont temps estimés ';
 $string['totalized'] = '(Total)';
 $string['totalteacherestimatedtime'] = 'Temps tutorat estimé ';
 $string['tutorboard'] = 'Rapport de tutorat (réalisé)';
-$string['trainingsessionscoupling'] = ' => Report TS';
 $string['uncheckoptional'] = 'Décocher pour rendre facultatif';
 $string['unindentitem'] = 'Désindenter les éléments';
 $string['unvalidate'] = 'Refuser';

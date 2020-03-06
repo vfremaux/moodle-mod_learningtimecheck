@@ -468,21 +468,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 $itemtpl->hascredittime = false;
                 if (!empty($item->credittime)) {
-                    $itemtpl->hascredittime = true;
+                    $itemtpl->hascredtitime = true;
                     $itemtpl->creditstr = get_string('itemcredittime', 'learningtimecheck', $item->credittime);
                 }
 
-                $itemtpl->hasdeclaredtime = false;
+                $itemtpl->declaredtime = false;
                 if (!empty($item->declaredtime) && (@$item->isdeclarative > 0) && !$isheading) {
-                    $itemtpl->hasdeclaredtime = true;
+                    $itemtpl->declaredtime = true;
                     $itemtpl->declaredstr = get_string('itemdeclaredtime', 'learningtimecheck', $item->declaredtime);
-                }
-
-                if ($viewother || !$userreport) {
-                    $itemtpl->hastscoupling = false;
-                    if (!empty($item->enablecredit)) {
-                        $itemtpl->hastscoupling = true;
-                    }
                 }
 
                 /*
@@ -1791,9 +1784,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         foreach ($printableitems as $item) {
             if ($item->hidden) {
-                if (function_exists('debug_trace')) {
-                    debug_trace("Hidden item $item->moduleid ");
-                }
+                debug_trace("Hidden item $item->moduleid ");
                 continue;
             }
 
@@ -1803,9 +1794,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     // Try first in module cache.
                     $mod = $modinfo->get_cm($item->moduleid);
                     if (!$mod) {
-                        if (function_exists('debug_trace')) {
-                            debug_trace("Lost module $item->moduleid before cache rebuild. ");
-                        }
+                        debug_trace("Lost module $item->moduleid before cache rebuild. ");
                         // Try rebuild.
                         rebuild_course_cache($COURSE->id);
                         $modinfo = get_fast_modinfo($COURSE);
@@ -1814,9 +1803,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     }
                     if (!$mod) {
                         // Lost modules
-                        if (function_exists('debug_trace')) {
-                            debug_trace("Lost module $item->moduleid after cache rebuild. ");
-                        }
+                        debug_trace("Lost module $item->moduleid after cache rebuild. ");
                         continue;
                     }
                     $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
@@ -1827,14 +1814,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $mod = $DB->get_record('course_modules', array('id' => $item->moduleid));
                     if (!$mod) {
                         // Really lost module
-                        if (function_exists('debug_trace')) {
-                            debug_trace("Lost module $item->moduleid even in DB");
-                        }
+                        debug_trace("Lost module $item->moduleid even in DB");
                         continue;
                     }
-                    if (function_exists('debug_trace')) {
-                        debug_trace("Lost module $item->moduleid but in DB. ");
-                    }
+                    debug_trace("Lost module $item->moduleid but in DB. ");
                 }
 
                 $itemurl = new moodle_url('/mod/'.$mod->modname.'/view.php', array('id' => $item->moduleid));
@@ -2499,7 +2482,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $template->formurl = new moodle_url('/mod/learningtimecheck/view.php');
         $template->hiddenparams = html_writer::input_hidden_params($thispage);
-        $template->sesskey = sesskey();
+        $template->sessskey = sesskey();
 
         return $this->output->render_from_template('mod_learningtimecheck/prev_user_button', $template);
     }
@@ -2510,7 +2493,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $template->formurl = new moodle_url('/mod/learningtimecheck/view.php');
         $template->hiddenparams = html_writer::input_hidden_params($thispage);
-        $template->sesskey = sesskey();
+        $template->sessskey = sesskey();
 
         return $this->output->render_from_template('mod_learningtimecheck/next_user_button', $template);
     }
