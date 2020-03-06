@@ -300,7 +300,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     ($this->instance->learningtimecheck->teacheredit == LTC_MARKING_EITHER);
             $template->showcheckbox = (($this->instance->learningtimecheck->teacheredit == LTC_MARKING_BOTH && $template->viewother)) ||
                     (($this->instance->learningtimecheck->teacheredit == LTC_MARKING_EITHER && $template->viewother));
-            $template->teachermarklocked = $template->teachermarklocked && $template->showteachermark; // Make sure this is OFF, if not showing teacher marks.
+            $template->teachermarklocked = @$template->teachermarklocked && @$template->showteachermark; // Make sure this is OFF, if not showing teacher marks.
         }
 
         $overrideauto = ($this->instance->learningtimecheck->autoupdate != LTC_AUTOUPDATE_YES);
@@ -468,14 +468,21 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 $itemtpl->hascredittime = false;
                 if (!empty($item->credittime)) {
-                    $itemtpl->hascredtitime = true;
+                    $itemtpl->hascredittime = true;
                     $itemtpl->creditstr = get_string('itemcredittime', 'learningtimecheck', $item->credittime);
                 }
 
-                $itemtpl->declaredtime = false;
+                $itemtpl->hasdeclaredtime = false;
                 if (!empty($item->declaredtime) && (@$item->isdeclarative > 0) && !$isheading) {
-                    $itemtpl->declaredtime = true;
+                    $itemtpl->hasdeclaredtime = true;
                     $itemtpl->declaredstr = get_string('itemdeclaredtime', 'learningtimecheck', $item->declaredtime);
+                }
+
+                if ($viewother || !$userreport) {
+                    $itemtpl->hastscoupling = false;
+                    if (!empty($item->enablecredit)) {
+                        $itemtpl->hastscoupling = true;
+                    }
                 }
 
                 /*
@@ -1780,7 +1787,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         foreach ($printableitems as $item) {
             if ($item->hidden) {
-                debug_trace("Hidden item $item->moduleid ");
+                if (function_exists('debug_trace')) {
+                    debug_trace("Hidden item $item->moduleid ");
+                }
                 continue;
             }
 
@@ -1790,7 +1799,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     // Try first in module cache.
                     $mod = $modinfo->get_cm($item->moduleid);
                     if (!$mod) {
-                        debug_trace("Lost module $item->moduleid before cache rebuild. ");
+                        if (function_exists('debug_trace')) {
+                            debug_trace("Lost module $item->moduleid before cache rebuild. ");
+                        }
                         // Try rebuild.
                         rebuild_course_cache($COURSE->id);
                         $modinfo = get_fast_modinfo($COURSE);
@@ -1799,7 +1810,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     }
                     if (!$mod) {
                         // Lost modules
-                        debug_trace("Lost module $item->moduleid after cache rebuild. ");
+                        if (function_exists('debug_trace')) {
+                            debug_trace("Lost module $item->moduleid after cache rebuild. ");
+                        }
                         continue;
                     }
                     $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
@@ -1810,10 +1823,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $mod = $DB->get_record('course_modules', array('id' => $item->moduleid));
                     if (!$mod) {
                         // Really lost module
-                        debug_trace("Lost module $item->moduleid even in DB");
+                        if (function_exists('debug_trace')) {
+                            debug_trace("Lost module $item->moduleid even in DB");
+                        }
                         continue;
                     }
-                    debug_trace("Lost module $item->moduleid but in DB. ");
+                    if (function_exists('debug_trace')) {
+                        debug_trace("Lost module $item->moduleid but in DB. ");
+                    }
                 }
 
                 $itemurl = new moodle_url('/mod/'.$mod->modname.'/view.php', array('id' => $item->moduleid));
@@ -1900,7 +1917,19 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $useroptions = (object) report_learningtimecheck::get_user_options();
         }
 
-        $str = '';
+        if (empty($useroptions->elements)) {
+            $useroptions->elements = [PROGRESSBAR_MANDATORY, PROGRESSBAR_ALL];
+        }
+
+        if (empty($useroptions->progressbars)) {
+            $useroptions->progressbars = [PROGRESSBAR_BOTH];
+        }
+
+        // Ugly patch wating better resolution
+        // FIX
+        if (isset($useroptions->elements) && !is_array($useroptions->elements)) {
+            $useroptions->elements = [$useroptions->elements];
+        }
 
         // Actually should already be catched sooner.
         if (!$this->instance) {
@@ -1926,10 +1955,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $template = new StdClass;
         $template->fadeurl = $this->output->image_url('progress-fade', 'learningtimecheck');
-
-        if (empty($useroptions->elements)) {
-            $useroptions->elements = [PROGRESSBAR_MANDATORY, PROGRESSBAR_ALL];
-        }
 
         if ($ccs['requireditems'] > 0 && $ccs['allitems'] > $ccs['requireditems']) {
 
@@ -2000,13 +2025,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     public static function progressbar_thin($percentcomplete1, $percentcomplete2) {
         global $OUTPUT;
 
+        $template = new StdClass;
+
         $class = '';
         if (!is_null($percentcomplete1) && !is_null($percentcomplete2)) {
-            $class = ' both';
+            $template->class = ' both';
         }
 
         if (!is_null($percentcomplete1)) {
-            $template = new StdClass;
             $template->percentcomplete1 = new StdClass;
             $template->percentcomplete1->value = round($percentcomplete1);
             $template->pixurl = $OUTPUT->image_url('progress1', 'learningtimecheck');
@@ -2472,7 +2498,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $template->formurl = new moodle_url('/mod/learningtimecheck/view.php');
         $template->hiddenparams = html_writer::input_hidden_params($thispage);
-        $template->sessskey = sesskey();
+        $template->sesskey = sesskey();
 
         return $this->output->render_from_template('mod_learningtimecheck/prev_user_button', $template);
     }
@@ -2483,7 +2509,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $template->formurl = new moodle_url('/mod/learningtimecheck/view.php');
         $template->hiddenparams = html_writer::input_hidden_params($thispage);
-        $template->sessskey = sesskey();
+        $template->sesskey = sesskey();
 
         return $this->output->render_from_template('mod_learningtimecheck/next_user_button', $template);
     }
@@ -2934,6 +2960,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * @param moodle_url ref &$thispageurl the current url of the page with all quiery string params.
      */
     public function namefilter(&$thispageurl) {
+
+        $localthispageurl = clone($thispageurl);
+        $localthispageurl->params(['page' => 0]);
         $template = new Stdclass;
 
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -2946,12 +2975,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             if ($template->firstnamefilter == $lettertpl->letter) {
                 $lettertpl->current = true;
             } else {
-                $lettertpl->thisurl = $thispageurl.'&filterfirstname='.$lettertpl->letter;
+                $lettertpl->thisurl = $localthispageurl.'&filterfirstname='.$lettertpl->letter;
                 $lettertpl->current = false;
             }
             $template->fnletters[] = $lettertpl;
         }
-        $template->allfnurl = $thispageurl.'&filterfirstname=';
+        $template->allfnurl = $localthispageurl.'&filterfirstname=';
 
         $template->lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
 
@@ -2961,12 +2990,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             if ($template->lastnamefilter == $lettertpl->letter) {
                 $lettertpl->current = true;
             } else {
-                $lettertpl->thisurl = $thispageurl.'&filterlastname='.$lettertpl->letter;
+                $lettertpl->thisurl = $localthispageurl.'&filterlastname='.$lettertpl->letter;
                 $lettertpl->current = false;
             }
             $template->lnletters[] = $lettertpl;
         }
-        $template->alllnurl = $thispageurl.'&filterlastname=';
+        $template->alllnurl = $localthispageurl.'&filterlastname=';
 
         $params = array();
         if ($template->firstnamefilter) {

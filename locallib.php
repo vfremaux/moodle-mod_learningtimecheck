@@ -176,7 +176,7 @@ class learningtimecheck_class {
         static $modnames = array();
         global $DB, $CFG, $COURSE;
 
-        $modinfo = get_fast_modinfo($COURSE);
+        $modinfo = get_fast_modinfo($COURSE, $this->userid);
 
         $this->counters['optionals'] = 0;
         $this->counters['mandatories'] = 0;
@@ -194,6 +194,12 @@ class learningtimecheck_class {
         $this->items = $DB->get_records('learningtimecheck_item', $params, 'position');
         // Makes sure all items are numbered sequentially, starting at 1.
         $this->update_item_positions(); // Update before filtering or positions will be messed.
+
+        // Get user's grouping/groups info.
+        $usergroups[0] = [];
+        if (!empty($this->userid)) {
+            $usergroups = groups_get_user_groups($COURSE->id, $this->userid);
+        }
 
         /*
          * Experimental : Filter out module bound items the user should not see
@@ -242,10 +248,26 @@ class learningtimecheck_class {
                 }
             }
 
-            if (!$cm->uservisible) {
+            if (!$cm->visible) {
                 $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
                 unset($this->items[$iid]);
             }
+
+            if (!$cm->groupingid) {
+                // We check the user is in one of the groupings group or has grouping 0.
+                if (!isset($usergroups[0]) && !array_key_exists($cm->groupingid, $usergroups)) {
+                    echo "discard $item->id by grouping <br/>";
+                    $this->ignoreditems[$iid] = $this->items[$iid]->moduleid;
+                    unset($this->items[$iid]);
+                }
+            }
+
+            /*
+             * Why NOT check for availability ?
+             *
+             * Because availability is mostly temporary situation, but the course module will have to be done
+             * at one moment.
+             */
 
             if ($this->course->format == 'page') {
                 require_once($CFG->dirroot.'/course/format/page/xlib.php');
@@ -263,6 +285,7 @@ class learningtimecheck_class {
         }
 
         // Load student's own learningtimecheck items.
+        /*
         if ($this->userid && $this->canaddown()) {
             $sql = 'learningtimecheck = ? ';
             $sql .= ' AND userid = ? ';//.$this->userid;
@@ -271,12 +294,14 @@ class learningtimecheck_class {
         } else {
             $this->useritems = false;
         }
+        */
 
         // Load the currently checked-off items.
         if ($this->userid) {
             $sql = '
                 SELECT
                     i.id,
+                    i.enablecredit,
                     c.usertimestamp,
                     c.declaredtime,
                     c.teacherdeclaredtime,
@@ -302,6 +327,7 @@ class learningtimecheck_class {
                     $this->items[$id]->usertimestamp = $check->usertimestamp;
                     $this->items[$id]->teachertimestamp = $check->teachertimestamp;
                     $this->items[$id]->teacherid = $check->teacherid;
+                    $this->items[$id]->enablecredit = $check->enablecredit;
 
                     // Calculate checked counters
                     if ($this->learningtimecheck->teacheredit == LTC_MARKING_STUDENT || $this->learningtimecheck->teacheredit == LTC_MARKING_EITHER) {
@@ -2396,12 +2422,12 @@ class learningtimecheck_class {
         $percent = round($ticked * 100 / $total);
 
         // TODO - fix this now that styles.css is included.
-        $output = '<div class="learningtimecheck_progress_outer" style="width: '.$width.';" >';
+        $output = '<div class="ltc_progress_outer" style="width: '.$width.';" >';
         $style = 'width:'.$percent.'%; background-image: url('.$OUTPUT->image_url('progress','learningtimecheck').');';
-        $output .= '<div class="learningtimecheck_progress_inner" title="'.$percent.'%" style="'.$style.'" >&nbsp;</div>';
+        $output .= '<div class="ltc_progress_inner" title="'.$percent.'%" style="'.$style.'" >&nbsp;</div>';
         $output .= '</div>';
         if ($showpercent) {
-            $output .= '<span class="learningtimecheck_progress_percent">&nbsp;'.sprintf('%0d%%', $percent).'</span>';
+            $output .= '<span class="ltc_progress_percent">&nbsp;'.sprintf('%0d%%', $percent).'</span>';
         }
         $output .= '<br style="clear:both;" />';
         if ($return) {
@@ -2648,6 +2674,7 @@ class learningtimecheck_class {
         }
 
         // Process additional user items. Check for DEPRECATION.
+        /*
         if (!empty($this->useritems)) {
             if (!$teacherdrivenprogress) {
                 foreach ($this->useritems as $item) {
@@ -2665,6 +2692,7 @@ class learningtimecheck_class {
                 }
             }
         }
+        */
 
         return $result;
     }
