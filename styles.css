@@ -214,6 +214,16 @@ ol.ltc li .itemteachername {
     background-color:#bbf4bb;
 }
 
+.ltc-tscoupling {
+    font-size:0.8em;
+    color: #fff;
+    border:1px solid #808080;
+    display:inline;
+    padding:2px;
+    border-radius:3px;
+    background-color:#c58b36;
+}
+
 .ltc-progress-inner {
     background-color: #229b15;
     background-position: top;
