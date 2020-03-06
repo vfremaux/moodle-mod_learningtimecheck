@@ -301,6 +301,7 @@ class learningtimecheck_class {
             $sql = '
                 SELECT
                     i.id,
+                    i.enablecredit,
                     c.usertimestamp,
                     c.declaredtime,
                     c.teacherdeclaredtime,
@@ -326,6 +327,7 @@ class learningtimecheck_class {
                     $this->items[$id]->usertimestamp = $check->usertimestamp;
                     $this->items[$id]->teachertimestamp = $check->teachertimestamp;
                     $this->items[$id]->teacherid = $check->teacherid;
+                    $this->items[$id]->enablecredit = $check->enablecredit;
 
                     // Calculate checked counters
                     if ($this->learningtimecheck->teacheredit == LTC_MARKING_STUDENT || $this->learningtimecheck->teacheredit == LTC_MARKING_EITHER) {
@@ -2418,12 +2420,12 @@ class learningtimecheck_class {
         $percent = round($ticked * 100 / $total);
 
         // TODO - fix this now that styles.css is included.
-        $output = '<div class="learningtimecheck_progress_outer" style="width: '.$width.';" >';
+        $output = '<div class="ltc_progress_outer" style="width: '.$width.';" >';
         $style = 'width:'.$percent.'%; background-image: url('.$OUTPUT->image_url('progress', 'learningtimecheck').');';
-        $output .= '<div class="learningtimecheck_progress_inner" title="'.$percent.'%" style="'.$style.'" >&nbsp;</div>';
+        $output .= '<div class="ltc_progress_inner" title="'.$percent.'%" style="'.$style.'" >&nbsp;</div>';
         $output .= '</div>';
         if ($showpercent) {
-            $output .= '<span class="learningtimecheck_progress_percent">&nbsp;'.sprintf('%0d%%', $percent).'</span>';
+            $output .= '<span class="ltc_progress_percent">&nbsp;'.sprintf('%0d%%', $percent).'</span>';
         }
         $output .= '<br style="clear:both;" />';
         if ($return) {

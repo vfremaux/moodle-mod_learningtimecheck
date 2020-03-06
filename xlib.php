@@ -78,6 +78,7 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
             ci.id,
             cc.userid as userid,
             ci.moduleid AS cmid,
+            ci.enablecredit,
             ci.credittime * 60 AS credittime,
             $markvalue
             m.name AS modname
@@ -279,7 +280,7 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
  * @return a result array with mandatory/optional total item times.
  * TOTO : finish this function.
  */
-function learningtimecheck_get_course_time($courseid, $userid = 0) {
+function learningtimecheck_get_course_total_time($courseid, $userid = 0) {
 
     if (!learningtimecheck_course_has_ltc_tracking($courseid)) {
         // Shortcut output.

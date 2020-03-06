@@ -264,6 +264,7 @@ $string['totalcoursetime'] = 'Total course time';
 $string['totalestimatedtime'] = 'Total estimated time';
 $string['totalized'] = '(TOT)';
 $string['totalteacherestimatedtime'] = 'Total teacher estimated time';
+$string['trainingsessionscoupling'] = ' => Report TS';
 $string['tutorboard'] = 'Tutor board';
 $string['uncheckoptional'] = 'Uncheck to make it optional';
 $string['unindentitem'] = 'Unindent item';

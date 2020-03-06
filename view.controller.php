@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $chk->useredit = optional_param('useredit', false, PARAM_BOOL);
 
 if (!confirm_sesskey()) {
-    error('Invalid sesskey');
+    print_error('Invalid sesskey');
 }
 
 $itemid = optional_param('itemid', 0, PARAM_INT);
@@ -103,6 +103,12 @@ switch ($action) {
     case 'seeknext':
         $nextuser = learningtimecheck_get_next_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
         $params = array('id' => $id, 'view' => 'view', 'studentid' => $nextuser->id, 'sesskey' => sesskey());
+        redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
+
+    case 'viewprev':
+    case 'seekprev':
+        $prevuser = learningtimecheck_get_prev_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
+        $params = array('id' => $id, 'view' => 'view', 'studentid' => $prevuser->id, 'sesskey' => sesskey());
         redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
 
     default:
