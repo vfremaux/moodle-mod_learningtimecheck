@@ -1,6 +1,6 @@
 
 
-<!-- mod_learningtimecheck/progressbars -->
+<!-- mod_learningtimecheck/progressthin -->
 <div class="ltc-progressthin-outer">
     {{#percentcomplete1}}
     <div class="ltc-progressthin-inner progress1 {{class}}" style="width:{{value}}%; background-image: url({{{pixurl}}});" >&nbsp;</div>
@@ -14,11 +14,11 @@
 <br/>
 <div style="text-align:center">
     {{#percentcomplete1}}
-    {{value}} {{#str}}items, learningtimecheck{{/str}}
+    {{value}} % {{#str}}items, learningtimecheck{{/str}}
     {{/percentcomplete1}}
 
     {{#percentcomplete2}}
-    {{value}} {{#str}}time, learningtimecheck{{/str}}}
+    {{value}} % {{#str}}time, learningtimecheck{{/str}}
     {{/percentcomplete2}}
 </div>
-<!-- /mod_learningtimecheck/progressbars -->
+<!-- /mod_learningtimecheck/progressthin -->

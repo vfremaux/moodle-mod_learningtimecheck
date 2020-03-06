@@ -113,7 +113,6 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
     }
 
     protected function after_execute() {
-        global $DB;
 
         // Add learningtimecheck related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_learningtimecheck', 'intro', null);

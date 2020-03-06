@@ -16,7 +16,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
+/*
  * @package mod_learningtimecheck
  * @category mod
  * @author  David Smith <moodle@davosmith.co.uk> as checklist

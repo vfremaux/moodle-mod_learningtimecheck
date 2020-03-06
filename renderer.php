@@ -52,7 +52,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function view_tabs($currenttab) {
-        global $CFG, $COURSE, $USER;
+        global $COURSE, $USER;
 
         if (!$this->instance) {
             throw new CodingException('Misuse of an uninitialized renderer. Please review the code');
@@ -199,7 +199,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     /**
-     * print main item list in student view or when the teacher assesses 
+     * print main item list in student view or when the teacher assesses
      * a student list.
      * @param boolean $viewother
      * @param boolean $isuserreport
@@ -300,7 +300,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     ($this->instance->learningtimecheck->teacheredit == LTC_MARKING_EITHER);
             $template->showcheckbox = (($this->instance->learningtimecheck->teacheredit == LTC_MARKING_BOTH && $template->viewother)) ||
                     (($this->instance->learningtimecheck->teacheredit == LTC_MARKING_EITHER && $template->viewother));
-            $template->teachermarklocked = $template->teachermarklocked && $template->showteachermark; // Make sure this is OFF, if not showing teacher marks.
+            $template->teachermarklocked = @$template->teachermarklocked && @$template->showteachermark; // Make sure this is OFF, if not showing teacher marks.
         }
 
         $overrideauto = ($this->instance->learningtimecheck->autoupdate != LTC_AUTOUPDATE_YES);
@@ -461,7 +461,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $itemtpl->haslink = false;
                 if (isset($item->modulelink)) {
                     $itemtpl->haslink = true;
-                    $alt = get_string('linktomodule','learningtimecheck');
+                    $alt = get_string('linktomodule', 'learningtimecheck');
                     $itemtpl->modulepix = $this->output->pix_icon('follow_link', $alt, 'learningtimecheck');
                     $itemtpl->modulelink = $item->modulelink;
                 }
@@ -493,7 +493,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                             $cond = $teachermarklocked && $item->teachermark == LTC_TEACHERMARK_YES;
                             $disabledarr = ($cond) ? array('disabled' => 'disabled') : array();
                             $opts = learningtimecheck_get_teacher_mark_options();
-                            $itemtpl->teachermarkselect = html_writer::select($opts, "items[$item->id]", $item->teachermark,'', $disabledarr);
+                            $itemtpl->teachermarkselect = html_writer::select($opts, "items[$item->id]", $item->teachermark, '', $disabledarr);
                         } else {
                             // I am a student.
                             list($imgsrc, $titletext) = $this->instance->get_teachermark($item->id);
@@ -590,7 +590,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if ($comments) {
                     $itemtpl->usecomments = true;
                     if (array_key_exists($item->id, $comments)) {
-                        $comment =  $comments[$item->id];
+                        $comment = $comments[$item->id];
                         $itemtpl->commenttext = $comment->text;
                         $foundcomment = true;
                         if ($comment->commentby) {
@@ -613,7 +613,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         return $this->output->render_from_template('mod_learningtimecheck/view_items', $template);
     }
-    
+
     /**
      * prints the coursecalibration report information
      *
@@ -678,7 +678,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $totalteachercreditable += $totaltimeforusersnum;
                         $teacheritemtime = learningtimecheck_format_time($item->teachercredittime);
                         $totaltimeforusers = learningtimecheck_format_time($totaltimeforusersnum);
-                        $itemtimeperuser =  learningtimecheck_format_time(0 + @$item->teachercredittimeperuser). ' x '.$usercount.' = '.$totaltimeforusers;
+                        $itemtimeperuser = learningtimecheck_format_time(0 + @$item->teachercredittimeperuser). ' x '.$usercount.' = '.$totaltimeforusers;
                         $cond = $item->isdeclarative != LTC_DECLARATIVE_STUDENTS && $item->isdeclarative != LTC_DECLARATIVE_BOTH;
                         $creditsource = ($cond) ? get_string('credit', 'learningtimecheck') : get_string('estimated', 'learningtimecheck');
                         $totaltimeforitem = learningtimecheck_format_time($item->teachercredittime + $totaltimeforusersnum);
@@ -709,7 +709,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      *
      */
     public function view_tutorboard() {
-        global $USER, $CFG, $COURSE, $DB;
+        global $USER, $COURSE, $DB;
 
         $context = context_course::instance($COURSE->id);
 
@@ -779,12 +779,16 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         foreach ($tutoredusers as $uid => $tu) {
             $credittime = $tutoredusersfull[$uid]->teachercredittime;
             $declaredtime = $tutoredusersfull[$uid]->teacherdeclaredtime;
-            $declareddisp = ($credittime > $declaredtime) ? '<span class="positive">'.$declaredtime.' mn</span>' : '<span class="negative">'.$declaredtime.' mn</span>' ;
+            $positive = '<span class="positive">'.$declaredtime.' mn</span>';
+            $negatiestr = '<span class="negative">'.$declaredtime.' mn</span>';
+            $declareddisp = ($credittime > $declaredtime) ? $positivestr : $negativestr;
             $table->data[] = array(fullname($tutoredusersfull[$uid]), $declareddisp, $credittime.' mn');
             $fullcourseexpected += $credittime;
             $fullcourseexpense += $declaredtime;
         }
-        $fullexpensedisp = ($fullcourseexpected > $fullcourseexpense) ? '<span class="positive"><b>'.$fullcourseexpense.' mn</b></span>' : '<span class="negative"><b>'.$fullcourseexpense.' mn</b></span>' ;
+        $positivestr = '<span class="positive"><b>'.$fullcourseexpense.' mn</b></span>';
+        $negativestr = '<span class="negative"><b>'.$fullcourseexpense.' mn</b></span>';
+        $fullexpensedisp = ($fullcourseexpected > $fullcourseexpense) ? $positivestr : $negativestr;
         $table->data[] = array('<b>'.get_string('totalcourse', 'learningtimecheck').'</b>', $declareddisp, '<b>'.$fullcourseexpected.' mn</b>');
 
         echo html_writer::table($table);
@@ -795,7 +799,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * DEPRECATED
      */
     public function view_own_report() {
-        global $CFG, $USER, $DB;
+        global $USER, $DB;
 
         echo "Deprecated. This function should be not used";
         return;
@@ -936,7 +940,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * View all the assessable activites as colored blocks
      */
     public function view_own_report_blocks($hidelinks = false) {
-        global $CFG, $USER, $DB;
+        global $USER, $DB;
 
         $str = '';
 
@@ -1075,7 +1079,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * memory instance 'items' which are filtered for the end user
      */
     public function view_edit_items() {
-        global $COURSE, $CFG, $DB, $USER, $SESSION;
+        global $COURSE, $DB, $USER;
 
         $context = context_module::instance($this->instance->cm->id);
         $forcetrainingsessions = has_capability('mod/learningtimecheck:forceintrainingsessions', $context, $USER->id, false);
@@ -1388,7 +1392,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * All reports of users for teachers
      */
     public function view_report($ausers, $totalusers) {
-        global $DB, $PAGE, $COURSE;
+        global $PAGE, $COURSE;
 
         if (!$this->instance) {
             throw new CodingException('Misuse of an uninitialized renderer. Please review the code');
@@ -1736,7 +1740,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * Displays full activity table for users with or without teacher controls
      */
     public function print_activity_detailed_list($users, $reportsettings, $thispage, $editchecks, $isteacher = false) {
-        global $CFG, $COURSE, $DB, $OUTPUT;
+        global $COURSE, $DB, $OUTPUT;
 
         $hpage = optional_param('hpage', 0, PARAM_INT);
 
@@ -1900,7 +1904,19 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $useroptions = (object) report_learningtimecheck::get_user_options();
         }
 
-        $str = '';
+        if (empty($useroptions->elements)) {
+            $useroptions->elements = [PROGRESSBAR_MANDATORY, PROGRESSBAR_ALL];
+        }
+
+        if (empty($useroptions->progressbars)) {
+            $useroptions->progressbars = [PROGRESSBAR_BOTH];
+        }
+
+        // Ugly patch wating better resolution
+        // FIX
+        if (isset($useroptions->elements) && !is_array($useroptions->elements)) {
+            $useroptions->elements = [$useroptions->elements];
+        }
 
         // Actually should already be catched sooner.
         if (!$this->instance) {
@@ -1926,10 +1942,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $template = new StdClass;
         $template->fadeurl = $this->output->image_url('progress-fade', 'learningtimecheck');
-
-        if (empty($useroptions->elements)) {
-            $useroptions->elements = [PROGRESSBAR_MANDATORY, PROGRESSBAR_ALL];
-        }
 
         if ($ccs['requireditems'] > 0 && $ccs['allitems'] > $ccs['requireditems']) {
 
@@ -2000,13 +2012,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     public static function progressbar_thin($percentcomplete1, $percentcomplete2) {
         global $OUTPUT;
 
+        $template = new StdClass;
+
         $class = '';
         if (!is_null($percentcomplete1) && !is_null($percentcomplete2)) {
-            $class = ' both';
+            $template->class = ' both';
         }
 
         if (!is_null($percentcomplete1)) {
-            $template = new StdClass;
             $template->percentcomplete1 = new StdClass;
             $template->percentcomplete1->value = round($percentcomplete1);
             $template->pixurl = $OUTPUT->image_url('progress1', 'learningtimecheck');
@@ -2154,7 +2167,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * Provides editing commands for each item.
      */
     public function item_edit_commands(&$thispage, &$item, $autoitem) {
-        global $CFG;
 
         $str = '';
 
@@ -2314,7 +2326,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function print_export_excel_button($thispage, $userid = 0) {
-        global $CFG, $COURSE;
+        global $COURSE;
 
         $str = '';
 
@@ -2419,7 +2431,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function print_previous_hpage_button($thispage, $hpage) {
-        global $CFG;
 
         $filterlastname = optional_param('filterlastname', '', PARAM_TEXT);
         $filterfirstname = optional_param('filterfirstname', '', PARAM_TEXT);
@@ -2442,7 +2453,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function print_next_hpage_button($thispage, $hpage, $itemcount) {
-        global $CFG;
 
         $str = '';
 
@@ -2497,7 +2507,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * an alternate URL.
      */
     public function print_event_filter($thispage, $url = null, $component = 'mod', $itemid = 0) {
-        global $SESSION, $CFG, $OUTPUT;
+        global $SESSION;
 
         $ruleops = learningtimecheck_class::get_ruleop_options();
 
@@ -2668,7 +2678,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function group_grouping_menu($rooturl) {
-        global $SESSION, $COURSE;
+        global $COURSE;
 
         $str = '';
         $this->groupid = groups_get_course_group($COURSE, true);
@@ -2934,6 +2944,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * @param moodle_url ref &$thispageurl the current url of the page with all quiery string params.
      */
     public function namefilter(&$thispageurl) {
+
+        $localthispageurl = clone($thispageurl);
+        $localthispageurl->params(['page' => 0]);
         $template = new Stdclass;
 
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -2946,12 +2959,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             if ($template->firstnamefilter == $lettertpl->letter) {
                 $lettertpl->current = true;
             } else {
-                $lettertpl->thisurl = $thispageurl.'&filterfirstname='.$lettertpl->letter;
+                $lettertpl->thisurl = $localthispageurl.'&filterfirstname='.$lettertpl->letter;
                 $lettertpl->current = false;
             }
             $template->fnletters[] = $lettertpl;
         }
-        $template->allfnurl = $thispageurl.'&filterfirstname=';
+        $template->allfnurl = $localthispageurl.'&filterfirstname=';
 
         $template->lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
 
@@ -2961,12 +2974,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             if ($template->lastnamefilter == $lettertpl->letter) {
                 $lettertpl->current = true;
             } else {
-                $lettertpl->thisurl = $thispageurl.'&filterlastname='.$lettertpl->letter;
+                $lettertpl->thisurl = $localthispageurl.'&filterlastname='.$lettertpl->letter;
                 $lettertpl->current = false;
             }
             $template->lnletters[] = $lettertpl;
         }
-        $template->alllnurl = $thispageurl.'&filterlastname=';
+        $template->alllnurl = $localthispageurl.'&filterlastname=';
 
         $params = array();
         if ($template->firstnamefilter) {
