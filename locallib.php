@@ -1955,7 +1955,7 @@ class learningtimecheck_class {
     }
 
     public function updateallteachermarks() {
-        global $DB, $CFG, $USER;
+        global $DB, $USER;
 
         if ($this->learningtimecheck->teacheredit == LTC_MARKING_STUDENT) {
             // Student only lists do not have teacher marks to update.

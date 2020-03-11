@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die;
  * this second case is used when delayed processing the reports by cron scheduling.
  *
  * @param ref &$users an input user array
- * @param string $rulefiltersdesc a serialized descriptor of filters. 
+ * @param string $rulefiltersdesc a serialized descriptor of filters.
  * @return by ref, the filtered user array.
  */
 function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
@@ -44,7 +44,7 @@ function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
     if (!is_null($rulefiltersdesc)) {
         $filterrules = json_decode($rulefiltersdesc);
         if (empty($filterrules)) {
-           return;
+            return;
         }
     } else {
         if (empty($SESSION->learningtimecheck->filterrules)) {

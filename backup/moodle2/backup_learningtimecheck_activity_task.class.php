@@ -48,35 +48,35 @@ class backup_learningtimecheck_activity_task extends backup_activity_task {
         // I don't think there is anything needed here (but I could be wrong)
         global $CFG;
 
-        $base = preg_quote($CFG->wwwroot,"/");
+        $base = preg_quote($CFG->wwwroot, "/");
 
         // Link to the list of learningtimechecks
-        $search="/(".$base."\/mod\/learningtimecheck\/index.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKINDEX*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/index.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKINDEX*$2@$', $content);
 
         // Link to learningtimecheck view by moduleid
-        $search="/(".$base."\/mod\/learningtimecheck\/view.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYID*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/view.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYID*$2@$', $content);
 
         // Link to learningtimecheck view by id
-        $search="/(".$base."\/mod\/learningtimecheck\/view.php\?learningtimecheck\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYINSTANCE*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/view.php\?learningtimecheck\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYINSTANCE*$2@$', $content);
 
         // Link to learningtimecheck report by moduleid
         $search="/(".$base."\/mod\/learningtimecheck\/report.php\?id\=)([0-9]+)/";
         $content= preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYID*$2@$', $content);
 
         // Link to learningtimecheck report by id
-        $search="/(".$base."\/mod\/learningtimecheck\/report.php\?learningtimecheck\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYINSTANCE*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/report.php\?learningtimecheck\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYINSTANCE*$2@$', $content);
 
         // Link to learningtimecheck edit by moduleid
-        $search="/(".$base."\/mod\/learningtimecheck\/edit.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKEDITBYID*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/edit.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKEDITBYID*$2@$', $content);
 
         // Link to learningtimecheck edit by id
-        $search="/(".$base."\/mod\/learningtimecheck\/edit.php\?learningtimecheck\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKEDITBYINSTANCE*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/edit.php\?learningtimecheck\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKEDITBYINSTANCE*$2@$', $content);
 
         return $content;
     }
