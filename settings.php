@@ -23,12 +23,12 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-/**
+/*
  * Global settings for the learningtimecheck
  */
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
-require_once $CFG->dirroot.'/mod/learningtimecheck/adminlib.php';
+require_once($CFG->dirroot.'/mod/learningtimecheck/adminlib.php');
 
 use \mod\learningtimecheck\admin_setting_configdatetime;
 
@@ -101,8 +101,8 @@ if ($ADMIN->fulltree) {
     $key = 'learningtimecheck/csvlineseparator';
     $label = get_string('configcsvlineseparator', 'mod_learningtimecheck');
     $desc = get_string('configcsvlineseparator_desc', 'mod_learningtimecheck');
-    $settings->add(new admin_setting_configselect($key, $label, $desc, '\n',$csvlineseparatoroptions));
- 
+    $settings->add(new admin_setting_configselect($key, $label, $desc, '\n', $csvlineseparatoroptions));
+
     $csvencodingoptions = array ('ISO-8859-1' => 'ISO-8859-1',
                                   'UTF-8' => 'UTF-8',
                                   'HTML' => 'HTML - Debugging');

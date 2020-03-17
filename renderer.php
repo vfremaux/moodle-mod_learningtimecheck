@@ -52,7 +52,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function view_tabs($currenttab) {
-        global $CFG, $COURSE, $USER;
+        global $COURSE, $USER;
 
         if (!$this->instance) {
             throw new CodingException('Misuse of an uninitialized renderer. Please review the code');
@@ -199,7 +199,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     /**
-     * print main item list in student view or when the teacher assesses 
+     * print main item list in student view or when the teacher assesses
      * a student list.
      * @param boolean $viewother
      * @param boolean $isuserreport
@@ -461,21 +461,28 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $itemtpl->haslink = false;
                 if (isset($item->modulelink)) {
                     $itemtpl->haslink = true;
-                    $alt = get_string('linktomodule','learningtimecheck');
+                    $alt = get_string('linktomodule', 'learningtimecheck');
                     $itemtpl->modulepix = $this->output->pix_icon('follow_link', $alt, 'learningtimecheck');
                     $itemtpl->modulelink = $item->modulelink;
                 }
 
                 $itemtpl->hascredittime = false;
                 if (!empty($item->credittime)) {
-                    $itemtpl->hascredtitime = true;
+                    $itemtpl->hascredittime = true;
                     $itemtpl->creditstr = get_string('itemcredittime', 'learningtimecheck', $item->credittime);
                 }
 
-                $itemtpl->declaredtime = false;
+                $itemtpl->hasdeclaredtime = false;
                 if (!empty($item->declaredtime) && (@$item->isdeclarative > 0) && !$isheading) {
-                    $itemtpl->declaredtime = true;
+                    $itemtpl->hasdeclaredtime = true;
                     $itemtpl->declaredstr = get_string('itemdeclaredtime', 'learningtimecheck', $item->declaredtime);
+                }
+
+                if ($viewother || !$userreport) {
+                    $itemtpl->hastscoupling = false;
+                    if (!empty($item->enablecredit)) {
+                        $itemtpl->hastscoupling = true;
+                    }
                 }
 
                 /*
@@ -493,7 +500,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                             $cond = $teachermarklocked && $item->teachermark == LTC_TEACHERMARK_YES;
                             $disabledarr = ($cond) ? array('disabled' => 'disabled') : array();
                             $opts = learningtimecheck_get_teacher_mark_options();
-                            $itemtpl->teachermarkselect = html_writer::select($opts, "items[$item->id]", $item->teachermark,'', $disabledarr);
+                            $itemtpl->teachermarkselect = html_writer::select($opts, "items[$item->id]", $item->teachermark, '', $disabledarr);
                         } else {
                             // I am a student.
                             list($imgsrc, $titletext) = $this->instance->get_teachermark($item->id);
@@ -590,7 +597,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if ($comments) {
                     $itemtpl->usecomments = true;
                     if (array_key_exists($item->id, $comments)) {
-                        $comment =  $comments[$item->id];
+                        $comment = $comments[$item->id];
                         $itemtpl->commenttext = $comment->text;
                         $foundcomment = true;
                         if ($comment->commentby) {
@@ -613,7 +620,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         return $this->output->render_from_template('mod_learningtimecheck/view_items', $template);
     }
-    
+
     /**
      * prints the coursecalibration report information
      *
@@ -678,7 +685,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $totalteachercreditable += $totaltimeforusersnum;
                         $teacheritemtime = learningtimecheck_format_time($item->teachercredittime);
                         $totaltimeforusers = learningtimecheck_format_time($totaltimeforusersnum);
-                        $itemtimeperuser =  learningtimecheck_format_time(0 + @$item->teachercredittimeperuser). ' x '.$usercount.' = '.$totaltimeforusers;
+                        $itemtimeperuser = learningtimecheck_format_time(0 + @$item->teachercredittimeperuser). ' x '.$usercount.' = '.$totaltimeforusers;
                         $cond = $item->isdeclarative != LTC_DECLARATIVE_STUDENTS && $item->isdeclarative != LTC_DECLARATIVE_BOTH;
                         $creditsource = ($cond) ? get_string('credit', 'learningtimecheck') : get_string('estimated', 'learningtimecheck');
                         $totaltimeforitem = learningtimecheck_format_time($item->teachercredittime + $totaltimeforusersnum);
@@ -709,7 +716,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      *
      */
     public function view_tutorboard() {
-        global $USER, $CFG, $COURSE, $DB;
+        global $USER, $COURSE, $DB;
 
         $context = context_course::instance($COURSE->id);
 
@@ -779,12 +786,16 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         foreach ($tutoredusers as $uid => $tu) {
             $credittime = $tutoredusersfull[$uid]->teachercredittime;
             $declaredtime = $tutoredusersfull[$uid]->teacherdeclaredtime;
-            $declareddisp = ($credittime > $declaredtime) ? '<span class="positive">'.$declaredtime.' mn</span>' : '<span class="negative">'.$declaredtime.' mn</span>' ;
+            $positive = '<span class="positive">'.$declaredtime.' mn</span>';
+            $negatiestr = '<span class="negative">'.$declaredtime.' mn</span>';
+            $declareddisp = ($credittime > $declaredtime) ? $positivestr : $negativestr;
             $table->data[] = array(fullname($tutoredusersfull[$uid]), $declareddisp, $credittime.' mn');
             $fullcourseexpected += $credittime;
             $fullcourseexpense += $declaredtime;
         }
-        $fullexpensedisp = ($fullcourseexpected > $fullcourseexpense) ? '<span class="positive"><b>'.$fullcourseexpense.' mn</b></span>' : '<span class="negative"><b>'.$fullcourseexpense.' mn</b></span>' ;
+        $positivestr = '<span class="positive"><b>'.$fullcourseexpense.' mn</b></span>';
+        $negativestr = '<span class="negative"><b>'.$fullcourseexpense.' mn</b></span>';
+        $fullexpensedisp = ($fullcourseexpected > $fullcourseexpense) ? $positivestr : $negativestr;
         $table->data[] = array('<b>'.get_string('totalcourse', 'learningtimecheck').'</b>', $declareddisp, '<b>'.$fullcourseexpected.' mn</b>');
 
         echo html_writer::table($table);
@@ -795,7 +806,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * DEPRECATED
      */
     public function view_own_report() {
-        global $CFG, $USER, $DB;
+        global $USER, $DB;
 
         echo "Deprecated. This function should be not used";
         return;
@@ -834,7 +845,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $checkstates = array();
         if ($checks ) {
             $checksrecs = array_values($checks);
-            for ($i = 0; $i < count($checksrecs); $i++ ) {
+            for ($i = 0; $i < count($checksrecs); $i++) {
 
                 $check = $checksrecs[$i];
 
@@ -906,7 +917,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     userid = ? AND
                     itemid = ?
                 ';
-                if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))){
+                if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
                     $str .= '<div class="comment">';
                     foreach ($comments as $comment) {
                         $fields = 'id,'.get_all_user_name_fields(true, '');
@@ -936,7 +947,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * View all the assessable activites as colored blocks
      */
     public function view_own_report_blocks($hidelinks = false) {
-        global $CFG, $USER, $DB;
+        global $USER, $DB;
 
         $str = '';
 
@@ -998,7 +1009,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $str .= '<br/>';
 
-        if ($this->instance->learningtimecheck->autopopulate == LTC_AUTOPOPULATE_COURSE){
+        if ($this->instance->learningtimecheck->autopopulate == LTC_AUTOPOPULATE_COURSE) {
             $completionliststr = get_string('coursecompletionboard', 'learningtimecheck');
         } else {
             $completionliststr = get_string('completionboard', 'learningtimecheck');
@@ -1075,7 +1086,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * memory instance 'items' which are filtered for the end user
      */
     public function view_edit_items() {
-        global $COURSE, $CFG, $DB, $USER, $SESSION;
+        global $COURSE, $DB, $USER;
 
         $context = context_module::instance($this->instance->cm->id);
         $forcetrainingsessions = has_capability('mod/learningtimecheck:forceintrainingsessions', $context, $USER->id, false);
@@ -1144,7 +1155,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 }
 
                 $itemname = '"item'.$item->id.'"';
-                $thispage->param('itemid',$item->id);
+                $thispage->param('itemid', $item->id);
 
                 $autoitem = ($this->instance->learningtimecheck->autopopulate) && ($item->moduleid != 0);
                 $hasauto = $hasauto || ($item->moduleid != 0);
@@ -1178,7 +1189,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 echo '</td>';
 
                 echo '</tr>';
- 
+
                 echo '<tr class="'.$hideclass.'" valign="top">';
 
                 echo '<td id="ltc-due-signal-'.$item->id.'">';
@@ -1256,7 +1267,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * in item record. for any item linked to a course module the due time information if
      * retrieved from the course module itself
      */
-    function item_due_signal($item, $editing = false) {
+    public function item_due_signal($item, $editing = false) {
         global $DB;
 
         if ($item->moduleid) {
@@ -1287,7 +1298,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= '<input type="text" size="'.LTC_TEXT_INPUT_WIDTH.'" name="displaytext" value="'.s($item->displaytext).'" id="updateitembox" />';
         $str .= '<input type="hidden" name="what" value="updateitem" />';
         $str .= html_writer::input_hidden_params($thispage);
-        $str .= '<input type="submit" name="updateitem" value="'.get_string('updateitem','learningtimecheck').'" />';
+        $str .= '<input type="submit" name="updateitem" value="'.get_string('updateitem', 'learningtimecheck').'" />';
         $str .= '</form>';
 
         return $str;
@@ -1298,7 +1309,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * @param object $item
      * @param bool $autoitem
      * @param string $optional a value to feed for caller, with optional class text
-     * @param url $thispage : deprecated. 
+     * @param url $thispage : deprecated.
      */
     public function item_optional_controls($item, $autoitem, &$optional, $thispage) {
 
@@ -1314,7 +1325,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '&nbsp;';
                 $optional = ' class="itemheading '.$autoclass.'" ';
             }
-        } elseif ($item->itemoptional == LTC_OPTIONAL_YES) {
+        } else if ($item->itemoptional == LTC_OPTIONAL_YES) {
             if ($item->hidden) {
                 $title = get_string('optionalitem', 'learningtimecheck');
                 $str .= '<input type="checkbox"
@@ -1388,7 +1399,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * All reports of users for teachers
      */
     public function view_report($ausers, $totalusers) {
-        global $DB, $PAGE, $COURSE;
+        global $PAGE, $COURSE;
 
         if (!$this->instance) {
             throw new CodingException('Misuse of an uninitialized renderer. Please review the code');
@@ -1487,7 +1498,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             echo '<form style="display: inline;" action="'.$thispage->out_omit_querystring().'" method="get" />';
             echo html_writer::input_hidden_params($thispage);
             echo '<input type="hidden" name="editchecks" value="on" />';
-            echo '<input type="submit" name="submit" value="'.get_string('editchecks','learningtimecheck').'" />';
+            echo '<input type="submit" name="submit" value="'.get_string('editchecks', 'learningtimecheck').'" />';
             echo '</form>';
         }
 
@@ -1586,7 +1597,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                     if ($this->instance->caneditother()) {
                         $vslink = ' <a href="'.$thispage->out(true, array('studentid' => $auser->id) ).'" ';
-                        $vslink .= 'alt="'.get_string('viewsinglereport','learningtimecheck').'" title="'.get_string('viewsinglereport','learningtimecheck').'">';
+                        $vslink .= 'alt="'.get_string('viewsinglereport', 'learningtimecheck').'" title="'.get_string('viewsinglereport', 'learningtimecheck').'">';
                         $vslink .= fullname($auser).'</a>';
                     } else {
                         $vslink = fullname($auser);
@@ -1613,7 +1624,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $timecomplete = round($checkinfo['mandatory']['percenttimecomplete'] * 100);
                     $timecompleteoptional = round($checkinfo['optional']['percenttimecomplete'] * 100);
 
-                    $row[] = mod_learningtimecheck_renderer::progressbar_thin($complete1, $complete2);
+                    $row[] = self::progressbar_thin($complete1, $complete2);
 
                     $totalitems = $checkinfo['mandatory']['items'];
                     if ($reportsettings->showoptional) {
@@ -1631,13 +1642,13 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     if ($reportsettings->showoptional) {
                         $tickeditems .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($checkinfo['optional']['tickedtime']).'</span>';
                     }
-                    $row[] =  $tickedtimes;
+                    $row[] = $tickedtimes;
 
                     $timeleftratio = (100 - $timecomplete).' %';
                     if ($reportsettings->showoptional && @$checkinfo['optional']['percenttimeleft']) {
                         $timeleftratio .= '<span class="ltc-optional"> +'.(100 - $timecompleteoptional).' %</span>';
                     }
-                    $row[] =  $timeleftratio;
+                    $row[] = $timeleftratio;
 
                     $timeleft = learningtimecheck_format_time($checkinfo['mandatory']['timeleft']);
                     if ($reportsettings->showoptional && @$checkinfo['optional']['timeleft']) {
@@ -1690,7 +1701,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $row1->cells[] = $cell4;
 
                 $cell5 = new html_table_cell();
-                $sumtickedtime =  $sums['mandatory']['tickedtime'];
+                $sumtickedtime = $sums['mandatory']['tickedtime'];
                 if ($reportsettings->showoptional && @$sums['optional']['tickedtime']) {
                     $sumtickedtime .= '<span class="ltc-optional"> +'.$sums['optional']['tickedtime'].'</span>';
                 }
@@ -1736,7 +1747,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * Displays full activity table for users with or without teacher controls
      */
     public function print_activity_detailed_list($users, $reportsettings, $thispage, $editchecks, $isteacher = false) {
-        global $CFG, $COURSE, $DB, $OUTPUT;
+        global $COURSE, $DB, $OUTPUT;
 
         $hpage = optional_param('hpage', 0, PARAM_INT);
 
@@ -1780,7 +1791,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         foreach ($printableitems as $item) {
             if ($item->hidden) {
-                debug_trace("Hidden item $item->moduleid ");
+                if (function_exists('debug_trace')) {
+                    debug_trace("Hidden item $item->moduleid ");
+                }
                 continue;
             }
 
@@ -1790,7 +1803,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     // Try first in module cache.
                     $mod = $modinfo->get_cm($item->moduleid);
                     if (!$mod) {
-                        debug_trace("Lost module $item->moduleid before cache rebuild. ");
+                        if (function_exists('debug_trace')) {
+                            debug_trace("Lost module $item->moduleid before cache rebuild. ");
+                        }
                         // Try rebuild.
                         rebuild_course_cache($COURSE->id);
                         $modinfo = get_fast_modinfo($COURSE);
@@ -1799,7 +1814,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     }
                     if (!$mod) {
                         // Lost modules
-                        debug_trace("Lost module $item->moduleid after cache rebuild. ");
+                        if (function_exists('debug_trace')) {
+                            debug_trace("Lost module $item->moduleid after cache rebuild. ");
+                        }
                         continue;
                     }
                     $icon = html_writer::empty_tag('img', array('src' => $mod->get_icon_url(),
@@ -1810,16 +1827,21 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     $mod = $DB->get_record('course_modules', array('id' => $item->moduleid));
                     if (!$mod) {
                         // Really lost module
-                        debug_trace("Lost module $item->moduleid even in DB");
+                        if (function_exists('debug_trace')) {
+                            debug_trace("Lost module $item->moduleid even in DB");
+                        }
                         continue;
                     }
-                    debug_trace("Lost module $item->moduleid but in DB. ");
+                    if (function_exists('debug_trace')) {
+                        debug_trace("Lost module $item->moduleid but in DB. ");
+                    }
                 }
 
                 $itemurl = new moodle_url('/mod/'.$mod->modname.'/view.php', array('id' => $item->moduleid));
                 $table->head[] = '<a href="'.$itemurl.'" data-cmid="'.$mod->id.'">'.$icon.'</a> '.s($item->displaytext);
                 $table->size[] = '80px';
             } else {
+                assert(1);
                 /*
                 if (!$reportsettings->hideheadings) {
                     $table->head[] = '<div title="'.s($item->displaytext).'" alt="'.s($item->displaytext).'"></div>';
@@ -1887,12 +1909,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         if ($editchecks) {
-            echo '<input type="submit" name="submit" value="'.get_string('savechecks','learningtimecheck').'" />';
+            echo '<input type="submit" name="submit" value="'.get_string('savechecks', 'learningtimecheck').'" />';
             echo '</form>';
         }
     }
 
-   // Accessory sub items.
+    // Accessory sub items.
 
     public function progressbar($useroptions = null) {
 
@@ -1946,8 +1968,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $bartpl = new StdClass;
                 $bartpl->percentcomplete = $requiredcompletepercent;
                 $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
-                $bartpl->heading = get_string('percentcomplete','learningtimecheck');
-                $bartpl->progressurl = $this->output->image_url('progress1_big','learningtimecheck');
+                $bartpl->heading = get_string('percentcomplete', 'learningtimecheck');
+                $bartpl->progressurl = $this->output->image_url('progress1_big', 'learningtimecheck');
                 $template->bars[] = $bartpl;
             }
 
@@ -1956,8 +1978,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $bartpl = new StdClass;
                 $bartpl->percentcomplete = $requiredcompletepercenttime;
                 $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
-                $bartpl->heading = get_string('timepercentcomplete','learningtimecheck');
-                $bartpl->progressurl = $this->output->image_url('progress2_big','learningtimecheck');
+                $bartpl->heading = get_string('timepercentcomplete', 'learningtimecheck');
+                $bartpl->progressurl = $this->output->image_url('progress2_big', 'learningtimecheck');
                 $template->bars[] = $bartpl;
             }
         }
@@ -1967,8 +1989,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $bartpl = new StdClass;
             $bartpl->percentcomplete = $optionalpercentcomplete;
             $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
-            $bartpl->heading = get_string('optionalpercentcompleteall','learningtimecheck');
-            $bartpl->progressurl = $this->output->image_url('progress1_big','learningtimecheck');
+            $bartpl->heading = get_string('optionalpercentcompleteall', 'learningtimecheck');
+            $bartpl->progressurl = $this->output->image_url('progress1_big', 'learningtimecheck');
             $template->bars[] = $bartpl;
         }
 
@@ -1987,7 +2009,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $bartpl = new StdClass;
             $bartpl->percentcomplete = $allpercentcomplete;
             $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
-            $bartpl->heading = get_string('percentcompleteall','learningtimecheck');
+            $bartpl->heading = get_string('percentcompleteall', 'learningtimecheck');
             $bartpl->progressurl = $this->output->image_url('progress1_big', 'learningtimecheck');
             $template->bars[] = $bartpl;
         }
@@ -2060,7 +2082,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $str .= '</td>';
             $str .= '</tr>';
             $str .= '</table>';
-            
+
             return $str;
         }
 
@@ -2075,12 +2097,13 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $str .= html_writer::select(learningtimecheck_get_credit_times(), "credittime[$item->id]", @$item->credittime, array('' => 'choosedots'), $attributes);
 
-        // Credit time can be forced to report in training sessions time report. 
+        // Credit time can be forced to report in training sessions time report.
         if (is_dir($CFG->dirroot.'/report/trainingsessions')) {
             if ($usercanforcetrainingsessions || $config->allowoverrideusestats) {
                 // Disable this option if training sessions report is not installed.
                 $checked = (@$item->enablecredit) ? ' checked="checked" ' : '';
-                $str .= '<br/><input type="checkbox" name="enablecredit['.$item->id.']" value="1" '.$checked.' /> <span <lass="smalltext">'.get_string('enablecredit', 'learningtimecheck').'</span>';
+                $str .= '<br/><input type="checkbox" name="enablecredit['.$item->id.']" value="1" '.$checked.' /> ';
+                $str .= '<span <lass="smalltext">'.get_string('enablecredit', 'learningtimecheck').'</span>';
             }
         }
 
@@ -2092,7 +2115,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             '1' => get_string('students'),
             '2' => get_string('teachers'),
             '3' => get_string('both', 'learningtimecheck'));
-        $str .= html_writer::select($isdeclarativeoptions, "isdeclarative[$item->id]", @$item->isdeclarative, array('' => 'choosedots'), array('onchange' => 'checktimecreditlist(\''.$item->id.'\', this)'));
+        $attrs = array('onchange' => 'checktimecreditlist(\''.$item->id.'\', this)');
+        $str .= html_writer::select($isdeclarativeoptions, "isdeclarative[$item->id]", @$item->isdeclarative, array('' => 'choosedots'), $attrs);
         $str .= '</td>';
 
         // teacher credittime item scope.
@@ -2163,7 +2187,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * Provides editing commands for each item.
      */
     public function item_edit_commands(&$thispage, &$item, $autoitem) {
-        global $CFG;
 
         $str = '';
 
@@ -2184,6 +2207,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $str .= '&nbsp;'.$this->output->pix_icon('hiddenbymodule', $title, 'learningtimecheck').'</a>';
             }
         } else {
+            assert(1);
             /*
             // Edit command (for non automatic items).
             $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'edititem')).'">';
@@ -2230,7 +2254,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $str .= '<input type="text" size="'.LTC_TEXT_INPUT_WIDTH.'" name="displaytext" value="" id="additembox" />';
         $str .= '<input type="submit" name="additem" value="'.$additemstr.'" />';
-        $str .= '<input type="button" name="canceledititem" value="'.get_string('canceledititem','learningtimecheck').'" onclick="cancel_add_item_form(\''.$addafteritem->id.'\')" />';
+        $cancelstr = get_string('canceledititem', 'learningtimecheck');
+        $str .= '<input type="button" name="canceledititem" value="'.$cancelstr.'" onclick="cancel_add_item_form(\''.$addafteritem->id.'\')" />';
         $str .= '<br />';
         $str .= '<textarea name="displaytextnote" rows="3" cols="25"></textarea>';
         $str .= '</form>';
@@ -2240,30 +2265,26 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     /**
-     * this form is used when adding an extra non automatic item 
+     * this form is used when adding an extra non automatic item
      * when edting the learningtimecheck list. Used by teachers
      * @param string $thispage
      * @param int $addafteritem
      */
-    function edit_item_form($thispage, $addafteritem){
+    public function edit_item_form($thispage, $addafteritem) {
 
-        $str = '';
+        $template = new StdClass;
 
-        $str .= '<form style="display:inline;" action="'.$thispage->out_omit_querystring().'" method="post">';
-        $str .= html_writer::input_hidden_params($thispage, array('sesskey'));
-        $str .= learningtimecheck_add_paged_params();
-        $str .= '<input type="hidden" name="what" value="additem" />';
-        $str .= '<input type="hidden" name="position" value="'.($addafteritem->position + 1).'" />';
-        $str .= '<input type="hidden" name="indent" value="'.$addafteritem->indent.'" />';
+        $template->formurl = $thispage->out_omit_querystring();
+        $template->hiddenparams = html_writer::input_hidden_params($thispage, array('sesskey'));
+        $template->pageparams = learningtimecheck_add_paged_params();
 
-        $str .= '<input type="checkbox" name="isoptional" value="1" title="'.get_string('uncheckoptional', 'learningtimecheck').'" checked />';
-        $str .= '<input type="text" size="'.LTC_TEXT_INPUT_WIDTH.'" name="displaytext" value="" id="additembox" />';
+        $template->position = $addafteritem->position + 1;
+        $template->indent = $addafteritem->indent;
 
-        $str .= '<input type="submit" name="additem" value="'.get_string('additem','learningtimecheck').'" />';
-        $str .= '<input type="button" name="canceledititem" value="'.get_string('canceledititem','learningtimecheck').'" onclick="cancel_add_item_form(\''.$addafteritem->id.'\')" />';
-        $str .= '</form>';
+        $template->size = LTC_TEXT_INPUT_WIDTH;
+        $template->id = $addafteritem->id;
 
-        return $str;
+        return $this->output->render_from_template('mod_learningtimecheck/edit_item_form', $template);
     }
 
     public function print_view_all_button($thispage) {
@@ -2285,7 +2306,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= '<form style="display: inline;" action="'.$thispage->out_omit_querystring().'" method="get">';
         $str .= html_writer::input_hidden_params($thispage);
         $str .= '<input type="hidden" name="editcomments" value="on" />';
-        $str .= ' <input type="submit" name="viewall" value="'.get_string('addcomments','learningtimecheck').'" />';
+        $str .= ' <input type="submit" name="viewall" value="'.get_string('addcomments', 'learningtimecheck').'" />';
         $str .= '</form>';
 
         return $str;
@@ -2302,7 +2323,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= html_writer::input_hidden_params($thispage);
         $str .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
         $str .= '<input type="hidden" name="what" value="toggledates" />';
-        $str .= ' <input type="submit" name="toggledates" value="'.get_string('toggledates','learningtimecheck').'" />';
+        $str .= ' <input type="submit" name="toggledates" value="'.get_string('toggledates', 'learningtimecheck').'" />';
         $str .= '</form>';
 
         return $str;
@@ -2316,14 +2337,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= '<form style="display: inline;" action="'.$velocityurl.'" method="get">';
         $str .= html_writer::input_hidden_params($thispage);
         $str .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
-        $str .= ' <input type="submit" name="gotovelocities" value="'.get_string('learningvelocities','learningtimecheck').'" />';
+        $str .= ' <input type="submit" name="gotovelocities" value="'.get_string('learningvelocities', 'learningtimecheck').'" />';
         $str .= '</form>';
 
         return $str;
     }
 
     public function print_export_excel_button($thispage, $userid = 0) {
-        global $CFG, $COURSE;
+        global $COURSE;
 
         $str = '';
 
@@ -2382,10 +2403,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= html_writer::input_hidden_params($thispage, array('what'));
         if ($reportsettings->showoptional) {
             $str .= '<input type="hidden" name="what" value="hideoptional" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('optionalhide','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('optionalhide', 'learningtimecheck').'" />';
         } else {
             $str .= '<input type="hidden" name="what" value="showoptional" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('optionalshow','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('optionalshow', 'learningtimecheck').'" />';
         }
         $str .= '</form>';
 
@@ -2399,10 +2420,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= html_writer::input_hidden_params($thispage, array('what'));
         if (!$reportsettings->hideheadings) {
             $str .= '<input type="hidden" name="what" value="collapseheaders" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('collapseheaders','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('collapseheaders', 'learningtimecheck').'" />';
         } else {
             $str .= '<input type="hidden" name="what" value="expandheaders" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('expandheaders','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('expandheaders', 'learningtimecheck').'" />';
         }
         $str .= '</form>';
 
@@ -2417,10 +2438,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         if ($reportsettings->showprogressbars) {
             $editchecks = false;
             $str .= '<input type="hidden" name="what" value="hideprogressbars" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('showfulldetails','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('showfulldetails', 'learningtimecheck').'" />';
         } else {
             $str .= '<input type="hidden" name="what" value="showprogressbars" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('showprogressbars','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('showprogressbars', 'learningtimecheck').'" />';
         }
         $str .= '</form>';
 
@@ -2428,7 +2449,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function print_previous_hpage_button($thispage, $hpage) {
-        global $CFG;
 
         $filterlastname = optional_param('filterlastname', '', PARAM_TEXT);
         $filterfirstname = optional_param('filterfirstname', '', PARAM_TEXT);
@@ -2451,7 +2471,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function print_next_hpage_button($thispage, $hpage, $itemcount) {
-        global $CFG;
 
         $str = '';
 
@@ -2467,7 +2486,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= '<input type="hidden" name="page" value="'.$page.'"/>';
         $str .= '<input type="hidden" name="filterlastname" value="'.$filterlastname.'"/>';
         $str .= '<input type="hidden" name="filterfirstname" value="'.$filterfirstname.'"/>';
-        $disabled = (($hpage + 1) * LTC_HPAGE_SIZE >= $itemcount) ? 'disabled="disabled" class="shadow" ' : '' ;
+        $disabled = (($hpage + 1) * LTC_HPAGE_SIZE >= $itemcount) ? 'disabled="disabled" class="shadow" ' : '';
         $str .= ' <input type="submit" name="nextpage" value="&gt;" '.$disabled.' />';
         $str .= '</form>';
 
@@ -2502,11 +2521,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * and date where they occur
      * this deals with filter rules.
      * @param object $thispage brings some extra params for generating url
-     * @param string $url if not set, will return to main learningtimecheck view. If set, diverts return to 
+     * @param string $url if not set, will return to main learningtimecheck view. If set, diverts return to
      * an alternate URL.
      */
     public function print_event_filter($thispage, $url = null, $component = 'mod', $itemid = 0) {
-        global $SESSION, $CFG, $OUTPUT;
+        global $SESSION;
 
         $ruleops = learningtimecheck_class::get_ruleop_options();
 
@@ -2677,7 +2696,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     }
 
     public function group_grouping_menu($rooturl) {
-        global $SESSION, $COURSE;
+        global $COURSE;
 
         $str = '';
         $this->groupid = groups_get_course_group($COURSE, true);
@@ -2869,7 +2888,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
     /**
      * Compute some complements depending on cmid
-     * @param string $item
+     * @param array $item
      */
     public function cell_cm_complement($item) {
         global $DB;
@@ -2892,9 +2911,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
     /**
      * Renders the the check grid upper row with mod names
-     * @param array $table the check table
+     * @param html_table $table the check table
      */
-    public function table_head_row($table) {
+    public function table_head_row(html_table $table) {
 
         $keys = array_keys($table->head);
         $lastkey = end($keys);
@@ -2918,7 +2937,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $headers;
     }
 
-    /** 
+    /**
      * Get suitable pixs for each teacher state.
      */
     public function teachermark_pixs() {
@@ -2992,72 +3011,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $this->output->render_from_template('mod_learningtimecheck/namefilter', $template);
     }
 
-    // Seems being an obsolete function.
-    /*
-    public function summary($learningtimecheck, $cm) {
-        global $DB;
-
-        $str = '';
-
-        $context = context_module::instance($cm->id);
-        if (!has_capability('mod/learningtimecheck:viewreports', $context)) {
-            $itemtimes = $learningtimecheck->get_items_for_user($USER);
-            $str .= '<div class="ltc-summary">';
-            $str .= get_string('totalduetime');
-            $str .= '<div class="ltc-totaltime">';
-            $str .= $itemtimes['mandatory']['time'];
-            if (!empty($itemtimes['optional']['time'])) {
-                $str .= '<span class="optional">+ '.$itemtimes['optional']['time'].'<span>';
-            }
-            $str .= '</div>';
-
-            $str .= get_string('totaldonetime');
-            $str .= '<div class="ltc-timedone">';
-            $str .= $itemtimes['mandatory']['tickedtime'];
-            if (!empty($itemtimes['optional']['tickedtime'])) {
-                $str .= '<span class="optional">+ '.$itemtimes['optional']['tickedtime'].'<span>';
-            }
-            $str .= '</div>';
-
-            $str .= get_string('totaldonetime');
-            $str .= '<div class="ltc-timeleft">';
-            $str .= $itemtimes['mandatory']['timeleft'];
-            if (!empty($itemtimes['optional']['timeleft'])) {
-                $str .= '<span class="optional">+ '.$itemtimes['optional']['timeleft'].'<span>';
-            }
-            $str .= '</div>';
-
-            $str .= '</div>';
-
-            $str .= '<div class="ltc-timeleft">';
-            if (!empty($learningtimecheck->items)) {
-                foreach ($learningtimecheck->items as $item) {
-
-                    if ($item->checked && $learningtimecheck->teacheredit == 0) {
-                        $itemclasses = 'green';
-                    }
-
-                    if ($learningtimecheck->teacheredit > 0) {
-                        if ($item->teachermark) {
-                            $itemclasses = 'green';
-                        } else if ($item->checked) {
-                            $itemclasses = 'green';
-                        }
-                    }
-
-                    $str .= '<div class="ltc-square '.$itemclasses.'" title="'.htmlentities($item->displaytext).'">&nbsp;</div>';
-                }
-            }
-            $str .= '</div>';
-        }
-
-        return $str;
-    }
-    */
-
     /**
      * Renders a JQPlot graph showing compared progress of students in a given population.
-     *
+     * @param arrayref &$users
+     * @param string $scale
+     * @param int $timeorigin
      */
     public function learning_curves(&$users, $scale = 'days', $timeorigin) {
         global $USER;

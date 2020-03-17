@@ -24,7 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-/**
+/*
  * this is the master controller of the edit form, except all what
  * is being handled by ajax.
  */
@@ -139,52 +139,52 @@ if ($action) {
             }
             break;
 
-    case 'updateitem':
-        $displaytext = optional_param('displaytext', '', PARAM_TEXT);
-        $chk->updateitemtext($itemid, $displaytext);
+        case 'updateitem':
+            $displaytext = optional_param('displaytext', '', PARAM_TEXT);
+            $chk->updateitemtext($itemid, $displaytext);
         break;
 
-    case 'deleteitem':
-        if (($chk->learningtimecheck->autopopulate) && (isset($chk->items[$itemid])) && ($chk->items[$itemid]->moduleid)) {
-            $chk->toggledisableitem($itemid);
-        } else {
-            $chk->deleteitem($itemid);
-        }
+        case 'deleteitem':
+            if (($chk->learningtimecheck->autopopulate) && (isset($chk->items[$itemid])) && ($chk->items[$itemid]->moduleid)) {
+                $chk->toggledisableitem($itemid);
+            } else {
+                $chk->deleteitem($itemid);
+            }
         break;
 
-    case 'moveitemup':
-        $chk->moveitemup($itemid);
+        case 'moveitemup':
+            $chk->moveitemup($itemid);
         break;
 
-    case 'moveitemdown':
-        $chk->moveitemdown($itemid);
+        case 'moveitemdown':
+            $chk->moveitemdown($itemid);
         break;
 
-    case 'makeoptional':
-        $chk->makeoptional($itemid, true);
+        case 'makeoptional':
+            $chk->makeoptional($itemid, true);
         break;
 
-    case 'makerequired':
-        $chk->makeoptional($itemid, false);
+        case 'makerequired':
+            $chk->makeoptional($itemid, false);
         break;
 
-    case 'makeheading':
-        $chk->makeoptional($itemid, true, true);
+        case 'makeheading':
+            $chk->makeoptional($itemid, true, true);
         break;
 
-    case 'nextcolour':
-        $chk->nextcolour($itemid);
+        case 'nextcolour':
+            $chk->nextcolour($itemid);
         break;
 
-    case 'hideitem':
-        $chk->hideitem($itemid);
+        case 'hideitem':
+            $chk->hideitem($itemid);
         break;
 
-    case 'showitem':
-        $chk->showitem($itemid);
+        case 'showitem':
+            $chk->showitem($itemid);
         break;
 
-    default:
-        error('Invalid action - "'.s($action).'"');
+        default:
+            error('Invalid action - "'.s($action).'"');
     }
 }
