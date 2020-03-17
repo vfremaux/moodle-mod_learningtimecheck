@@ -165,9 +165,9 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
                 cc.teacherid,
                 cmid
         ";
-        
+
         // echo "teacher $sql <br/>";
-        
+
         return $DB->get_records_sql($sql);
     } else {
 
@@ -230,12 +230,22 @@ function learningtimecheck_get_checklists($uid, $courseid = 0, $userlist = []) {
     }
 }
 
+/**
+ * Checks if a course use some LTC tracking.
+ * @param int $courseid
+ */
 function learningtimecheck_course_has_ltc_tracking($courseid) {
     global $DB;
 
     return $DB->record_exists('learningtimecheck', array('course' => $courseid));
 }
 
+/*
+ * Get all mark checks in the course, among all LTC instances.
+ * @param int $courseid the course
+ * @param int $userid the user
+ * @param bool $mandatory
+ */
 function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = false) {
     global $DB;
 
@@ -261,4 +271,21 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
     }
 
     return $marks;
+}
+
+/**
+ * Get the global time contract of all the ltc instances in a course.
+ * @param int $courseid
+ * @return a result array with mandatory/optional total item times.
+ * TOTO : finish this function.
+ */
+function learningtimecheck_get_course_time($courseid, $userid = 0) {
+
+    if (!learningtimecheck_course_has_ltc_tracking($courseid)) {
+        // Shortcut output.
+        return [0, 0];
+    }
+
+    $checklists = learningtimecheck_get_checklists($userid, $courseid);
+
 }

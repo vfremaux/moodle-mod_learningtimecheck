@@ -72,10 +72,19 @@ function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
  * @param int $userid
  */
 function learningtimecheck_execute_rule($filterrule, $userid) {
-    global $COURSE, $DB;
+    global $COURSE, $DB, $CFG;
 
-    $filterdatetime = strtotime($filterrule->datetime);
+    if ($CFG->lang == 'fr' || $CFG->lang == 'es') {
+        list($day, $month, $year) = explode('/', $filterrule->datetime);
+        $filterdatetime = mktime(0, 0, 0, $month, $day, $year);
+    } else {
+        $filterdatetime = 0 + strtotime($filterrule->datetime);
+    }
     $ruleops = learningtimecheck_class::get_ruleop_options();
+
+    $logmanager = get_log_manager();
+    $readers = $logmanager->get_readers(ltc_get_logreader_name());
+    $reader = reset($readers);
 
     switch ($filterrule->rule) {
         case 'courseenroltime':
@@ -122,54 +131,70 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
 
         case 'checkcomplete':
             break;
+
         case 'coursestarted':
-            $sql = "
-                SELECT
-                    MIN(time)
-                FROM
-                    {log} l
-                WHERE
-                    course = ? AND
-                    userid = ?
-            ";
-            $time = $DB->get_field_sql($sql, array($COURSE->id, $userid));
+
+            if (empty($reader)) {
+                return false; // No log reader found.
+            }
+
+            // We'll have to probably address directly the log tables (standard_log and log if used).
+            if ($reader instanceof \logstore_standard\log\store) {
+                // address standard log
+                $time = $DB->get_field('logstore_standard_log', 'MIN(timecreated)', array('userid' => $userid, 'courseid' => $COURSE->id));
+            } else if ($reader instanceof \logstore_standard\log\store) {
+                // address legacy log table
+                $time = $DB->get_field('log', 'MIN(time)', array('userid' => $userid, 'courseid' => $COURSE->id));
+            } else {
+                // Might be not supported or needs to be developed, such as external DB logging.
+                throw new coding_exception('Not supported logstore');
+            }
+
             $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             eval($statement);
             return $result;
             break;
 
         case 'coursecompleted':
+            $completion = $DB->get_record('course_completion', array('courseid' => $COURSE->id, 'userid' => $userid));
+            $completiontime = $completion->timecompleted;
+            $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             break;
 
         case 'lastcoursetrack':
-            $sql = "
-                SELECT
-                    MAX(time)
-                FROM
-                    {log} l
-                WHERE
-                    course = ? AND
-                    userid = ?
-            ";
-            $time = $DB->get_field_sql($sql, array($COURSE->id, $userid));
+
+            if (empty($reader)) {
+                return false; // No log reader found.
+            }
+
+            // We'll have to probably address directly the log tables (standard_log and log if used).
+            if ($reader instanceof \logstore_standard\log\store) {
+                // address standard log
+                $time = $DB->get_field('logstore_standard_log', 'MAX(timecreated)', array('userid' => $userid, 'courseid' => $COURSE->id));
+            } else if ($reader instanceof \logstore_standard\log\store) {
+                // address legacy log table
+                $time = $DB->get_field('log', 'MAX(time)', array('userid' => $userid, 'courseid' => $COURSE->id));
+            } else {
+                // Might be not supported or needs to be developed, such as external DB logging.
+                throw new coding_exception('Not supported logstore');
+            }
+
             $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             eval($statement);
             return $result;
 
         case 'usercreationdate':
-            $createdate = $DB->get_field('user', 'timecreated', array('id' => $userid));
+            $createdate = 0 + $DB->get_field('user', 'timecreated', array('id' => $userid));
             $statement = " \$result = {$createdate} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
             eval($statement);
             return $result;
 
         case 'sitefirstevent':
-            $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            $reader = reset($readers);
 
             if (empty($reader)) {
                 return false; // No log reader found.
             }
+
             // We'll have to probably address directly the log tables (standard_log and log if used).
             if ($reader instanceof \logstore_standard\log\store) {
                 // address standard log
@@ -179,6 +204,7 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 $firstevent = $DB->get_field('log', 'MIN(time)', array('userid' => $userid));
             } else {
                 // Might be not supported or needs to be developed, such as external DB logging.
+                throw new coding_exception('Not supported logstore');
             }
 
             // Needs at least an event to accept.
@@ -191,9 +217,6 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
             return $result;
 
         case 'sitelastevent':
-            $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            $reader = reset($readers);
 
             if (empty($reader)) {
                 return false; // No log reader found.
@@ -224,10 +247,6 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
              * this means : i have started activity in at least one registered course (except SITE and MY page). this
              * can discriminate users just registered in global spaces from users being actually users in courses
              */
-
-            $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            $reader = reset($readers);
 
             if (empty($reader)) {
                 return false; // No log reader found.
