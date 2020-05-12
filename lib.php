@@ -74,6 +74,7 @@ define('LTC_MAX_INDENT', 10);
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/lib/completionlib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
 function learningtimecheck_supports($feature) {
     switch($feature) {

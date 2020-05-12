@@ -83,7 +83,7 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
     $ruleops = learningtimecheck_class::get_ruleop_options();
 
     $logmanager = get_log_manager();
-    $readers = $logmanager->get_readers('\core\log\sql_reader');
+    $readers = $logmanager->get_readers(ltc_get_logreader_name());
     $reader = reset($readers);
 
     switch ($filterrule->rule) {
