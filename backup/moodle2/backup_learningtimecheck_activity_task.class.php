@@ -63,8 +63,8 @@ class backup_learningtimecheck_activity_task extends backup_activity_task {
         $content = preg_replace($search, '$@LEARNINGTIMECHECKVIEWBYINSTANCE*$2@$', $content);
 
         // Link to learningtimecheck report by moduleid
-        $search="/(".$base."\/mod\/learningtimecheck\/report.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYID*$2@$', $content);
+        $search = "/(".$base."\/mod\/learningtimecheck\/report.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@LEARNINGTIMECHECKREPORTBYID*$2@$', $content);
 
         // Link to learningtimecheck report by id
         $search = "/(".$base."\/mod\/learningtimecheck\/report.php\?learningtimecheck\=)([0-9]+)/";

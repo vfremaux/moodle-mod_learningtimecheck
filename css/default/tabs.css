@@ -1,10 +1,11 @@
+/* stylelint-disable no-duplicate-properties */
+
 .tabs-container {
     overflow: hidden;
 }
 .tabs-header {
-    border-bottom-width: 0;
     border-style: solid;
-    border-width: 1px;
+    border-width: 1px 1px 0 1px;
     overflow: hidden;
     padding: 0;
     padding-top: 2px;
@@ -155,8 +156,7 @@
 }
 .tabs-panels {
     border-style: solid;
-    border-top-width: 0;
-    border-width: 1px;
+    border-width: 0 1px 1px 1px;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -301,7 +301,7 @@
 }
 .tabs-header-right .tabs li.tabs-selected a.tabs-inner {
     background: -webkit-linear-gradient(left, #fff 0, #eff5ff 100%);
-    background: -moz-linear-gradient(left,#fff 0,#eff5ff 100%);
+    background: -moz-linear-gradient(left, #fff 0, #eff5ff 100%);
     background: -o-linear-gradient(left, #fff 0, #eff5ff 100%);
     background: linear-gradient(to right, #fff 0, #eff5ff 100%);
     background-repeat: repeat-y;

@@ -1,3 +1,5 @@
+/* stylelint-disable no-duplicate-properties */
+
 .panel {
     border: 0;
     border-radius: 0 0 0 0;
@@ -73,7 +75,7 @@
     -webkit-border-radius: 3px 3px 3px 3px;
 }
 .panel-loading {
-    padding: 11px 0 10 30;
+    padding: 11px 0 10px 30px;
 }
 .panel-noscroll {
     overflow: hidden;
@@ -87,7 +89,7 @@
     padding: 0;
 }
 .panel-loading {
-    background: url('images/loading.gif') no-repeat 10 10;
+    background: url('images/loading.gif') no-repeat 10px 10px;
 }
 .panel-tool-close {
     background: url('images/panel_tools.png') no-repeat -16px 0;

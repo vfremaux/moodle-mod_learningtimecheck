@@ -103,7 +103,6 @@ function learningtimecheck_supports($feature) {
         case FEATURE_SHOW_DESCRIPTION: {
             return true;
         }
-
         default: return null;
     }
 }

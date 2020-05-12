@@ -154,13 +154,13 @@
     color: #000;
 }
 .calendar-sunday {
-    color: #cc2222;
+    color: #c22;
 }
 .calendar-saturday {
-    color: #00ee00;
+    color: #0e0;
 }
 .calendar-today {
-    color: #0000ff;
+    color: #00f;
 }
 .calendar-menu-year {
     border-color: #95b8e7;

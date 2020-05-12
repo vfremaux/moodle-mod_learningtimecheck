@@ -2866,7 +2866,6 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehi
             l.id = li.learningtimecheck AND
             cm.instance = l.id AND
             cm.module = ? AND
-            cm.visible = 1 AND
             cm.deletioninprogress = 0 AND
             l.course = ? AND
             li.itemoptional <> ".LTC_OPTIONAL_HEADING."

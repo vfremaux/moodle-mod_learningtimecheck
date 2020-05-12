@@ -512,7 +512,7 @@ table.ltc-timesettings {
     border: solid 1px #e0e0e0;
     border-radius: 3px;
     display: inline-block;
-    min-width: 20px
+    min-width: 20px;
     padding: 4px;
 }
 

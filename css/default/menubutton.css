@@ -1,3 +1,5 @@
+/* stylelint-disable no-duplicate-properties */
+
 .m-btn-downarrow,
 .s-btn-downarrow {
     display: inline-block;
@@ -44,7 +46,7 @@
     margin-right: 4px;
 }
 .m-btn .l-btn-icon-bottom .l-btn-icon {
-    bottom: 20;
+    bottom: 20px;
     top: auto;
 }
 .m-btn .l-btn-icon-top .m-btn-downarrow,

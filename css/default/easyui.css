@@ -1,3 +1,5 @@
+/* stylelint-disable no-duplicate-properties */
+
 .panel {
     border: 0;
     border-radius: 0 0 0 0;
@@ -193,8 +195,7 @@
 }
 .window .window-body {
     border-style: solid;
-    border-top-width: 0;
-    border-width: 1px;
+    border-width: 0 1px 1px 1px;
 }
 .window .window-body-noheader {
     border-top-width: 1px;
@@ -402,7 +403,7 @@
     padding: 0;
 }
 .l-btn-focus {
-    outline: #0000ff dotted thin;
+    outline: #00f dotted thin;
 }
 .l-btn-large .l-btn-text {
     line-height: 40px;
@@ -617,7 +618,7 @@
     cursor: pointer;
     display: inline-block;
     filter: alpha(opacity=60);
-    height: 20;
+    height: 20px;
     opacity: 0.6;
     overflow: hidden;
     vertical-align: top;
@@ -697,7 +698,7 @@
 }
 .layout-panel-north,
 .layout-panel-south {
-  z-index: 3;
+    z-index: 3;
 }
 .layout-expand {
     cursor: pointer;
@@ -928,8 +929,7 @@
 }
 .tabs-panels {
     border-style: solid;
-    border-top-width: 0;
-    border-width: 1px;
+    border-width: 0 1px 1px 1px;
     margin: 0;
     overflow: hidden;
     padding: 0;
@@ -1169,7 +1169,7 @@
     width: auto;
 }
 .datagrid-sort-icon {
-   padding: 0;
+    padding: 0;
 }
 .datagrid-toolbar {
     border-style: solid;
@@ -1287,7 +1287,7 @@
 .datagrid-resize-proxy {
     cursor: e-resize;
     display: none;
-    height: 10000;
+    height: 10000px;
     position: absolute;
     top: 0;
     width: 1px;
@@ -1649,13 +1649,13 @@
     color: #000;
 }
 .calendar-sunday {
-    color: #cc2222;
+    color: #c22;
 }
 .calendar-saturday {
-    color: #00ee00;
+    color: #0e0;
 }
 .calendar-today {
-    color: #0000ff;
+    color: #00f;
 }
 .calendar-menu-year {
     border-color: #95b8e7;
@@ -2008,7 +2008,6 @@
     border-left: 0;
     border-style: solid;
     border-width: 1px 0 0 0;
-    height: 'auto';
     width: 5px;
 }
 .slider-v .slider-rulelabel {

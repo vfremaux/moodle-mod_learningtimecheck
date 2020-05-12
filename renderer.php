@@ -1777,7 +1777,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $nameheading = ' <a href="'.$firstlink.'" >'.get_string('firstname').'</a> '.$firstarrow;
         $nameheading .= ' / <a href="'.$lastlink.'" >'.get_string('lastname').'</a> '.$lastarrow;
 
-        $table = new stdClass;
+        $table = new html_table;
         $table->head = array($nameheading);
         $table->level = array(-1);
         $table->size = array('100px');
@@ -1969,7 +1969,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $bartpl->percentcomplete = $requiredcompletepercent;
                 $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
                 $bartpl->heading = get_string('percentcomplete', 'learningtimecheck');
-                $bartpl->progressurl = $this->output->image_url('progress1_big','learningtimecheck');
+                $bartpl->progressurl = $this->output->image_url('progress1_big', 'learningtimecheck');
                 $template->bars[] = $bartpl;
             }
 
@@ -2254,7 +2254,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $str .= '<input type="text" size="'.LTC_TEXT_INPUT_WIDTH.'" name="displaytext" value="" id="additembox" />';
         $str .= '<input type="submit" name="additem" value="'.$additemstr.'" />';
-        $str .= '<input type="button" name="canceledititem" value="'.get_string('canceledititem', 'learningtimecheck').'" onclick="cancel_add_item_form(\''.$addafteritem->id.'\')" />';
+        $cancelstr = get_string('canceledititem', 'learningtimecheck');
+        $str .= '<input type="button" name="canceledititem" value="'.$cancelstr.'" onclick="cancel_add_item_form(\''.$addafteritem->id.'\')" />';
         $str .= '<br />';
         $str .= '<textarea name="displaytextnote" rows="3" cols="25"></textarea>';
         $str .= '</form>';
@@ -2437,7 +2438,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         if ($reportsettings->showprogressbars) {
             $editchecks = false;
             $str .= '<input type="hidden" name="what" value="hideprogressbars" />';
-            $str .= '<input type="submit" name="submit" value="'.get_string('showfulldetails','learningtimecheck').'" />';
+            $str .= '<input type="submit" name="submit" value="'.get_string('showfulldetails', 'learningtimecheck').'" />';
         } else {
             $str .= '<input type="hidden" name="what" value="showprogressbars" />';
             $str .= '<input type="submit" name="submit" value="'.get_string('showprogressbars', 'learningtimecheck').'" />';

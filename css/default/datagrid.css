@@ -1,3 +1,5 @@
+/* stylelint-disable no-duplicate-properties */
+
 .datagrid .panel-body {
     overflow: hidden;
     position: relative;
@@ -191,7 +193,7 @@
     padding: 0 13px 0 0;
 }
 .datagrid-sort-asc .datagrid-sort-icon {
-    background: url('images/datagrid_icons.png') no-repeat 0px center;
+    background: url('images/datagrid_icons.png') no-repeat 0 center;
     padding: 0 13px 0 0;
 }
 .datagrid-row-collapse {
@@ -205,8 +207,8 @@
 }
 .datagrid-header,
 .datagrid-td-rownumber {
-    background: -webkit-linear-gradient(top,#f9f9f9 0,#efefef 100%);
-    background: -moz-linear-gradient(top,#f9f9f9 0,#efefef 100%);
+    background: -webkit-linear-gradient(top, #f9f9f9 0, #efefef 100%);
+    background: -moz-linear-gradient(top, #f9f9f9 0, #efefef 100%);
     background: -o-linear-gradient(top, #f9f9f9 0, #efefef 100%);
     background: linear-gradient(to bottom, #f9f9f9 0, #efefef 100%);
     background-color: #efefef;
