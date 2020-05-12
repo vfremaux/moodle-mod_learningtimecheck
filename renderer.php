@@ -1787,7 +1787,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         foreach ($printableitems as $item) {
             if ($item->hidden) {
-                if (function_exists('debug_trace')) {
+                if (function_exists('debug_trace') && $CFG->debug = DEBUG_DEVELOPER) {
                     debug_trace("Hidden item $item->moduleid ");
                 }
                 continue;
