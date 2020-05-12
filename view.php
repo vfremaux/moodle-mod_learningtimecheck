@@ -24,17 +24,17 @@
  */
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
 
-$PAGE->requires->jquery();
+$PAGE->requires->css('/mod/learningtimecheck/css/icons.css');
+$PAGE->requires->js('/mod/learningtimecheck/teacherupdatechecks.js');
+$PAGE->requires->js_call_amd('mod_learningtimecheck/report', 'init');
 $PAGE->requires->js('/mod/learningtimecheck/js/jquery.easyui.min.js');
 $PAGE->requires->js('/mod/learningtimecheck/js/locale/easyui-lang-'.current_language().'.js');
 $PAGE->requires->css('/mod/learningtimecheck/css/default/easyui.css');
-$PAGE->requires->css('/mod/learningtimecheck/css/icons.css');
-$PAGE->requires->js('/mod/learningtimecheck/js/jquery.report.js');
-$PAGE->requires->js('/mod/learningtimecheck/teacherupdatechecks.js');
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
@@ -122,7 +122,35 @@ if ($view == 'preview') {
     }
 
     $userid = $studentid;
-    $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course);
+
+    // Get for which users.
+    $reportsettings = learningtimecheck_class::get_report_settings();
+
+    // Getting users for report.
+    switch ($reportsettings->sortby) {
+        case 'firstdesc':
+            $orderby = 'u.firstname DESC';
+            break;
+
+        case 'lastasc':
+            $orderby = 'u.lastname';
+            break;
+
+        case 'lastdesc':
+            $orderby = 'u.lastname DESC';
+            break;
+
+        default:
+            $orderby = 'u.firstname';
+            break;
+    }
+
+    $page = optional_param('page', 0, PARAM_INT);
+    $perpage = optional_param('perpage', 20, PARAM_INT);
+    $totalusers = 0;
+    $forusers = learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, $totalusers);
+
+    $chk = new learningtimecheck_class($cm->id, $userid, $learningtimecheck, $cm, $course, $forusers);
 
     if (!empty($action)) {
         include($CFG->dirroot.'/mod/learningtimecheck/report.controller.php');
@@ -132,6 +160,12 @@ if ($view == 'preview') {
 // Redirect to itemlist edition if empty learningtimecheck and have edtion capabilities.
 if ((!$chk->items) && $chk->canedit()) {
     redirect(new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $cm->id)) );
+}
+
+// Check and cache once the first access time to get it faster. This will accelearate progressively
+// all reports.
+if (!has_capability('mod/learningtimecheck:viewreports', $context, $userid)) {
+    report_learningtimecheck::get_first_course_log($userid, $course->id);
 }
 
 echo $OUTPUT->header();
@@ -157,17 +191,17 @@ switch ($view) {
         if (!$seeother) {
             echo $OUTPUT->heading(get_string('myprogress', 'learningtimecheck'));
         }
-        $renderer->view_items($seeother, true);
+        echo $renderer->view_items($seeother, true);
         break;
 
     case 'preview':
         echo $OUTPUT->heading(get_string('listpreview', 'learningtimecheck'));
-        $renderer->view_items(false, false);
+        echo $renderer->view_items(false, false);
         break;
 
     case 'report':
         echo $OUTPUT->heading(get_string('report', 'learningtimecheck'));
-        $renderer->view_report();
+        $renderer->view_report($forusers, $totalusers);
         break;
 }
 

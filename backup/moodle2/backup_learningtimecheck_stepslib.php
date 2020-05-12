@@ -34,8 +34,9 @@ class backup_learningtimecheck_activity_structure_step extends backup_activity_s
 
         $learningtimecheck = new backup_nested_element('learningtimecheck', array('id'), array(
             'name', 'intro', 'introformat', 'timecreated', 'timemodified', 'useritemsallowed',
-            'teacheredit', 'teachercomments', 'maxgrade',
-            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks', 'usetimecounterpart', 'lastcompiledtime'));
+            'teacheredit', 'duedatesoncalendar', 'teachercomments', 'maxgrade',
+            'autopopulate', 'autoupdate', 'completionpercent', 'emailoncomplete', 'lockteachermarks', 'lockstudentinput',
+            'declaredoverridepolicy', 'usetimecounterpart', 'lastcompiledtime'));
 
         $items = new backup_nested_element('items');
 
