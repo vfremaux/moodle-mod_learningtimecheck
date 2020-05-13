@@ -95,13 +95,13 @@ class mod_learningtimecheck_mod_form extends moodleform_mod {
 
         if (!($COURSE->format == 'page')) {
             $autopopulateoptions = array (LTC_AUTOPOPULATE_NO => get_string('no'),
-                                          LTC_AUTOPOPULATE_SECTION => get_string('importfromsection','learningtimecheck'),
+                                          LTC_AUTOPOPULATE_SECTION => get_string('importfromsection', 'learningtimecheck'),
                                           LTC_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
         } else {
             $autopopulateoptions = array (LTC_AUTOPOPULATE_NO => get_string('no'),
-                                          LTC_AUTOPOPULATE_CURRENT_PAGE => get_string('importfrompage','learningtimecheck'),
-                                          LTC_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs','learningtimecheck'),
-                                          LTC_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromtoppage','learningtimecheck'),
+                                          LTC_AUTOPOPULATE_CURRENT_PAGE => get_string('importfrompage', 'learningtimecheck'),
+                                          LTC_AUTOPOPULATE_CURRENT_PAGE_AND_SUBS => get_string('importfrompageandsubs', 'learningtimecheck'),
+                                          LTC_AUTOPOPULATE_CURRENT_TOP_PAGE => get_string('importfromtoppage', 'learningtimecheck'),
                                           LTC_AUTOPOPULATE_COURSE => get_string('importfromcourse', 'learningtimecheck'));
         }
 
