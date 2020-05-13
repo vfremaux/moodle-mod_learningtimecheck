@@ -89,7 +89,7 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
 $event->trigger();
 
-include($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
+require($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
 
 if ($learningtimecheck->autopopulate) {
     // Needs to be done again, just in case the edit actions have changed something.
