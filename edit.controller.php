@@ -121,68 +121,81 @@ if ($action) {
     }
 
     switch ($action) {
-        case 'additem':
+        case 'additem': {
             $displaytext = optional_param('displaytext', '', PARAM_TEXT);
             $indent = optional_param('indent', 0, PARAM_INT);
             $position = optional_param('position', false, PARAM_INT);
             $isoptional = optional_param('isoptional', LTC_OPTIONAL_YES, PARAM_INT);
             $chk->additem($displaytext, 0, $indent, $position, 0, $isoptional);
             break;
+        }
 
-        case 'startadditem':
+        case 'startadditem': {
             $additemafter = $itemid;
             break;
+        }
 
-        case 'edititem':
+        case 'edititem': {
             if (isset($chk->items[$itemid])) {
                 $chk->items[$itemid]->editme = true;
             }
             break;
+        }
 
-        case 'updateitem':
+        case 'updateitem': {
             $displaytext = optional_param('displaytext', '', PARAM_TEXT);
             $chk->updateitemtext($itemid, $displaytext);
-        break;
+            break;
+        }
 
-        case 'deleteitem':
+        case 'deleteitem': {
             if (($chk->learningtimecheck->autopopulate) && (isset($chk->items[$itemid])) && ($chk->items[$itemid]->moduleid)) {
                 $chk->toggledisableitem($itemid);
             } else {
                 $chk->deleteitem($itemid);
             }
-        break;
+            break;
+        }
 
-        case 'moveitemup':
+        case 'moveitemup': {
             $chk->moveitemup($itemid);
-        break;
+            break;
+        }
 
-        case 'moveitemdown':
+        case 'moveitemdown': {
             $chk->moveitemdown($itemid);
-        break;
+            break;
+        }
 
-        case 'makeoptional':
+        case 'makeoptional': {
             $chk->makeoptional($itemid, true);
-        break;
+            break;
+        }
 
-        case 'makerequired':
+        case 'makerequired': {
             $chk->makeoptional($itemid, false);
-        break;
+            break;
+        }
 
-        case 'makeheading':
+        case 'makeheading': {
             $chk->makeoptional($itemid, true, true);
-        break;
+            break;
+        }
 
-        case 'nextcolour':
+        case 'nextcolour': {
             $chk->nextcolour($itemid);
-        break;
+            break;
+        }
 
-        case 'hideitem':
+        case 'hideitem': {
             $chk->hideitem($itemid);
-        break;
+            break;
+        }
 
-        case 'showitem':
+        case 'showitem': {
             $chk->showitem($itemid);
-        break;
+            break;
+        }
 
         default:
             error('Invalid action - "'.s($action).'"');

@@ -1842,17 +1842,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $table->size[] = '80px';
             } else {
                 assert(1);
-                /*
-                if (!$reportsettings->hideheadings) {
-                    $table->head[] = '<div title="'.s($item->displaytext).'" alt="'.s($item->displaytext).'"></div>';
-                    $table->size[] = '5px';
-                } else {
-                    debug_trace("No showing header item as not showing headers.. ");
-                    continue;
-                }
-                */
             }
-            // $table->level[] = ($item->indent < 3) ? $item->indent : 2;
             $table->size[] = '80px';
             $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
@@ -2208,25 +2198,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
         } else {
             assert(1);
-            /*
-            // Edit command (for non automatic items).
-            $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'edititem')).'">';
-            $title = '"'.get_string('edititem', 'learningtimecheck').'"';
-            $str .= $this->output->pix_icon('/t/edit', $title).'</a>&nbsp;';
-
-            // Delete command.
-            $str .= '&nbsp;<a href="'.$thispage->out(true, array('what' => 'deleteitem')).'">';
-            $title = '"'.get_string('deleteitem', 'learningtimecheck').'"';
-            $str .= $this->output->pix_icon('/t/delete', $title).'</a>';
-            */
         }
-
-        // Add non auto item after this one.
-        /*
-        $title = '"'.get_string('additemhere', 'learningtimecheck').'"';
-        $img = $this->output->pix_icon('add', $title, 'learningtimecheck');
-        $str .= '&nbsp;&nbsp;&nbsp;<a href="javascript:load_add_item_form(\''.$CFG->wwwroot.'\', \''.$this->instance->cm->id.'\', \''.$item->id.'\')">'.$img.'</a>';
-        */
 
         return $str;
     }
