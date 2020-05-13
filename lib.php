@@ -37,6 +37,7 @@
  *     help to save some memory when Moodle is performing
  *     actions across all modules.
  */
+defined('MOODLE_INTERNAL') || die();
 
 define('LTC_EMAIL_NO', 0);
 define('LTC_EMAIL_STUDENT', 1);
@@ -78,21 +79,36 @@ require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
 function learningtimecheck_supports($feature) {
     switch($feature) {
-    case FEATURE_GROUPS:                  return true;
-    case FEATURE_GROUPINGS:               return true;
-    case FEATURE_GROUPMEMBERSONLY:        return true;
-    case FEATURE_MOD_INTRO:               return true;
-    case FEATURE_GRADE_HAS_GRADE:         return false;
-    case FEATURE_COMPLETION_HAS_RULES:    return true;
-    case FEATURE_BACKUP_MOODLE2:          return true;
-    case FEATURE_SHOW_DESCRIPTION:        return true;
-
-    default: return null;
+        case FEATURE_GROUPS: {
+            return true;
+        }
+        case FEATURE_GROUPINGS: {
+            return true;
+        }
+        case FEATURE_GROUPMEMBERSONLY: {
+            return true;
+        }
+        case FEATURE_MOD_INTRO:  {
+            return true;
+        }
+        case FEATURE_GRADE_HAS_GRADE: {
+            return true;
+        }
+        case FEATURE_COMPLETION_HAS_RULES: {
+            return true;
+        }
+        case FEATURE_BACKUP_MOODLE2: {
+            return true;
+        }
+        case FEATURE_SHOW_DESCRIPTION: {
+            return true;
+        }
+        default: return null;
     }
 }
 
 /**
- * Tells wether a feature is supported or not. Gives back the 
+ * Tells wether a feature is supported or not. Gives back the
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
@@ -354,7 +370,7 @@ function learningtimecheck_user_complete($course, $user, $mod, $learningtimechec
  * @todo Finish documenting this function
  */
 function learningtimecheck_print_recent_activity($course, $isteacher, $timestart) {
-    return false;  //  True if anything was printed, otherwise false.
+    return false; // True if anything was printed, otherwise false.
 }
 
 /**
@@ -628,7 +644,7 @@ function learningtimecheck_grade_item_delete($learningtimecheck) {
     }
 
     return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck',
-                        $learningtimecheck->id, 0, null, array('deleted'=>1));
+                        $learningtimecheck->id, 0, null, array('deleted' => 1));
 }
 
 /**
@@ -815,7 +831,6 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
  * @return bool false if file not found, does not return if found - justsend the file
  */
 function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
-    global $CFG, $DB;
 
     require_login($course);
 

@@ -418,7 +418,7 @@ class provider implements
         }
 
         $ltcid = $cm->instance;
-    $items = $DB->get_records('learningtimecheck_item', ['learningtimecheckid' => $ltcid]);
+        $items = $DB->get_records('learningtimecheck_item', ['learningtimecheckid' => $ltcid]);
         $itemlist = array_keys($items);
         if (!empty($itemlist)) {
             // TODO to be checked.

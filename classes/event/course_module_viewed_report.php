@@ -29,10 +29,10 @@ defined('MOODLE_INTERNAL') || die();
  * Event for when a learningtimecheck activity is viewed.
  *
  * @property-read array $other {
- *      Extra information about event.
+ * Extra information about event.
  *
- *      @type int anonymous if learningtimecheck is anonymous.
- *      @type int cmid course module id.
+ * @type int anonymous if learningtimecheck is anonymous.
+ * @type int cmid course module id.
  * }
  *
  * @package    mod_learningtimecheck

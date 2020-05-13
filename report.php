@@ -114,7 +114,7 @@ if ($studentid) {
 }
 
 if ($COURSE->format == 'page') {
-    require_once $CFG->dirroot.'/course/format/page/xlib.php';
+    require_once($CFG->dirroot.'/course/format/page/xlib.php');
     page_print_page_format_navigation($cm);
 }
 

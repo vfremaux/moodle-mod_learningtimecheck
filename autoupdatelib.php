@@ -483,7 +483,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
                 }
             } else {
                 /*
-                 * Completion has been unmarked for any reason, so checklist should also 
+                 * Completion has been unmarked for any reason, so checklist should also
                  * reflect this, whatever the time is valid or not.
                  */
                 if (!$item->usertimestamp) {
