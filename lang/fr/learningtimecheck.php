@@ -34,10 +34,15 @@ $string['additemalt'] = 'Ajouter un nouvel élément à la liste';
 $string['additemhere'] = 'Ajouter un élément après celui-ci';
 $string['addownitems'] = 'Ajoutez vos éléments';
 $string['addownitems-stop'] = 'Ne plus ajouter ses propres éléments';
+$string['addrule'] = 'Ajouter une règle';
 $string['allowmodulelinks'] = 'Permettre les liaisons aux modules d\'activité';
 $string['allreports'] = 'Rapports';
 $string['anygrade'] = 'N\'importe quelle valeur';
 $string['applytoall'] = 'Appliquer à tout';
+$string['applynever'] = 'Ne pas appliquer les crédits temps';
+$string['applyifcredithigher'] = 'Appliquer si le credit surpasse le temps réel';
+$string['applyifcreditlower'] = 'Appliquer si le temps réel dépasse le crédit';
+$string['applyalways'] = 'Toujours appliquer le crédit';
 $string['autopopulate'] = 'Capturer les modules de cours dans la liste';
 $string['autoupdate'] = 'Auto-marquer quand l\'activité est complète';
 $string['autoupdate_task'] = 'Mise à jour automatique des marques';
@@ -80,6 +85,8 @@ $string['configinitialautocapture'] = 'Autocapture initiale';
 $string['configinitialautocapture_desc'] = 'Quel mode de découverte autoamatique des items est activé lors de la création d\'une nouvelle instance de liste';
 $string['configinitiallymandatory'] = 'Initialement obligatoire';
 $string['configinitialcredittimeon'] = 'Temps forfaitaires activés initiallement';
+$string['configinitialdeclaredoverridepolicy'] = 'Surcharge initiale des temps déclarés';
+$string['configinitialdeclaredoverridepolicy_desc'] = 'Définit le mode de surcharge choisi par défaut pour toute nouvelle instance.';
 $string['configintegrateusestats'] = 'Intégrer les mesures réelles d\'activité';
 $string['configlearningtimecheckautoupdate'] = 'Bénéficier de cette fonctionnalité demande la quelques modifications locales du noyau de Moodle, lisez le document mod/learningtimecheck/README.txt pour plus de détails ou consultez un intégrateur.';
 $string['configlearningtimecheckautoupdateusecron'] = 'Les accomplissements seront automatiquement marqués sur la base d\'événements des traces';
@@ -96,10 +103,11 @@ $string['credit'] = 'Crédit';
 $string['credittime'] = 'Temps forfaitaire apprenant ';
 $string['itemcredittime'] = 'Crédit temps : {$a} min.';
 $string['deleteitem'] = 'Supprimer cet élément';
+$string['declaredoverridepolicy'] = 'Combinaison des temps déclarés';
 $string['disabled'] = 'Désactivé';
 $string['itemsdone'] = 'Activités réalisées';
 $string['edit'] = 'Modifier la liste';
-$string['editchecks'] = 'Modifier les marques';
+$string['editchecks'] = 'Temps';
 $string['editdatesstart'] = 'Activer les dates';
 $string['editdatesstop'] = 'Désactiver les dates';
 $string['editingoptions'] = 'Actions globales d\'édition';
@@ -149,9 +157,10 @@ $string['licenseprovider_desc'] = 'Entrez la clef de votre distributeur.';
 $string['licensekey'] = 'Clef de license pro';
 $string['licensekey_desc'] = 'Entrez ici la clef de produit que vous avez reçu de votre distributeur.';
 $string['uservelocity'] = 'Vélocité';
-$string['days'] = 'Jours';
-$string['hours'] = 'Heures';
+$string['days'] = 'j';
+$string['hours'] = 'h';
 $string['back'] = 'Retour';
+$string['largeuseramountsignal'] = 'ATTENTION: Il y a un nombre important d\'inscrits dans ce cours. Cela peut avoir un impact significatif sur certains écrans de synthèse ou la génération de rapports.';
 $string['lastcompiledtime'] = 'Dernier log compilé';
 $string['learningtimecheck'] = 'Avancement du travail';
 $string['learningtimecheck_autoupdate_use_cron'] = 'Mise à jour automatique par cron';
@@ -160,16 +169,19 @@ $string['learningtimecheckfor'] = 'Liste pour ';
 $string['learningtimecheckintro'] = 'Introduction';
 $string['learningtimechecksettings'] = 'Réglages';
 $string['linktomodule'] = 'Lier à l\'activité';
-$string['listpreview'] = 'Prévisualisation de la liste';
+$string['listpreview'] = 'Prévisualiser';
+$string['ltc'] = ' (LTC)';
 $string['myprogress'] = 'Ma progression';
 $string['lockteachermarks'] = 'Verrouiler les marques de l\'enseignant';
 $string['lockteachermarkswarning'] = 'Note: une fois mémorisées, vous ne pouvez plus modifier des marques positives';
+$string['lockstudentinput'] = 'Verrouiler les saisies étudiantes';
 $string['marktypes'] = 'Types de marques';
 $string['mandatory'] = 'obligatoires ';
+$string['mandatories'] = 'obligatoires (LTC)';
 $string['optional'] = 'facultatifs ';
 $string['modulename'] = 'Avancement et temps pédagogiques';
 $string['modulenameplural'] = 'Avancements et temps pédagogiques';
-$string['moduletotaltime'] = 'Temps pour ce module';
+$string['instancetotaltime'] = 'Temps pour LTC';
 $string['moveitemdown'] = 'Vers le bas';
 $string['moveitemup'] = 'Vers le haut';
 $string['noitems'] = 'Aucun élément dans la liste';
@@ -244,6 +256,7 @@ $string['totalestimatedtime'] = 'Dont temps estimés ';
 $string['totalized'] = '(Total)';
 $string['totalteacherestimatedtime'] = 'Temps tutorat estimé ';
 $string['tutorboard'] = 'Rapport de tutorat (réalisé)';
+$string['trainingsessionscoupling'] = ' => Report TS';
 $string['uncheckoptional'] = 'Décocher pour rendre facultatif';
 $string['unindentitem'] = 'Désindenter les éléments';
 $string['unvalidate'] = 'Refuser';
@@ -272,6 +285,11 @@ $string['itemenable'] = 'Prendre en compte';
 $string['itemdisable'] = 'Ignorer cet élément';
 $string['itemdeclaredtime'] = 'Temps déclaré : {$a} min.';
 
+$string['declared'] = 'Temps déclarés seulement';
+$string['declaredovercreditifhigher'] = 'Déclaré si supérieur au crédit, le crédit sinon.';
+$string['declaredcapedbycredit'] = 'Le déclaré jusqu\'à obtention du crédit (si le crédit est défini).';
+$string['credit'] = 'Temps crédités seulement';
+
 $string['and'] = 'ET';
 $string['or'] = 'OU';
 $string['xor'] = 'OU ALORS';
@@ -283,7 +301,7 @@ $string['coursestarted'] = 'Date d\'entrée dans le cours (première trace effec
 $string['coursecompleted'] = 'Date d\'achévement du cours ';
 $string['lastcoursetrack'] = 'Date de la dernière trace du cours ';
 $string['onecertificateissued'] = 'Date d\'obtention du premier certificat ';
-$string['allcertificatesissued'] = 'Date d\'obtention du dernier certificat '; 
+$string['allcertificatesissued'] = 'Date d\'obtention du dernier certificat ';
 $string['usercreationdate'] = 'Compte utilisateur créé ';
 $string['sitefirstevent'] = 'Première trace ';
 $string['sitelastevent'] = 'Dernière trace ';
@@ -343,6 +361,9 @@ s\'appliquent aux marques générées par la liste. Sinon, le module de temps d\
 $string['lockteachermarks_help'] = 'Lorsque ce réglage est activé, Les marques validées par les enseignants ne peuvent plus être retirées,
 sauf par les utilisateurs disposant de la capacité \'mod/learningtimecheck:updatelocked\'.';
 
+$string['lockstudentinput_help'] = 'Lorsque ce réglage est activé, les étudiants ne peuvent plus modifier leur déclaration de temps.
+';
+
 $string['modulename_help'] = '
 Ce module aide les étudiants et les enseignants à marquer et suivre les activités accomplies, tout en définissant et comptabilisant des temps
 pédagogiques associés aux activités. Des activités hors ligne peuvent également être comptabilisées, ainsi que des temps déclarés par les étudiants.
@@ -382,10 +403,10 @@ les enseignants et non enseignants non éditeur ont cette capacité.</p>
 
 $string['emailoncompletesubject'] = 'L\'utilisateur {$a->user} a terminé la liste de travaux \'{$a->learningtimecheck}\'';
 $string['emailoncompletesubjectown'] = 'Vous avez terminé la liste de travaux \'{$a->learningtimecheck}\'';
-$string['emailoncompletebody'] = 'L\'utilisateur {$a->user} a terminé la liste de travaux \'{$a->learningtimecheck}\' dans le cours \'{$a->coursename}\' 
+$string['emailoncompletebody'] = 'L\'utilisateur {$a->user} a terminé la liste de travaux \'{$a->learningtimecheck}\' dans le cours \'{$a->coursename}\'
 Voir la liste ici :';
 
-$string['emailoncompletebodyown'] = 'Vous avez terminé les travaux de la liste \'{$a->learningtimecheck}\' du cours \'{$a->coursename}\' 
+$string['emailoncompletebodyown'] = 'Vous avez terminé les travaux de la liste \'{$a->learningtimecheck}\' du cours \'{$a->coursename}\'
 Voir la liste ici :';
 
 $string['configstrictcredits_desc'] = 'Si actif, les temps crédités sont utilisés dans tous les cas à la place. Sinon, le crédit temps ne sera affecté que
@@ -396,5 +417,4 @@ $string['plugindist_desc'] = '
 correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugin existe et est distribuée
 sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
 <p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
-<p>Notez que les deux composant local_sharedresources et mod_sharedresource doivent fonctionner au même niveau de distribution</p>
 <p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';

@@ -46,7 +46,7 @@ function learningtimecheck_progress_set_instance(&$block, $chooseview = false) {
         $renderer = $PAGE->get_renderer('learningtimecheck');
         $renderer->set_instance($chk);
         $checkinfo = $chk->get_items_for_user($USER, array());
-        $percentcomplete = 0 + $checkinfo['mandatory']['percentcomplete']* 100;
+        $percentcomplete = 0 + $checkinfo['mandatory']['percentcomplete'] * 100;
         $str .= '<div style="text-align:center;margin-left:auto;margin-right:auto">';
         $str .= $renderer->progressbar_thin($percentcomplete);
         $str .= '</div>';
@@ -56,7 +56,7 @@ function learningtimecheck_progress_set_instance(&$block, $chooseview = false) {
         } else {
             $completeviewstr = get_string('fullview', 'learningtimecheck');
         }
-        $page = course_page::get_current_page($COURSE->id, false);
+        $page = \format\page\course_page::get_current_page($COURSE->id, false);
         $str .= '<center>';
         $buttonurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $block->cm->id, 'page' => $page->id));
         $str .= $OUTPUT->single_button($buttonurl, $completeviewstr);

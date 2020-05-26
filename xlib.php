@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
@@ -22,7 +23,7 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
 
     if ($usecredit) {
         $creditclause = ' AND usetimecounterpart = 1 ';
-    } elseif ($usecredit === false) {
+    } else if ($usecredit === false) {
         $creditclause = ' AND usetimecounterpart = 0 ';
     } else {
         $creditclause = '';
@@ -42,7 +43,7 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
  * credittime values are normalized in secs.
  */
 function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0, $userid = 0) {
-    global $CFG, $DB;
+    global $DB;
 
     if (is_numeric($learningtimecheckorid)) {
         $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckorid));
@@ -74,10 +75,11 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
 
     // get only teacher validated marks to assess the credit time
     $sql = "
-        SELECT
+        SELECT DISTINCT
             ci.id,
             cc.userid as userid,
             ci.moduleid AS cmid,
+            ci.enablecredit,
             ci.credittime * 60 AS credittime,
             $markvalue
             m.name AS modname
@@ -97,9 +99,10 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
             m.id = cm.module
         WHERE
             $userclause
-            ci.enablecredit = 1
+            1 = 1
             $cmclause
-            $learningtimecheckclause
+            $learningtimecheckclause AND
+            cm.deletioninprogress = 0
     ";
 
     $results = $DB->get_records_sql($sql, $params);
@@ -114,11 +117,11 @@ function learningtimecheck_get_credittimes($learningtimecheckorid = 0, $cmid = 0
  * credittime values are normalized in secs.
  */
 function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $userid = 0) {
-    global $CFG, $USER, $DB;
+    global $USER, $DB;
 
-    $learningtimecheckclause = ($learningtimecheckid) ? " AND ci.learningtimecheck = $learningtimecheckid " : '' ;
-    $cmclause = ($cmid) ? " AND cm.id = $cmid " : '' ;
-    $userclause = ($userid) ? " AND cc.userid = $userid " : '' ;
+    $learningtimecheckclause = ($learningtimecheckid) ? " AND ci.learningtimecheck = $learningtimecheckid " : '';
+    $cmclause = ($cmid) ? " AND cm.id = $cmid " : '';
+    $userclause = ($userid) ? " AND cc.userid = $userid " : '';
     $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => "$learningtimecheckid"));
     $teachermarkedclause = '';
     if ($learningtimecheck->teacheredit > LTC_MARKING_STUDENT) {
@@ -131,7 +134,7 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
 
     if (has_capability('mod/learningtimecheck:updateother', $context) && $userid == $USER->id) {
 
-        // assessor case when self viewing 
+        // assessor case when self viewing
         // get sum of teacherdelcaredtimes you have for each explicit module, or default module to learningtimecheck itself (NULL)
         // note the primary key is a pseudo key calculated for unicity, not for use.
         $sql = "
@@ -153,7 +156,7 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
                 cm.id = ci.moduleid
             LEFT JOIN
                 {modules} m
-            ON 
+            ON
                 m.id = cm.module
             WHERE
                 cc.teacherid = $userid
@@ -164,9 +167,9 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
                 cc.teacherid,
                 cmid
         ";
-        
+
         // echo "teacher $sql <br/>";
-        
+
         return $DB->get_records_sql($sql);
     } else {
 
@@ -195,7 +198,7 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
                 cm.id = ci.moduleid
             LEFT JOIN
                 {modules} m
-            ON 
+            ON
                 m.id = cm.module
             WHERE
                 1 = 1
@@ -212,29 +215,40 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
 /**
  * Get concerned checklists for a user or a course
  */
-function learningtimecheck_get_checklists($uid, $courseid = 0) {
+function learningtimecheck_get_checklists($uid, $courseid = 0, $userlist = []) {
     global $DB;
-    
+
     if ($courseid) {
         if ($records = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
-            foreach($records as $r) {
+            foreach ($records as $r) {
                 $cm = get_coursemodule_from_instance('learningtimecheck', $r->id);
-                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r);
+                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r, $cm, null, $userlist);
             }
             return $checklists;
         }
     } else {
+        assert(1);
         // TODO
         // returns all learningtimechecks concerned by the user
     }
 }
 
+/**
+ * Checks if a course use some LTC tracking.
+ * @param int $courseid
+ */
 function learningtimecheck_course_has_ltc_tracking($courseid) {
     global $DB;
 
     return $DB->record_exists('learningtimecheck', array('course' => $courseid));
 }
 
+/*
+ * Get all mark checks in the course, among all LTC instances.
+ * @param int $courseid the course
+ * @param int $userid the user
+ * @param bool $mandatory
+ */
 function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = false) {
     global $DB;
 
@@ -260,4 +274,21 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
     }
 
     return $marks;
+}
+
+/**
+ * Get the global time contract of all the ltc instances in a course.
+ * @param int $courseid
+ * @return a result array with mandatory/optional total item times.
+ * TOTO : finish this function.
+ */
+function learningtimecheck_get_course_total_time($courseid, $userid = 0) {
+
+    if (!learningtimecheck_course_has_ltc_tracking($courseid)) {
+        // Shortcut output.
+        return [0, 0];
+    }
+
+    $checklists = learningtimecheck_get_checklists($userid, $courseid);
+
 }

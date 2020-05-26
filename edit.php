@@ -89,7 +89,7 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('learningtimecheck', $learningtimecheck);
 $event->trigger();
 
-include($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
+require($CFG->dirroot.'/mod/learningtimecheck/edit.controller.php');
 
 if ($learningtimecheck->autopopulate) {
     // Needs to be done again, just in case the edit actions have changed something.
@@ -104,11 +104,11 @@ $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(format_string($learningtimecheck->name));
-
 $renderer = $PAGE->get_renderer('learningtimecheck');
 $renderer->set_instance($chk);
 $renderer->view_tabs('edit');
+
+echo $OUTPUT->heading(get_string('editchecks', 'learningtimecheck'));
 
 $chk->view_import_export();
 
