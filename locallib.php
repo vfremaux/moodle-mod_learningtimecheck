@@ -96,11 +96,7 @@ class learningtimecheck_class {
         if ($learningtimecheck) {
             $this->learningtimecheck = $learningtimecheck;
         } else if (! $this->learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $this->cm->instance) )) {
-            error('learningtimecheck ID was incorrect');
-        }
-
-        if (!$this->learningtimecheck) {
-            print_error('errorbadinstance', 'learningtimecheck', '', $cmid);
+            print_error('errorbadinstance', 'learningtimecheck', '', $this->cm->instance);
         }
 
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $this->learningtimecheck->autopopulate && $userid) {
@@ -151,7 +147,19 @@ class learningtimecheck_class {
         global $DB;
 
         $params = ['learningtimecheckid' => $this->id];
-        $select = ' learningtimecheck = :learningtimecheckid ';
+        $sql = '
+            SELECT 
+                li.*
+            FROM
+                {learningtimecheck_item} li
+            LEFT JOIN
+                {course_modules} cm
+            ON
+                li.moduleid = cm.id
+            WHERE
+                learningtimecheck = :learningtimecheckid AND
+                (cm.deletioninprogress IS NULL OR cm.deletioninprogress = 0)
+        ';
 
         $optionalclause = '';
         $optionals[] = ' itemoptional = 0 ';
@@ -164,7 +172,7 @@ class learningtimecheck_class {
         }
         $optionalclause = ' AND ('.implode(' OR ', $optionals).')';
 
-        $items = $DB->get_records_select('learningtimecheck_item', $select.$optionalclause, $params);
+        $items = $DB->get_records_sql($sql.$optionalclause, $params);
         return $items;
     }
 
@@ -372,6 +380,8 @@ class learningtimecheck_class {
                 }
             }
         }
+
+        return $this->items;
     }
 
     /**
@@ -514,7 +524,7 @@ class learningtimecheck_class {
      * Redraw this function
      * Loop through all activities / resources in course and check they
      * are in the current learningtimecheck (in the right order)
-     *
+     * @param array $userlist
      */
     public function update_items_from_course($userlist = []) {
         global $DB, $CFG;
@@ -542,7 +552,7 @@ class learningtimecheck_class {
             WHERE
                 ltci.learningtimecheck = ? AND
                 ltci.itemoptional <> ".LTC_OPTIONAL_HEADING." AND
-                (cm.id IS NULL OR cm.deletioninprogress != 0)
+                ((ltci.moduleid != 0 AND cm.id IS NULL) OR cm.deletioninprogress = 1)
         ";
         $lostcms = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
         if (!empty($lostcms)) {
@@ -2866,6 +2876,7 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehi
             l.id = li.learningtimecheck AND
             cm.instance = l.id AND
             cm.module = ? AND
+            cm.visible = 1 AND
             cm.deletioninprogress = 0 AND
             l.course = ? AND
             li.itemoptional <> ".LTC_OPTIONAL_HEADING."

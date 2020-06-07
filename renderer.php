@@ -1117,11 +1117,24 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
          * Start producing item list
          ****** */
 
-        $select = '
-            (userid = ? OR userid = 0) AND
-            learningtimecheck = ?
-        ';
-        $items = $DB->get_records_select('learningtimecheck_item', $select, array($USER->id, $this->instance->learningtimecheck->id), 'position');
+        $sql = "
+            SELECT
+                ltci.*
+            FROM
+                {learningtimecheck_item} ltci
+            LEFT JOIN
+                {course_modules} cm
+            ON
+                ltci.moduleid = cm.id
+            WHERE
+                (cm.deletioninprogress IS NULL || cm.deletioninprogress = 0) AND
+                (ltci.userid = ? OR ltci.userid = 0) AND
+                learningtimecheck = ?
+             ORDER BY
+                ltci.position
+        ";
+
+        $items = $DB->get_records_sql($sql, array($USER->id, $this->instance->learningtimecheck->id));
         $itemslist = array_values($items);
 
         if ($items) {
@@ -1469,6 +1482,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         echo '&nbsp;';
         echo $this->print_velocity_button($thispage);
         echo '&nbsp;';
+        echo $this->print_deltas_button($thispage);
+        echo '&nbsp;';
         echo $this->print_export_excel_button($thispage);
         echo '&nbsp;';
         echo $this->print_export_pdf_button($thispage);
@@ -1777,7 +1792,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $nameheading = ' <a href="'.$firstlink.'" >'.get_string('firstname').'</a> '.$firstarrow;
         $nameheading .= ' / <a href="'.$lastlink.'" >'.get_string('lastname').'</a> '.$lastarrow;
 
-        $table = new html_table;
+        $table = new html_table();
         $table->head = array($nameheading);
         $table->level = array(-1);
         $table->size = array('100px');
@@ -2310,6 +2325,25 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $str .= html_writer::input_hidden_params($thispage);
         $str .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
         $str .= ' <input type="submit" name="gotovelocities" value="'.get_string('learningvelocities', 'learningtimecheck').'" />';
+        $str .= '</form>';
+
+        return $str;
+    }
+
+    public function print_deltas_button($thispage) {
+        global $CFG;
+
+        if (!is_dir($CFG->dirroot.'/blocks/use_stats')) {
+            return;
+        }
+
+        $str = '';
+
+        $deltaurl = new moodle_url('/mod/learningtimecheck/deltas.php');
+        $str .= '<form style="display: inline;" action="'.$deltaurl.'" method="get">';
+        $str .= html_writer::input_hidden_params($thispage);
+        $str .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+        $str .= ' <input type="submit" name="gotodeltas" value="'.get_string('deltas', 'learningtimecheck').'" />';
         $str .= '</form>';
 
         return $str;
@@ -3111,5 +3145,102 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
     private function random_color() {
         return '#'.$this->random_color_part() . $this->random_color_part() . $this->random_color_part();
+    }
+
+    /**
+     * Prints delta cms report. Deltas plot difference between really time spent on activities
+     * and the threoretical quantification forecasting.
+     */
+    public function delta_cms($userid, &$timeaggregate, &$allusers) {
+        global $COURSE, $DB;
+
+
+        $user = $DB->get_record('user', ['id' => $userid]);
+        $template = new Stdclass;
+
+        $context = context_course::instance($COURSE->id);
+        $usermenu = [];
+        foreach (array_keys($allusers) as $uid) {
+            $u = $DB->get_record('user', ['id' => $uid]);
+            $usermenu[$u->id] = fullname($u);
+        }
+        $template->userselect = html_writer::select($usermenu, 'userid', $user->id);
+        $template->sesskey = sesskey();
+        $template->formurl = new moodle_url('/mod/learningtimecheck/deltas.php');
+
+        $items = $this->instance->get_items();
+
+        $maxneg = 0;
+        $maxpos = 0;
+        foreach ($items as $item) {
+
+            if ($item->itemoptional != 2 && empty($item->credittime)) {
+                // Unquantified.
+                $itemtpl = new StdClass;
+                $itemtpl->isitem = true;
+                $itemtpl->isvalid = false;
+                $itemtpl->isunquantified = true;
+                $itemtpl->cmname = format_string($item->displaytext);
+                $template->cms[] = $itemtpl;
+                continue;
+            }
+
+            if ($item->itemoptional == 2) {
+                // Section names.
+                $itemtpl = new StdClass;
+                $itemtpl->isitem = false;
+                $itemtpl->sectionname = format_string($item->displaytext);
+                $template->cms[] = $itemtpl;
+                continue;
+            }
+
+            if (empty($timeaggregate['module'][$item->moduleid]->elapsed)) {
+                $itemtpl = new StdClass;
+                $itemtpl->isitem = true;
+                $itemtpl->isvalid = false;
+                $itemtpl->isunvisited = true;
+                $itemtpl->cmname = format_string($item->displaytext);
+                $template->cms[] = $itemtpl;
+                continue;
+            }
+
+            $itemtpl = new StdClass;
+            $itemtpl->isvalid = true;
+            $itemtpl->isitem = true;
+            $itemtpl->cmname = format_string($item->displaytext);
+            $realtime = $timeaggregate['module'][$item->moduleid]->elapsed;
+            $absdelta = ($item->credittime * 60) - $realtime;
+            $reldelta = (($item->credittime * 60) - $realtime) / ($item->credittime * 60);
+            $itemtpl->credittimestr = get_string('itemcredittime', 'learningtimecheck', $item->credittime);
+            if ($absdelta > 0) {
+                $itemtpl->posrealtimestr = block_use_stats_x_format_time($realtime);
+                $itemtpl->abspositivedev = $reldelta; // Real time was better than creditted.
+                $itemtpl->absnegativedev = 0;
+                if ($maxpos < $reldelta) {
+                    $maxpos = $reldelta;
+                }
+            } else if ($absdelta < 0) {
+                $itemtpl->abspositivedev = 0;
+                $itemtpl->absnegativedev = $reldelta; // Real time was worse than creditted.
+                $itemtpl->negrealtimestr = block_use_stats_x_format_time($realtime);
+                if ($maxneg < $reldelta) {
+                    $maxneg = $reldelta;
+                }
+            } else {
+                $itemtpl->absnegativedev = 0;
+                $itemtpl->abspositivedev = 0;
+            }
+
+            $template->cms[] = $itemtpl;
+        }
+
+        foreach ($template->cms as &$cms) {
+            if (!empty($cms->isquantified)) {
+                $cms->relpositivedev = ($maxpos) ? $cms->abspositivedev / $maxpos * 100 : 0;
+                $cms->relnegativedev = ($maxneg) ? $cms->absnegativedev / $maxneg * 100 : 0;
+            }
+        }
+
+        return $this->output->render_from_template('mod_learningtimecheck/delta_cms', $template);
     }
 }
