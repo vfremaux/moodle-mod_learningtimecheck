@@ -103,6 +103,7 @@ $string['credit'] = 'Crédit';
 $string['credittime'] = 'Temps forfaitaire apprenant ';
 $string['itemcredittime'] = 'Crédit temps : {$a} min.';
 $string['deleteitem'] = 'Supprimer cet élément';
+$string['deltas'] = 'Ecarts';
 $string['declaredoverridepolicy'] = 'Combinaison des temps déclarés';
 $string['disabled'] = 'Désactivé';
 $string['itemsdone'] = 'Activités réalisées';
@@ -259,7 +260,9 @@ $string['tutorboard'] = 'Rapport de tutorat (réalisé)';
 $string['trainingsessionscoupling'] = ' => Report TS';
 $string['uncheckoptional'] = 'Décocher pour rendre facultatif';
 $string['unindentitem'] = 'Désindenter les éléments';
+$string['unqualified'] = 'Non quantifié';
 $string['unvalidate'] = 'Refuser';
+$string['unvisited'] = 'Non visité';
 $string['updatecompletescore'] = 'Enregistrer les modifications';
 $string['updateitem'] = 'Mettre à jour';
 $string['userdate'] = 'Date de dernière modification par l\'élève';
@@ -301,7 +304,7 @@ $string['coursestarted'] = 'Date d\'entrée dans le cours (première trace effec
 $string['coursecompleted'] = 'Date d\'achévement du cours ';
 $string['lastcoursetrack'] = 'Date de la dernière trace du cours ';
 $string['onecertificateissued'] = 'Date d\'obtention du premier certificat ';
-$string['allcertificatesissued'] = 'Date d\'obtention du dernier certificat '; 
+$string['allcertificatesissued'] = 'Date d\'obtention du dernier certificat ';
 $string['usercreationdate'] = 'Compte utilisateur créé ';
 $string['sitefirstevent'] = 'Première trace ';
 $string['sitelastevent'] = 'Dernière trace ';
@@ -403,10 +406,10 @@ les enseignants et non enseignants non éditeur ont cette capacité.</p>
 
 $string['emailoncompletesubject'] = 'L\'utilisateur {$a->user} a terminé la liste de travaux \'{$a->learningtimecheck}\'';
 $string['emailoncompletesubjectown'] = 'Vous avez terminé la liste de travaux \'{$a->learningtimecheck}\'';
-$string['emailoncompletebody'] = 'L\'utilisateur {$a->user} a terminé la liste de travaux \'{$a->learningtimecheck}\' dans le cours \'{$a->coursename}\' 
+$string['emailoncompletebody'] = 'L\'utilisateur {$a->user} a terminé la liste de travaux \'{$a->learningtimecheck}\' dans le cours \'{$a->coursename}\'
 Voir la liste ici :';
 
-$string['emailoncompletebodyown'] = 'Vous avez terminé les travaux de la liste \'{$a->learningtimecheck}\' du cours \'{$a->coursename}\' 
+$string['emailoncompletebodyown'] = 'Vous avez terminé les travaux de la liste \'{$a->learningtimecheck}\' du cours \'{$a->coursename}\'
 Voir la liste ici :';
 
 $string['configstrictcredits_desc'] = 'Si actif, les temps crédités sont utilisés dans tous les cas à la place. Sinon, le crédit temps ne sera affecté que

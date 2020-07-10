@@ -24,7 +24,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-/**
+/*
  * this is the master controller of the edit form, except all what
  * is being handled by ajax.
  */
@@ -41,7 +41,7 @@ if ($editdates !== false) {
 
 $additemafter = optional_param('additemafter', false, PARAM_INT);
 $removeauto = optional_param('removeauto', false, PARAM_TEXT);
-$update_complete_scores = optional_param('update_complete_score', false, PARAM_TEXT);
+$updatecompletescores = optional_param('update_complete_score', false, PARAM_TEXT);
 $applyenablecredittoall = optional_param('applyenablecredittoall', false, PARAM_TEXT);
 $applycredittimetoall = optional_param('applycredittimetoall', false, PARAM_TEXT);
 $applyisdeclarativetoall = optional_param('applyisdeclarativetoall', false, PARAM_TEXT);
@@ -121,70 +121,83 @@ if ($action) {
     }
 
     switch ($action) {
-        case 'additem':
+        case 'additem': {
             $displaytext = optional_param('displaytext', '', PARAM_TEXT);
             $indent = optional_param('indent', 0, PARAM_INT);
             $position = optional_param('position', false, PARAM_INT);
             $isoptional = optional_param('isoptional', LTC_OPTIONAL_YES, PARAM_INT);
             $chk->additem($displaytext, 0, $indent, $position, 0, $isoptional);
             break;
+        }
 
-        case 'startadditem':
+        case 'startadditem': {
             $additemafter = $itemid;
             break;
+        }
 
-        case 'edititem':
+        case 'edititem': {
             if (isset($chk->items[$itemid])) {
                 $chk->items[$itemid]->editme = true;
             }
             break;
-
-    case 'updateitem':
-        $displaytext = optional_param('displaytext', '', PARAM_TEXT);
-        $chk->updateitemtext($itemid, $displaytext);
-        break;
-
-    case 'deleteitem':
-        if (($chk->learningtimecheck->autopopulate) && (isset($chk->items[$itemid])) && ($chk->items[$itemid]->moduleid)) {
-            $chk->toggledisableitem($itemid);
-        } else {
-            $chk->deleteitem($itemid);
         }
-        break;
 
-    case 'moveitemup':
-        $chk->moveitemup($itemid);
-        break;
+        case 'updateitem': {
+            $displaytext = optional_param('displaytext', '', PARAM_TEXT);
+            $chk->updateitemtext($itemid, $displaytext);
+            break;
+        }
 
-    case 'moveitemdown':
-        $chk->moveitemdown($itemid);
-        break;
+        case 'deleteitem': {
+            if (($chk->learningtimecheck->autopopulate) && (isset($chk->items[$itemid])) && ($chk->items[$itemid]->moduleid)) {
+                $chk->toggledisableitem($itemid);
+            } else {
+                $chk->deleteitem($itemid);
+            }
+            break;
+        }
 
-    case 'makeoptional':
-        $chk->makeoptional($itemid, true);
-        break;
+        case 'moveitemup': {
+            $chk->moveitemup($itemid);
+            break;
+        }
 
-    case 'makerequired':
-        $chk->makeoptional($itemid, false);
-        break;
+        case 'moveitemdown': {
+            $chk->moveitemdown($itemid);
+            break;
+        }
 
-    case 'makeheading':
-        $chk->makeoptional($itemid, true, true);
-        break;
+        case 'makeoptional': {
+            $chk->makeoptional($itemid, true);
+            break;
+        }
 
-    case 'nextcolour':
-        $chk->nextcolour($itemid);
-        break;
+        case 'makerequired': {
+            $chk->makeoptional($itemid, false);
+            break;
+        }
 
-    case 'hideitem':
-        $chk->hideitem($itemid);
-        break;
+        case 'makeheading': {
+            $chk->makeoptional($itemid, true, true);
+            break;
+        }
 
-    case 'showitem':
-        $chk->showitem($itemid);
-        break;
+        case 'nextcolour': {
+            $chk->nextcolour($itemid);
+            break;
+        }
 
-    default:
-        error('Invalid action - "'.s($action).'"');
+        case 'hideitem': {
+            $chk->hideitem($itemid);
+            break;
+        }
+
+        case 'showitem': {
+            $chk->showitem($itemid);
+            break;
+        }
+
+        default:
+            error('Invalid action - "'.s($action).'"');
     }
 }

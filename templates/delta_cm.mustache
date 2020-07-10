@@ -1,0 +1,47 @@
+{{!
+
+A template for displayin a single course module delta between
+preset time against real time.
+
+}}
+<!-- mod_learningtimecheck/delta_cm -->
+<div class="delta-cm d-flex w-100 m-1">
+{{^isitem}}
+    <div class="delta-section w-100 p-2">
+        <h3>{{{sectionname}}}</h3>
+    </div>
+{{/isitem}}
+{{#isitem}}
+{{^isvalid}}
+    {{#canseeother}}
+    {{#isunquantified}}
+    <div class="delta-cm-name w-25 p-2">
+        {{cmname}}
+    </div>
+    <div class="delta-cm-unqualified w-75 p-2" style="background-color: #eee;color:#fff;font-size:1.5em;border-radius:8px">
+        {{#str}}unqualified, learningtimecheck{{/str}}
+    </div>
+    {{/isunquantified}}
+    {{/canseeother}}
+    {{#isunvisited}}
+    <div class="delta-cm-name w-25 p-2">
+        {{cmname}}
+    </div>
+    <div class="delta-cm-unqualified w-75 p-2 bg-info" style="color:#fff;font-size:1.5em;border-radius:8px">
+        {{#str}}unvisited, learningtimecheck{{/str}}
+    </div>
+    {{/isunvisited}}
+{{/isvalid}}
+{{#isvalid}}
+    <div class="delta-cm-name w-25 p-2">
+        {{cmname}}
+    </div>
+    <div class="delta-display w-75 p-2 d-flex">
+        <div class="delta-minus w-50 d-flex justify-content-end p-2"><div class="delta-minus-value text-white bg-success p-2" style="width:{{relpositivedev}}%">{{posrealtimestr}}</div></div>
+        <div class="delta-zero d-flex justify-content-center"><div>{{credittimestr}}</div></div>
+        <div class="delta-plus w-50 d-flex justify-content-start p-2"><div class="delta-plus-value text-white bg-danger p-2" style="width:{{relnegativedev}}%">{{negrealtimestr}}</div></div>
+    </div>
+{{/isvalid}}
+{{/isitem}}
+</div>
+<!-- /mod_learningtimecheck/delta_cm -->

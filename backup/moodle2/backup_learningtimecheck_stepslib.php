@@ -42,8 +42,8 @@ class backup_learningtimecheck_activity_structure_step extends backup_activity_s
 
         $item = new backup_nested_element('item', array('id'),
                                           array('userid', 'displaytext', 'position', 'indent',
-                                                'itemoptional', 'credittime', 'teachercredittime', 
-                                                'teachercredittimeperuser', 'enablecredit', 'isdeclarative', 
+                                                'itemoptional', 'credittime', 'teachercredittime',
+                                                'teachercredittimeperuser', 'enablecredit', 'isdeclarative',
                                                 'eventid', 'colour', 'moduleid', 'hidden', 'grouping'));
 
         $checks = new backup_nested_element('checks');
