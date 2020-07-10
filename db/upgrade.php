@@ -298,7 +298,7 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         }
 
         // learningtimecheck savepoint reached.
-        upgrade_mod_savepoint($result, 2015041900, 'learningtimecheck');
+        upgrade_mod_savepoint(true, 2015041900, 'learningtimecheck');
     }
 
     if ($oldversion < 2015100800) {
@@ -314,7 +314,7 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         }
 
         // Learningtimecheck savepoint reached.
-        upgrade_mod_savepoint($result, 2015100800, 'learningtimecheck');
+        upgrade_mod_savepoint(true, 2015100800, 'learningtimecheck');
     }
 
     if ($oldversion < 2016090700) {
@@ -327,7 +327,7 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
                 learningtimecheck_grade_item_delete($ltc);
             }
         }
-        upgrade_mod_savepoint($result, 2016090700, 'learningtimecheck');
+        upgrade_mod_savepoint(true, 2016090700, 'learningtimecheck');
     }
 
     if ($oldversion < 2017062303) {
@@ -342,7 +342,7 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         }
 
         // Learningtimecheck savepoint reached.
-        upgrade_mod_savepoint($result, 2017062303, 'learningtimecheck');
+        upgrade_mod_savepoint(true, 2017062303, 'learningtimecheck');
     }
 
     if ($oldversion < 2017081001) {
@@ -365,7 +365,7 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         upgrade_postprocess_completion();
 
         // Learningtimecheck savepoint reached.
-        upgrade_mod_savepoint($result, 2017081001, 'learningtimecheck');
+        upgrade_mod_savepoint(true, 2017081001, 'learningtimecheck');
     }
 
     if ($oldversion < 2019040600) {
@@ -384,7 +384,7 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         }
 
         // Learningtimecheck savepoint reached.
-        upgrade_mod_savepoint($result, 2019040600, 'learningtimecheck');
+        upgrade_mod_savepoint(true, 2019040600, 'learningtimecheck');
     }
 
     return $result;

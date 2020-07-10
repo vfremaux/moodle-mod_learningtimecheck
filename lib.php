@@ -113,7 +113,9 @@ function learningtimecheck_supports($feature) {
             return true;
         }
 
-        default: return null;
+        default: {
+            return null;
+        }
     }
 }
 
@@ -310,7 +312,7 @@ function learningtimecheck_cm_info_dynamic(&$cminfo) {
 function learningtimecheck_user_outline($course, $user, $mod, $learningtimecheck) {
     global $DB, $CFG;
 
-    $groupins_sel = '';
+    $groupinssel = '';
     if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
         $groupings = learningtimecheck_class::get_user_groupings($user->id, $learningtimecheck->course);
         $groupings[] = 0;
