@@ -143,12 +143,12 @@ class learningtimecheck_class {
      * Get an array of the items in a learningtimecheck
      *
      */
-    public function get_items_from_db($showoptionals = true, $hideheading = true) {
+    public function get_items_from_db($showoptionals = true, $hideheadings = true) {
         global $DB;
 
         $params = ['learningtimecheckid' => $this->id];
         $sql = '
-            SELECT 
+            SELECT
                 li.*
             FROM
                 {learningtimecheck_item} li
@@ -167,12 +167,16 @@ class learningtimecheck_class {
             $optionals[] = ' itemoptional = 1 ';
         }
 
-        if (empty($hideheadings)) {
+        if (!$hideheadings) {
             $optionals[] = ' itemoptional = 2 ';
         }
         $optionalclause = ' AND ('.implode(' OR ', $optionals).')';
 
-        $items = $DB->get_records_sql($sql.$optionalclause, $params);
+        $orderby = " ORDER BY
+                li.position
+        ";
+
+        $items = $DB->get_records_sql($sql.$optionalclause.$orderby, $params);
         return $items;
     }
 
@@ -240,6 +244,11 @@ class learningtimecheck_class {
                     $modnames[$cm->id] = format_string($DB->get_field($mname, 'name', array('id' => $cm->instance)));
                 }
                 $cm->modname = $modnames[$cm->id];
+            }
+
+            if ($DB->get_field('course_modules', 'deletioninprogress', ['id' => $item->moduleid])) {
+                unset($this->items[$iid]);
+                continue;
             }
 
             if ($item->itemoptional == LTC_OPTIONAL_YES) {
@@ -2180,7 +2189,7 @@ class learningtimecheck_class {
         ";
 
         $completion = new completion_info($this->course);
-        $using_completion = $completion->is_enabled();
+        $usingcompletion = $completion->is_enabled();
 
         $reportconfig = get_config('report_learningtimecheck');
         $context = context_module::instance($this->cm->id);
@@ -2188,15 +2197,15 @@ class learningtimecheck_class {
         $items = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
         if ($items) {
             foreach ($items as $itemid => $item) {
-                if ($using_completion && $item->completion) {
+                if ($usingcompletion && $item->completion) {
                     $fakecm = new stdClass;
                     $fakecm->id = $item->cmid;
 
                     foreach ($users as $user) {
-                        $comp_data = $completion->get_data($fakecm, false, $user->id);
+                        $compdata = $completion->get_data($fakecm, false, $user->id);
 
-                        if ($comp_data->completionstate == COMPLETION_COMPLETE ||
-                                $comp_data->completionstate == COMPLETION_COMPLETE_PASS) {
+                        if ($compdata->completionstate == COMPLETION_COMPLETE ||
+                                $compdata->completionstate == COMPLETION_COMPLETE_PASS) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
                             $check = $DB->get_record('learningtimecheck_check', $params);
                             if ($check) {
@@ -2204,14 +2213,14 @@ class learningtimecheck_class {
                                     continue;
                                 }
                                 if (report_learningtimecheck::is_valid($check, $reportconfig, $context)) {
-                                    $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified;
+                                    $check->usertimestamp = (empty($compdata->timemodified)) ? time() : $compdata->timemodified;
                                     $DB->update_record('learningtimecheck_check', $check);
                                 }
                             } else {
                                 $check = new stdClass;
                                 $check->item = $item->itemid;
                                 $check->userid = $user->id;
-                                $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified;
+                                $check->usertimestamp = (empty($compdata->timemodified)) ? time() : $compdata->timemodified;
                                 $check->teachertimestamp = 0;
                                 $check->teachermark = LTC_TEACHERMARK_UNDECIDED;
 
@@ -2313,25 +2322,25 @@ class learningtimecheck_class {
                 if ($reader instanceof \logstore_standard\log\store) {
                     $courseparm = 'courseid';
                     $select = "timecreated >= ? AND courseid = {$item->course} AND objectid > 0 AND component = 'mod_{$item->mod_name}' ";
-                    $log_entries = $DB->get_records_select('logstore_standard_log', $select, array($item->lastcompiled));
+                    $logentries = $DB->get_records_select('logstore_standard_log', $select, array($item->lastcompiled));
                 } else if ($reader instanceof \logstore_legacy\log\store) {
                     $params = array($item->lastcompiled, $logaction);
                     if (!empty($logaction2)) {
                         $action2clause = ' OR l.action = ? ';
                         $params[] = $logaction2;
                     }
-                    $log_entries = get_logs("l.time >= ? AND (l.action = ? $action2clause) AND cmid > 0", $params, 'l.time ASC', '', '', $totalcount);
+                    $logentries = get_logs("l.time >= ? AND (l.action = ? $action2clause) AND cmid > 0", $params, 'l.time ASC', '', '', $totalcount);
                 } else {
                     continue;
                 }
 
-                if (!$log_entries) {
+                if (!$logentries) {
                     // Mark the compiletime.
                     $DB->set_field('learningtimecheck', 'lastcompiledtime', $now, array('id' => $this->learningtimecheck->id));
                     continue;
                 }
 
-                foreach ($log_entries as $entry) {
+                foreach ($logentries as $entry) {
                     $check = $DB->get_record('learningtimecheck_check', array('item' => $item->itemid, 'userid' => $entry->userid));
                     if ($check) {
                         if ($check->usertimestamp) {
@@ -2461,17 +2470,17 @@ class learningtimecheck_class {
         if (!$learningtimecheck) {
             return array(false, false);
         }
-        $groupings_sel = '';
+        $groupingssel = '';
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
             $groupings = self::get_user_groupings($userid, $learningtimecheck->course);
             $groupings[] = 0;
-            $groupings_sel = ' AND grouping IN ('.implode(',', $groupings).') ';
+            $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
         }
         $select = '
             learningtimecheck = ? AND
             userid = 0 AND
             itemoptional = '.$mandatory.' AND
-            hidden = '.LTC_HIDDEN_NO.$groupings_sel;
+            hidden = '.LTC_HIDDEN_NO.$groupingssel;
         $items = $DB->get_records_select('learningtimecheck_item', $select, array($learningtimecheck->id), '', 'id');
         if (empty($items)) {
             return array(false, false);
@@ -2874,10 +2883,8 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehi
             {course_modules} cm
         WHERE
             l.id = li.learningtimecheck AND
-            cm.instance = l.id AND
-            cm.module = ? AND
-            cm.visible = 1 AND
-            cm.deletioninprogress = 0 AND
+            cm.id = li.moduleid AND
+            (cm.deletioninprogress IS NULL or cm.deletioninprogress = 0) AND
             l.course = ? AND
             li.itemoptional <> ".LTC_OPTIONAL_HEADING."
             $showhiddenclause
@@ -2887,9 +2894,8 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehi
     $optionalitemscount = 0;
     $time = 0;
     $optionaltime = 0;
-
-    if ($items = $DB->get_records_sql($sql, array($module->id, $courseid))) {
-
+    $params = array($courseid);
+    if ($items = $DB->get_records_sql($sql, $params)) {
         foreach ($items as $item) {
             if ($item->itemoptional == LTC_OPTIONAL_NO) {
                 $itemscount++;

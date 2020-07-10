@@ -203,12 +203,12 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         // I really should not have to update the 'cron' field manually.
         $chkmod = $DB->get_record('modules', array('name' => 'learningtimecheck'));
         if ($chkmod) {
-            $chkmod_upd = new stdClass;
-            $chkmod_upd->id = $chkmod->id;
-            $chkmod_upd->cron = 60;
-            $DB->update_record('modules', $chkmod_upd);
+            $chkmodupd = new stdClass;
+            $chkmodupd->id = $chkmod->id;
+            $chkmodupd->cron = 60;
+            $DB->update_record('modules', $chkmodupd);
         }
-
+        upgrade_mod_savepoint($result, 2011021600, 'learningtimecheck');
     }
 
     if ($result && $oldversion < 2011021900) {

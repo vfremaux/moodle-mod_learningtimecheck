@@ -70,12 +70,11 @@ $context = context_module::instance($cm->id);
 
 $PAGE->set_url($url);
 $PAGE->navbar->add(get_string('deltas', 'learningtimecheck'));
-$PAGE->requires->js_amd_call('mod_learningtimecheck/deltas', 'init');
+$PAGE->requires->js_call_amd('mod_learningtimecheck/deltas', 'init');
 
 // Security.
 
 require_login($course, true, $cm);
-require_capability('mod/learningtimecheck:updateother', $context);
 
 $allusers = get_enrolled_users($context, '', 0, 'u.id');
 

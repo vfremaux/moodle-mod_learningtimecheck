@@ -13,15 +13,20 @@ preset time against real time.
 {{/isitem}}
 {{#isitem}}
 {{^isvalid}}
+    {{#canseeother}}
+    {{#isunquantified}}
     <div class="delta-cm-name w-25 p-2">
         {{cmname}}
     </div>
-    {{#isunquantified}}
     <div class="delta-cm-unqualified w-75 p-2" style="background-color: #eee;color:#fff;font-size:1.5em;border-radius:8px">
         {{#str}}unqualified, learningtimecheck{{/str}}
     </div>
     {{/isunquantified}}
+    {{/canseeother}}
     {{#isunvisited}}
+    <div class="delta-cm-name w-25 p-2">
+        {{cmname}}
+    </div>
     <div class="delta-cm-unqualified w-75 p-2 bg-info" style="color:#fff;font-size:1.5em;border-radius:8px">
         {{#str}}unvisited, learningtimecheck{{/str}}
     </div>
