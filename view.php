@@ -217,7 +217,7 @@ if ($course->format != 'singleactivity') {
 echo '</center>';
 
 if ($course->format == 'page') {
-    require_once $CFG->dirroot.'/course/format/page/xlib.php';
+    require_once($CFG->dirroot.'/course/format/page/xlib.php');
     // No "backtocourse" print as was already printed in page
     page_print_page_format_navigation($cm->id, false);
 }

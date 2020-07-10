@@ -1,5 +1,5 @@
-<?php
-// This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
+
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,8 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- // This activity has not particular settings but the inherited from the generic
- // backup_activity_task so here there isn't any class definition, like the ones
- // existing in /backup/moodle2/backup_settingslib.php (activities section)
+// jshint unused: true, undef:true
 
-defined('MOODLE_INTERNAL') || die();
+define(['jquery', 'core/log'], function($, log) {
+
+    var ltcdeltas = {
+
+        init: function() {
+            $('#menuuserid').on('change', this.submit_form);
+            log.debug("AMD Ltc deltas initialized");
+        },
+
+        submit_form: function () {
+            $('#delta-user-form').submit();
+            return true;
+        }
+    };
+
+    return ltcdeltas;
+});

@@ -23,19 +23,21 @@
  */
 defined('MOODLE_INTERNAL') || die;
 
+require_once($CFG->dirroot.'/mod/learningtimecheck/extralib/lib.php');
+
 /**
  * Computes a ruleset for all users and filter non matching users. Rules are usually
  * taken from the current user $SESSION, unless it is explicitely given by the second param.
  * this second case is used when delayed processing the reports by cron scheduling.
  *
  * @param ref &$users an input user array
- * @param string $rulefiltersdesc a serialized descriptor of filters. 
+ * @param string $rulefiltersdesc a serialized descriptor of filters.
  * @return by ref, the filtered user array.
  */
 function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
     global $SESSION;
 
-    static $LOGICALOPS = array(
+    static $logicalops = array(
         'and' => '&&',
         'or' => '||',
         'xor' => '^',
@@ -44,7 +46,7 @@ function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
     if (!is_null($rulefiltersdesc)) {
         $filterrules = json_decode($rulefiltersdesc);
         if (empty($filterrules)) {
-           return;
+            return;
         }
     } else {
         if (empty($SESSION->learningtimecheck->filterrules)) {
@@ -56,9 +58,11 @@ function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
     $result = true;
     foreach ($users as $uid => $user) {
         foreach ($filterrules as $rid => $filterrule) {
-            $ruleres = learningtimecheck_execute_rule($filterrule, $user->id);
-            $expr = (empty($filterrule->logop)) ? " \$result = \$ruleres; " : " \$result = \$result {$LOGICALOPS[$filterrule->logop]} \$ruleres; ";
-            eval($expr);
+            $inputs = [];
+            $inputs['ruleres'] = learningtimecheck_execute_rule($filterrule, $user->id);
+            $inputs['op'] = $logicalops[$filterrule->logop];
+            $expr = (empty($filterrule->logop)) ? " \$result = \$ruleres; " : " \$result = \$result [op] \$ruleres; ";
+            $result = mod_learningtimecheck_eval($expr, $inputs);
         }
         if (!$result) {
             unset($users[$uid]);
@@ -100,8 +104,12 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                     ue.userid = ?
             ";
             $time = $DB->get_field_sql($sql, array($COURSE->id, $userid));
-            $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            eval($statement);
+            $inputs = [];
+            $inputs['time'] = $time;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$time} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
             break;
 
@@ -121,9 +129,12 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
             ";
             $time = 0 + $DB->get_field_sql($sql, array($COURSE->id, $userid));
             if ($time) {
-                $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-                echo $statement;
-                eval($statement);
+                $inputs = [];
+                $inputs['time'] = $time;
+                $inputs['op'] = $ruleops[$filterrule->ruleop];
+                $inputs['filterdatetime'] = $filterdatetime;
+                $statement = " \$result = {$time} [op] {$filterdatetime}; ";
+                $result = mod_learningtimecheck_eval($statement, $inputs);
                 return $result;
             }
             return false;
@@ -150,16 +161,25 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 throw new coding_exception('Not supported logstore');
             }
 
-            $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            eval($statement);
+            $inputs = [];
+            $inputs['time'] = $time;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$time} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
             break;
 
         case 'coursecompleted':
             $completion = $DB->get_record('course_completion', array('courseid' => $COURSE->id, 'userid' => $userid));
             $completiontime = $completion->timecompleted;
-            $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            break;
+            $inputs = [];
+            $inputs['time'] = $time;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$time} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
+            return $result;
 
         case 'lastcoursetrack':
 
@@ -179,14 +199,22 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 throw new coding_exception('Not supported logstore');
             }
 
-            $statement = " \$result = {$time} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            eval($statement);
+            $inputs = [];
+            $inputs['time'] = $time;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$time} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
 
         case 'usercreationdate':
             $createdate = 0 + $DB->get_field('user', 'timecreated', array('id' => $userid));
-            $statement = " \$result = {$createdate} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            eval($statement);
+            $inputs = [];
+            $inputs['createdate'] = $createdate;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$createdate} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
 
         case 'sitefirstevent':
@@ -212,8 +240,12 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 return false;
             }
 
-            $statement = " \$result = {$firstevent} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            eval($statement);
+            $inputs = [];
+            $inputs['firstevent'] = $firstevent;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$firstevent} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
 
         case 'sitelastevent':
@@ -238,8 +270,12 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 return false;
             }
 
-            $statement = " \$result = {$lastevent} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
-            eval($statement);
+            $inputs = [];
+            $inputs['lastevent'] = $lastevent;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$lastevent} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
 
         case 'firstcoursestarted':
@@ -270,7 +306,12 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 return false;
             }
 
-            $statement = " \$result = {$mincourserecord} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
+            $inputs = [];
+            $inputs['mincourserecord'] = $mincourserecord;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$mincourserecord} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
 
         case 'firstcoursecompleted':
@@ -288,7 +329,12 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
                 return false;
             }
 
-            $statement = " \$result = {$mincourserecord} {$ruleops[$filterrule->ruleop]} {$filterdatetime}; ";
+            $inputs = [];
+            $inputs['mincohortaddition'] = $mincohortaddition;
+            $inputs['op'] = $ruleops[$filterrule->ruleop];
+            $inputs['filterdatetime'] = $filterdatetime;
+            $statement = " \$result = {$mincohortaddition} [op] {$filterdatetime}; ";
+            $result = mod_learningtimecheck_eval($statement, $inputs);
             return $result;
 
         default:

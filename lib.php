@@ -37,6 +37,7 @@
  *     help to save some memory when Moodle is performing
  *     actions across all modules.
  */
+defined('MOODLE_INTERNAL') || die();
 
 define('LTC_EMAIL_NO', 0);
 define('LTC_EMAIL_STUDENT', 1);
@@ -77,22 +78,49 @@ require_once($CFG->dirroot.'/lib/completionlib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
 function learningtimecheck_supports($feature) {
-    switch($feature) {
-    case FEATURE_GROUPS:                  return true;
-    case FEATURE_GROUPINGS:               return true;
-    case FEATURE_GROUPMEMBERSONLY:        return true;
-    case FEATURE_MOD_INTRO:               return true;
-    case FEATURE_GRADE_HAS_GRADE:         return false;
-    case FEATURE_COMPLETION_HAS_RULES:    return true;
-    case FEATURE_BACKUP_MOODLE2:          return true;
-    case FEATURE_SHOW_DESCRIPTION:        return true;
 
-    default: return null;
+    switch($feature) {
+
+        case FEATURE_GROUPS: {
+            return true;
+        }
+
+        case FEATURE_GROUPINGS: {
+            return true;
+        }
+
+        case FEATURE_GROUPMEMBERSONLY: {
+            return true;
+        }
+
+        case FEATURE_MOD_INTRO:  {
+            return true;
+        }
+
+        case FEATURE_GRADE_HAS_GRADE: {
+            return true;
+        }
+
+        case FEATURE_COMPLETION_HAS_RULES: {
+            return true;
+        }
+
+        case FEATURE_BACKUP_MOODLE2: {
+            return true;
+        }
+
+        case FEATURE_SHOW_DESCRIPTION: {
+            return true;
+        }
+
+        default: {
+            return null;
+        }
     }
 }
 
 /**
- * Tells wether a feature is supported or not. Gives back the 
+ * Tells wether a feature is supported or not. Gives back the
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
@@ -284,14 +312,14 @@ function learningtimecheck_cm_info_dynamic(&$cminfo) {
 function learningtimecheck_user_outline($course, $user, $mod, $learningtimecheck) {
     global $DB, $CFG;
 
-    $groupins_sel = '';
+    $groupinssel = '';
     if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
         $groupings = learningtimecheck_class::get_user_groupings($user->id, $learningtimecheck->course);
         $groupings[] = 0;
-        $groupings_sel = ' AND grouping IN ('.implode(',', $groupings).') ';
+        $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
     }
     $sel = 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.LTC_OPTIONAL_NO;
-    $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupings_sel;
+    $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupingssel;
     $items = $DB->get_records_select('learningtimecheck_item', $sel, array($learningtimecheck->id), '', 'id');
     if (!$items) {
         return null;
@@ -354,7 +382,7 @@ function learningtimecheck_user_complete($course, $user, $mod, $learningtimechec
  * @todo Finish documenting this function
  */
 function learningtimecheck_print_recent_activity($course, $isteacher, $timestart) {
-    return false;  //  True if anything was printed, otherwise false.
+    return false; // True if anything was printed, otherwise false.
 }
 
 /**
@@ -387,10 +415,10 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
     $strlearningtimecheck = get_string('modulename', 'learningtimecheck');
 
     foreach ($learningtimechecks as $learningtimecheck) {
-        $show_all = true;
+        $showall = true;
         if ($learningtimecheck->teacheredit == LTC_MARKING_STUDENT) {
             $context = context_module::instance($learningtimecheck->coursemodule);
-            $show_all = !has_capability('mod/learningtimecheck:updateown', $context);
+            $showall = !has_capability('mod/learningtimecheck:updateown', $context);
         }
 
         $progressbar = learningtimecheck_class::print_user_progressbar($learningtimecheck->id, $USER->id,
@@ -404,7 +432,7 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
          * Do not worry about hidden items / groupings as automatic items cannot have dates
          * (and manual items cannot be hidden / have groupings)
          */
-        if ($show_all) {
+        if ($showall) {
             // Show all items whether or not they are checked off (as this user is unable to check them off).
             $dateitems = $DB->get_records_select('learningtimecheck_item',
                                                   'learningtimecheck = ?',
@@ -628,7 +656,7 @@ function learningtimecheck_grade_item_delete($learningtimecheck) {
     }
 
     return grade_update('mod/learningtimecheck', $learningtimecheck->courseid, 'mod', 'learningtimecheck',
-                        $learningtimecheck->id, 0, null, array('deleted'=>1));
+                        $learningtimecheck->id, 0, null, array('deleted' => 1));
 }
 
 /**
@@ -815,7 +843,6 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
  * @return bool false if file not found, does not return if found - justsend the file
  */
 function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
-    global $CFG, $DB;
 
     require_login($course);
 
