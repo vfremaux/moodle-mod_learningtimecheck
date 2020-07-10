@@ -3259,6 +3259,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         foreach ($template->cms as &$cms) {
             if (!empty($cms->isquantified)) {
+                assert(1);
                 // $cms->relpositivedev = ($maxpos) ? $cms->abspositivedev / $maxpos * 100 : 0;
                 // $cms->relnegativedev = ($maxneg) ? $cms->absnegativedev / $maxneg * 100 : 0;
             }
