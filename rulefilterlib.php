@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/mod/learningtimecheck/extralib/lib.php');
 function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
     global $SESSION;
 
-    static $LOGICALOPS = array(
+    static $logicalops = array(
         'and' => '&&',
         'or' => '||',
         'xor' => '^',
@@ -60,7 +60,7 @@ function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
         foreach ($filterrules as $rid => $filterrule) {
             $inputs = [];
             $inputs['ruleres'] = learningtimecheck_execute_rule($filterrule, $user->id);
-            $inputs['op'] = $LOGICALOPS[$filterrule->logop];
+            $inputs['op'] = $logicalops[$filterrule->logop];
             $expr = (empty($filterrule->logop)) ? " \$result = \$ruleres; " : " \$result = \$result [op] \$ruleres; ";
             $result = mod_learningtimecheck_eval($expr, $inputs);
         }

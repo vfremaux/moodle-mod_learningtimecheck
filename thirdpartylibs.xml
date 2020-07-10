@@ -21,4 +21,11 @@
     <version>v3</version>
     <licenseversion>v3</licenseversion>
   </library>
+  <library>
+    <location>cli</location>
+    <name>Cli tools</name>
+    <license>GPL</license>
+    <version>v3</version>
+    <licenseversion>v3</licenseversion>
+  </library>
 </libraries>

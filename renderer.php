@@ -1117,11 +1117,24 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
          * Start producing item list
          ****** */
 
-        $select = '
-            (userid = ? OR userid = 0) AND
-            learningtimecheck = ?
-        ';
-        $items = $DB->get_records_select('learningtimecheck_item', $select, array($USER->id, $this->instance->learningtimecheck->id), 'position');
+        $sql = "
+            SELECT
+                ltci.*
+            FROM
+                {learningtimecheck_item} ltci
+            LEFT JOIN
+                {course_modules} cm
+            ON
+                ltci.moduleid = cm.id
+            WHERE
+                (cm.deletioninprogress IS NULL || cm.deletioninprogress = 0) AND
+                (ltci.userid = ? OR ltci.userid = 0) AND
+                learningtimecheck = ?
+             ORDER BY
+                ltci.position
+        ";
+
+        $items = $DB->get_records_sql($sql, array($USER->id, $this->instance->learningtimecheck->id));
         $itemslist = array_values($items);
 
         if ($items) {
@@ -1424,10 +1437,14 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         // Event filters.
 
         echo $this->print_event_filter($thispage);
+
+        // Display options.
+
         $reportrenderer = $PAGE->get_renderer('report_learningtimecheck');
         echo $reportrenderer->options('report', $COURSE->id, 0, 'mod/'.$this->instance->cm->id.'/report');
 
         // Course report global indicators.
+
         echo $this->print_global_counters();
 
         // Advice.
@@ -1468,6 +1485,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         echo $this->toggle_progressbar_button($thispage, $reportsettings);
         echo '&nbsp;';
         echo $this->print_velocity_button($thispage);
+        echo '&nbsp;';
+        echo $this->print_deltas_button($thispage);
         echo '&nbsp;';
         echo $this->print_export_excel_button($thispage);
         echo '&nbsp;';
@@ -1519,228 +1538,234 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         // Report panels.
 
         if ($reportsettings->showprogressbars) {
-
-            // This is the progressbar version of the report panel.
-
-            if ($ausers) {
-                echo $this->output->box_start('ltc-progressbar');
-
-                $namestr = get_string('name');
-                $progressstr = get_string('progressbar', 'learningtimecheck');
-                $itemstodostr = get_string('itemstodo', 'learningtimecheck');
-                $doneitemsstr = get_string('itemsdone', 'learningtimecheck');
-                $donetimestr = get_string('timedone', 'learningtimecheck');
-                $leftratiostr = get_string('ratioleft', 'learningtimecheck');
-                $timeleftstr = get_string('timeleft', 'learningtimecheck');
-
-                $firstlink = 'firstasc';
-                $lastlink = 'lastasc';
-                $firstarrow = '';
-                $lastarrow = '';
-                $asc = get_string('asc');
-                $desc = get_string('desc');
-                if ($reportsettings->sortby == 'firstasc') {
-                    $firstlink = 'firstdesc';
-                    $firstarrow = $this->output->pix_icon('/t/down', $asc);
-                } else if ($reportsettings->sortby == 'lastasc') {
-                    $lastlink = 'lastdesc';
-                    $lastarrow = $this->output->pix_icon('/t/down', $asc);
-                } else if ($reportsettings->sortby == 'firstdesc') {
-                    $firstarrow = $this->output->pix_icon('/t/up', $desc);
-                } else if ($reportsettings->sortby == 'lastdesc') {
-                    $lastarrow = $this->output->pix_icon('/t/up', $desc);
-                }
-                $firstlink = new moodle_url($thispage, array('sortby' => $firstlink));
-                $lastlink = new moodle_url($thispage, array('sortby' => $lastlink));
-                $nameheading = ' <a href="'.$firstlink.'" >'.get_string('firstname').'</a> '.$firstarrow;
-                $nameheading .= ' / <a href="'.$lastlink.'" >'.get_string('lastname').'</a> '.$lastarrow;
-
-                $table = new html_table();
-                $table->head = array($nameheading, $progressstr, $itemstodostr, $doneitemsstr, $donetimestr, $leftratiostr, $timeleftstr);
-                $table->size = array('30%', '30%', '10%', '10%', '10%', '10%');
-                $table->align = array('left', 'center', 'center', 'center', 'center', 'center');
-                $table->colclasses = array('', '', '', '', 'highlighted', '');
-
-                $countusers = count($ausers);
-
-                $sums['mandatory']['items'] = 0;
-                $sums['mandatory']['ticked'] = 0;
-                $sums['mandatory']['time'] = 0;
-                $sums['mandatory']['tickedtime'] = 0;
-                $sums['mandatory']['timeleft'] = 0;
-
-                if ($reportsettings->showoptional) {
-                    $sums['optional']['items'] = 0;
-                    $sums['optional']['ticked'] = 0;
-                    $sums['optional']['time'] = 0;
-                    $sums['optional']['tickedtime'] = 0;
-                    $sums['optional']['timeleft'] = 0;
-                }
-
-                foreach ($ausers as $auser) {
-                    // Fetch total items and total time for user.
-                    $checkinfo = $this->instance->get_items_for_user($auser, $reportsettings);
-
-                    $sums['mandatory']['items'] += $checkinfo['mandatory']['items'];
-                    $sums['mandatory']['ticked'] += $checkinfo['mandatory']['ticked'];
-                    $sums['mandatory']['time'] += $checkinfo['mandatory']['time'];
-                    $sums['mandatory']['tickedtime'] += $checkinfo['mandatory']['tickedtime'];
-                    $sums['mandatory']['timeleft'] += $checkinfo['mandatory']['timeleft'];
-
-                    if ($reportsettings->showoptional) {
-                        $sums['optional']['items'] += $checkinfo['optional']['items'];
-                        $sums['optional']['ticked'] += $checkinfo['optional']['ticked'];
-                        $sums['optional']['time'] += $checkinfo['optional']['time'];
-                        $sums['optional']['tickedtime'] += $checkinfo['optional']['tickedtime'];
-                        $sums['optional']['timeleft'] += $checkinfo['optional']['timeleft'];
-                    }
-
-                    if ($this->instance->caneditother()) {
-                        $vslink = ' <a href="'.$thispage->out(true, array('studentid' => $auser->id) ).'" ';
-                        $vslink .= 'alt="'.get_string('viewsinglereport', 'learningtimecheck').'" title="'.get_string('viewsinglereport', 'learningtimecheck').'">';
-                        $vslink .= fullname($auser).'</a>';
-                    } else {
-                        $vslink = fullname($auser);
-                    }
-                    $userurl = new moodle_url('/user/view.php', array('id' => $auser->id, 'course' => $this->instance->course->id) );
-                    $userlink = '<a href="'.$userurl.'">'.$this->output->user_picture($auser, array('size' => 25)).'</a>';
-
-                    $row = array();
-                    $row[] = $userlink.$vslink;
-
-                    $useroptions = (object) report_learningtimecheck::get_user_options();
-                    if ($useroptions->progressbars == PROGRESSBAR_BOTH) {
-                        $complete1 = $checkinfo['mandatory']['percentcomplete'] * 100;
-                        $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
-                    } else if ($useroptions->progressbars == PROGRESSBAR_ITEMS) {
-                        $complete1 = $checkinfo['mandatory']['percentcomplete'] * 100;
-                        $complete2 = null;
-                    } else {
-                        $complete1 = null;
-                        $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
-                    }
-
-                    // Get time ratio anyway for displaying the remaining time.
-                    $timecomplete = round($checkinfo['mandatory']['percenttimecomplete'] * 100);
-                    $timecompleteoptional = round($checkinfo['optional']['percenttimecomplete'] * 100);
-
-                    $row[] = self::progressbar_thin($complete1, $complete2);
-
-                    $totalitems = $checkinfo['mandatory']['items'];
-                    if ($reportsettings->showoptional) {
-                        $totalitems .= '<span class="ltc-optional"> +'.$checkinfo['optional']['items'].'</span>';
-                    }
-                    $row[] = $totalitems;
-
-                    $tickeditems = $checkinfo['mandatory']['ticked'];
-                    if ($reportsettings->showoptional) {
-                        $tickeditems .= '<span class="ltc-optional"> +'.$checkinfo['optional']['ticked'].'</span>';
-                    }
-                    $row[] = $tickeditems;
-
-                    $tickedtimes = learningtimecheck_format_time($checkinfo['mandatory']['tickedtime']);
-                    if ($reportsettings->showoptional) {
-                        $tickeditems .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($checkinfo['optional']['tickedtime']).'</span>';
-                    }
-                    $row[] = $tickedtimes;
-
-                    $timeleftratio = (100 - $timecomplete).' %';
-                    if ($reportsettings->showoptional && @$checkinfo['optional']['percenttimeleft']) {
-                        $timeleftratio .= '<span class="ltc-optional"> +'.(100 - $timecompleteoptional).' %</span>';
-                    }
-                    $row[] = $timeleftratio;
-
-                    $timeleft = learningtimecheck_format_time($checkinfo['mandatory']['timeleft']);
-                    if ($reportsettings->showoptional && @$checkinfo['optional']['timeleft']) {
-                        $timeleft .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($checkinfo['optional']['timeleft']).'</span>';
-                    }
-                    $row[] = $timeleft;
-
-                    $table->data[] = $row;
-                }
-
-                // Make last row with average and sums.
-
-                $row1 = new html_table_row();
-
-                $cell1 = new html_table_cell();
-                $cell1->text = '<b>'.get_string('summators', 'learningtimecheck').'</b>';
-                $cell1->colspan = 1;
-                $cell1->align = 'right';
-                $row1->cells[] = $cell1;
-
-                $cell2 = new html_table_cell();
-                $averagedonenum = round($sums['mandatory']['ticked'] / $sums['mandatory']['items'] * 100);
-                $averagedone = ($sums['mandatory']['items']) ? sprintf('%0d', $averagedonenum).' %' : '0 %';
-                if ($reportsettings->showoptional) {
-                    $sumoptionals = $sums['optional']['items'];
-                    if ($sumoptionals > 0) {
-                        $averagedonenumoptional = round($sums['optional']['ticked'] / $sums['optional']['items'] * 100);
-                    } else {
-                        $averagedonenumoptional = 0;
-                    }
-                    $averagedone .= ($sums['optional']['items']) ? '<span class="ltc-optional"> +'.sprintf('%0d', $averagedonenumoptional). ' %</span>' : '';
-                }
-                $cell2->text = $averagedone.' '.get_string('average', 'learningtimecheck');
-                $row1->cells[] = $cell2;
-
-                $cell3 = new html_table_cell();
-                $sumitems = $sums['mandatory']['items'];
-                if ($reportsettings->showoptional && @$sums['optional']['items']) {
-                    $sumitems .= '<span class="ltc-optional"> +'.$sums['optional']['items'].'</span>';
-                }
-                $cell3->text = '<span class="totalizer">'.$sumitems.' '.get_string('totalized', 'learningtimecheck').'</span>';
-                $row1->cells[] = $cell3;
-
-                $cell4 = new html_table_cell();
-                $sumticked = $sums['mandatory']['ticked'];
-                if ($reportsettings->showoptional && @$sums['optional']['ticked']) {
-                    $sumticked .= '<span class="ltc-optional"> +'.$sums['optional']['ticked'].'</span>';
-                }
-                $cell4->text = '<span class="totalizer">'.$sumticked.' '.get_string('totalized', 'learningtimecheck').'</span>';
-                $row1->cells[] = $cell4;
-
-                $cell5 = new html_table_cell();
-                $sumtickedtime = $sums['mandatory']['tickedtime'];
-                if ($reportsettings->showoptional && @$sums['optional']['tickedtime']) {
-                    $sumtickedtime .= '<span class="ltc-optional"> +'.$sums['optional']['tickedtime'].'</span>';
-                }
-                $cell5->text = '<span class="totalizer">'.$sumtickedtime.' '.get_string('totalized', 'learningtimecheck').'</span>';
-                $cell5->attributes['class'] = 'ltc-result';
-                $row1->cells[] = $cell5;
-
-                $cell6 = new html_table_cell();
-                $ratio = 100 - $averagedonenum;
-                $percentleft = ($sums['mandatory']['items']) ? sprintf('%0d', $ratio.' %') : '0 %';
-                if ($reportsettings->showoptional && @$sums['optional']['items']) {
-                    $ratio = 100 - $averagedonenumoptional;
-                    $optionalpercentleft = ($sums['optional']['items']) ? sprintf('%0d', $ratio.' %') : '0 %';
-                    $percentleft .= '<span class="ltc-optional"> +'.$optionalpercentleft.'</span>';
-                }
-                $cell6->text = $percentleft;
-                $cell6->attributes['class'] = 'ltc-remain-result';
-                $row1->cells[] = $cell6;
-
-                $cell7 = new html_table_cell();
-                $sumtimeleft = learningtimecheck_format_time($sums['mandatory']['timeleft']);
-                if ($reportsettings->showoptional && @$sums['optional']['timeleft']) {
-                    $sumtimeleft .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($sums['optional']['timeleft']).'</span>';
-                }
-                $cell7->text = $sumtimeleft.' '.get_string('totalized', 'learningtimecheck');
-                $cell7->attributes['class'] = 'ltc-remain-result';
-                $row1->cells[] = $cell7;
-
-                 $table->data[] = $row1;
-
-                echo html_writer::table($table);
-                echo $this->output->box_end();
-            } else {
-                echo $this->output->notification(get_string('nousers', 'learningtimecheck'));
-            }
-
+            echo $this->print_progress_bars_list($ausers, $reportsettings, $thispage);
         } else {
             echo $this->print_activity_detailed_list($ausers, $reportsettings, $thispage, $editchecks, true);
         }
+    }
+
+    public function print_progress_bars_list($ausers, $reportsettings, $thispage) {
+        // This is the progressbar version of the report panel.
+
+        $str = '';
+
+        if ($ausers) {
+            $str = $this->output->box_start('ltc-progressbar');
+
+            $namestr = get_string('name');
+            $progressstr = get_string('progressbar', 'learningtimecheck');
+            $itemstodostr = get_string('itemstodo', 'learningtimecheck');
+            $doneitemsstr = get_string('itemsdone', 'learningtimecheck');
+            $donetimestr = get_string('timedone', 'learningtimecheck');
+            $leftratiostr = get_string('ratioleft', 'learningtimecheck');
+            $timeleftstr = get_string('timeleft', 'learningtimecheck');
+
+            $firstlink = 'firstasc';
+            $lastlink = 'lastasc';
+            $firstarrow = '';
+            $lastarrow = '';
+            $asc = get_string('asc');
+            $desc = get_string('desc');
+            if ($reportsettings->sortby == 'firstasc') {
+                $firstlink = 'firstdesc';
+                $firstarrow = $this->output->pix_icon('/t/down', $asc);
+            } else if ($reportsettings->sortby == 'lastasc') {
+                $lastlink = 'lastdesc';
+                $lastarrow = $this->output->pix_icon('/t/down', $asc);
+            } else if ($reportsettings->sortby == 'firstdesc') {
+                $firstarrow = $this->output->pix_icon('/t/up', $desc);
+            } else if ($reportsettings->sortby == 'lastdesc') {
+                $lastarrow = $this->output->pix_icon('/t/up', $desc);
+            }
+            $firstlink = new moodle_url($thispage, array('sortby' => $firstlink));
+            $lastlink = new moodle_url($thispage, array('sortby' => $lastlink));
+            $nameheading = ' <a href="'.$firstlink.'" >'.get_string('firstname').'</a> '.$firstarrow;
+            $nameheading .= ' / <a href="'.$lastlink.'" >'.get_string('lastname').'</a> '.$lastarrow;
+
+            $table = new html_table();
+            $table->head = array($nameheading, $progressstr, $itemstodostr, $doneitemsstr, $donetimestr, $leftratiostr, $timeleftstr);
+            $table->size = array('30%', '30%', '10%', '10%', '10%', '10%');
+            $table->align = array('left', 'center', 'center', 'center', 'center', 'center');
+            $table->colclasses = array('', '', '', '', 'highlighted', '');
+
+            $countusers = count($ausers);
+
+            $sums['mandatory']['items'] = 0;
+            $sums['mandatory']['ticked'] = 0;
+            $sums['mandatory']['time'] = 0;
+            $sums['mandatory']['tickedtime'] = 0;
+            $sums['mandatory']['timeleft'] = 0;
+
+            if ($reportsettings->showoptional) {
+                $sums['optional']['items'] = 0;
+                $sums['optional']['ticked'] = 0;
+                $sums['optional']['time'] = 0;
+                $sums['optional']['tickedtime'] = 0;
+                $sums['optional']['timeleft'] = 0;
+            }
+
+            foreach ($ausers as $auser) {
+                // Fetch total items and total time for user.
+                $checkinfo = $this->instance->get_items_for_user($auser, $reportsettings);
+
+                $sums['mandatory']['items'] += $checkinfo['mandatory']['items'];
+                $sums['mandatory']['ticked'] += $checkinfo['mandatory']['ticked'];
+                $sums['mandatory']['time'] += $checkinfo['mandatory']['time'];
+                $sums['mandatory']['tickedtime'] += $checkinfo['mandatory']['tickedtime'];
+                $sums['mandatory']['timeleft'] += $checkinfo['mandatory']['timeleft'];
+
+                if ($reportsettings->showoptional) {
+                    $sums['optional']['items'] += $checkinfo['optional']['items'];
+                    $sums['optional']['ticked'] += $checkinfo['optional']['ticked'];
+                    $sums['optional']['time'] += $checkinfo['optional']['time'];
+                    $sums['optional']['tickedtime'] += $checkinfo['optional']['tickedtime'];
+                    $sums['optional']['timeleft'] += $checkinfo['optional']['timeleft'];
+                }
+
+                if ($this->instance->caneditother()) {
+                    $vslink = ' <a href="'.$thispage->out(true, array('studentid' => $auser->id) ).'" ';
+                    $vslink .= 'alt="'.get_string('viewsinglereport', 'learningtimecheck').'" title="'.get_string('viewsinglereport', 'learningtimecheck').'">';
+                    $vslink .= fullname($auser).'</a>';
+                } else {
+                    $vslink = fullname($auser);
+                }
+                $userurl = new moodle_url('/user/view.php', array('id' => $auser->id, 'course' => $this->instance->course->id) );
+                $userlink = '<a href="'.$userurl.'">'.$this->output->user_picture($auser, array('size' => 25)).'</a>';
+
+                $row = array();
+                $row[] = $userlink.$vslink;
+
+                $useroptions = (object) report_learningtimecheck::get_user_options();
+                if ($useroptions->progressbars == PROGRESSBAR_BOTH) {
+                    $complete1 = $checkinfo['mandatory']['percentcomplete'] * 100;
+                    $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
+                } else if ($useroptions->progressbars == PROGRESSBAR_ITEMS) {
+                    $complete1 = $checkinfo['mandatory']['percentcomplete'] * 100;
+                    $complete2 = null;
+                } else {
+                    $complete1 = null;
+                    $complete2 = $checkinfo['mandatory']['percenttimecomplete'] * 100;
+                }
+
+                // Get time ratio anyway for displaying the remaining time.
+                $timecomplete = round($checkinfo['mandatory']['percenttimecomplete'] * 100);
+                $timecompleteoptional = round($checkinfo['optional']['percenttimecomplete'] * 100);
+
+                $row[] = self::progressbar_thin($complete1, $complete2);
+
+                $totalitems = $checkinfo['mandatory']['items'];
+                if ($reportsettings->showoptional) {
+                    $totalitems .= '<span class="ltc-optional"> +'.$checkinfo['optional']['items'].'</span>';
+                }
+                $row[] = $totalitems;
+
+                $tickeditems = $checkinfo['mandatory']['ticked'];
+                if ($reportsettings->showoptional) {
+                    $tickeditems .= '<span class="ltc-optional"> +'.$checkinfo['optional']['ticked'].'</span>';
+                }
+                $row[] = $tickeditems;
+
+                $tickedtimes = learningtimecheck_format_time($checkinfo['mandatory']['tickedtime']);
+                if ($reportsettings->showoptional) {
+                    $tickeditems .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($checkinfo['optional']['tickedtime']).'</span>';
+                }
+                $row[] = $tickedtimes;
+
+                $timeleftratio = (100 - $timecomplete).' %';
+                if ($reportsettings->showoptional && @$checkinfo['optional']['percenttimeleft']) {
+                    $timeleftratio .= '<span class="ltc-optional"> +'.(100 - $timecompleteoptional).' %</span>';
+                }
+                $row[] = $timeleftratio;
+
+                $timeleft = learningtimecheck_format_time($checkinfo['mandatory']['timeleft']);
+                if ($reportsettings->showoptional && @$checkinfo['optional']['timeleft']) {
+                    $timeleft .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($checkinfo['optional']['timeleft']).'</span>';
+                }
+                $row[] = $timeleft;
+
+                $table->data[] = $row;
+            }
+
+            // Make last row with average and sums.
+
+            $row1 = new html_table_row();
+
+            $cell1 = new html_table_cell();
+            $cell1->text = '<b>'.get_string('summators', 'learningtimecheck').'</b>';
+            $cell1->colspan = 1;
+            $cell1->align = 'right';
+            $row1->cells[] = $cell1;
+
+            $cell2 = new html_table_cell();
+            $averagedonenum = round($sums['mandatory']['ticked'] / $sums['mandatory']['items'] * 100);
+            $averagedone = ($sums['mandatory']['items']) ? sprintf('%0d', $averagedonenum).' %' : '0 %';
+            if ($reportsettings->showoptional) {
+                $sumoptionals = $sums['optional']['items'];
+                if ($sumoptionals > 0) {
+                    $averagedonenumoptional = round($sums['optional']['ticked'] / $sums['optional']['items'] * 100);
+                } else {
+                    $averagedonenumoptional = 0;
+                }
+                $averagedone .= ($sums['optional']['items']) ? '<span class="ltc-optional"> +'.sprintf('%0d', $averagedonenumoptional). ' %</span>' : '';
+            }
+            $cell2->text = $averagedone.' '.get_string('average', 'learningtimecheck');
+            $row1->cells[] = $cell2;
+
+            $cell3 = new html_table_cell();
+            $sumitems = $sums['mandatory']['items'];
+            if ($reportsettings->showoptional && @$sums['optional']['items']) {
+                $sumitems .= '<span class="ltc-optional"> +'.$sums['optional']['items'].'</span>';
+            }
+            $cell3->text = '<span class="totalizer">'.$sumitems.' '.get_string('totalized', 'learningtimecheck').'</span>';
+            $row1->cells[] = $cell3;
+
+            $cell4 = new html_table_cell();
+            $sumticked = $sums['mandatory']['ticked'];
+            if ($reportsettings->showoptional && @$sums['optional']['ticked']) {
+                $sumticked .= '<span class="ltc-optional"> +'.$sums['optional']['ticked'].'</span>';
+            }
+            $cell4->text = '<span class="totalizer">'.$sumticked.' '.get_string('totalized', 'learningtimecheck').'</span>';
+            $row1->cells[] = $cell4;
+
+            $cell5 = new html_table_cell();
+            $sumtickedtime = $sums['mandatory']['tickedtime'];
+            if ($reportsettings->showoptional && @$sums['optional']['tickedtime']) {
+                $sumtickedtime .= '<span class="ltc-optional"> +'.$sums['optional']['tickedtime'].'</span>';
+            }
+            $cell5->text = '<span class="totalizer">'.$sumtickedtime.' '.get_string('totalized', 'learningtimecheck').'</span>';
+            $cell5->attributes['class'] = 'ltc-result';
+            $row1->cells[] = $cell5;
+
+            $cell6 = new html_table_cell();
+            $ratio = 100 - $averagedonenum;
+            $percentleft = ($sums['mandatory']['items']) ? sprintf('%0d', $ratio.' %') : '0 %';
+            if ($reportsettings->showoptional && @$sums['optional']['items']) {
+                $ratio = 100 - $averagedonenumoptional;
+                $optionalpercentleft = ($sums['optional']['items']) ? sprintf('%0d', $ratio.' %') : '0 %';
+                $percentleft .= '<span class="ltc-optional"> +'.$optionalpercentleft.'</span>';
+            }
+            $cell6->text = $percentleft;
+            $cell6->attributes['class'] = 'ltc-remain-result';
+            $row1->cells[] = $cell6;
+
+            $cell7 = new html_table_cell();
+            $sumtimeleft = learningtimecheck_format_time($sums['mandatory']['timeleft']);
+            if ($reportsettings->showoptional && @$sums['optional']['timeleft']) {
+                $sumtimeleft .= '<span class="ltc-optional"> +'.learningtimecheck_format_time($sums['optional']['timeleft']).'</span>';
+            }
+            $cell7->text = $sumtimeleft.' '.get_string('totalized', 'learningtimecheck');
+            $cell7->attributes['class'] = 'ltc-remain-result';
+            $row1->cells[] = $cell7;
+
+             $table->data[] = $row1;
+
+            $str .= html_writer::table($table);
+            $str .= $this->output->box_end();
+        } else {
+            $str = $this->output->notification(get_string('nousers', 'learningtimecheck'));
+        }
+
+        return $str;
     }
 
     /**
@@ -1798,6 +1823,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
 
             if ($item->itemoptional != LTC_OPTIONAL_HEADING) {
+                // Not heading.
                 $icon = '';
                 if (in_array($item->moduleid, array_keys($cms))) {
                     // Try first in module cache.
@@ -1840,11 +1866,15 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $itemurl = new moodle_url('/mod/'.$mod->modname.'/view.php', array('id' => $item->moduleid));
                 $table->head[] = '<a href="'.$itemurl.'" data-cmid="'.$mod->id.'">'.$icon.'</a> '.s($item->displaytext);
                 $table->size[] = '80px';
+                $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
             } else {
-                assert(1);
+                // Heading.
+                if (!$reportsettings->hideheadings) {
+                    $table->head[] = s($item->displaytext);
+                    $table->size[] = '30px';
+                }
+                continue;
             }
-            $table->size[] = '80px';
-            $table->skip[] = (!$reportsettings->showoptional) && ($item->itemoptional == LTC_OPTIONAL_YES);
         }
 
         $table->data = [];
@@ -1870,17 +1900,20 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     }
 
                     if ($check->itemoptional == LTC_OPTIONAL_HEADING) {
-                        if (!$reportsettings->hideheadings) {
-                            // $row[] = array(false, false, true, 0, 0, null);
+                        // Heading.
+                        if ($reportsettings->hideheadings) {
                             continue;
+                        } else {
+                            $row[] = array(false, false, true, 0, 0, null);
                         }
                     } else {
+                        // Not Heading.
                         if ($check->usertimestamp > 0) {
                             // Check->id is the itemid.
-                            $row[] = array($check->teachermark, true, false, $auser->id, $check->id, @$ITEMMODS[$check->id]);
+                            $row[] = array($check->teachermark, true, false, $auser->id, $check->id, @$itemmods[$check->id]);
                         } else {
                             // Check->id is the itemid.
-                            $row[] = array($check->teachermark, false, false, $auser->id, $check->id, @$ITEMMODS[$check->id]);
+                            $row[] = array($check->teachermark, false, false, $auser->id, $check->id, @$itemmods[$check->id]);
                         }
                     }
                 }
@@ -2315,6 +2348,25 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $str;
     }
 
+    public function print_deltas_button($thispage) {
+        global $CFG;
+
+        if (!is_dir($CFG->dirroot.'/blocks/use_stats')) {
+            return;
+        }
+
+        $str = '';
+
+        $deltaurl = new moodle_url('/mod/learningtimecheck/deltas.php');
+        $str .= '<form style="display: inline;" action="'.$deltaurl.'" method="get">';
+        $str .= html_writer::input_hidden_params($thispage);
+        $str .= '<input type="hidden" name="sesskey" value="'.sesskey().'" />';
+        $str .= ' <input type="submit" name="gotodeltas" value="'.get_string('deltas', 'learningtimecheck').'" />';
+        $str .= '</form>';
+
+        return $str;
+    }
+
     public function print_export_excel_button($thispage, $userid = 0) {
         global $COURSE;
 
@@ -2586,7 +2638,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 ltc.id = cm.instance AND
                 cm.module = m.id AND
                 m.name = 'learningtimecheck' AND
-                cm.deletioninprogress = 0 AND
                 cm.course = ?
         ";
         $courseinstances = $DB->count_records_sql($sql, [$COURSE->id]);
@@ -3111,5 +3162,109 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
     private function random_color() {
         return '#'.$this->random_color_part() . $this->random_color_part() . $this->random_color_part();
+    }
+
+    /**
+     * Prints delta cms report. Deltas plot difference between really time spent on activities
+     * and the threoretical quantification forecasting.
+     */
+    public function delta_cms($userid, &$timeaggregate, &$allusers) {
+        global $COURSE, $DB;
+
+        $user = $DB->get_record('user', ['id' => $userid]);
+        $template = new Stdclass;
+
+        $context = context_course::instance($COURSE->id);
+        $usermenu = [];
+        foreach (array_keys($allusers) as $uid) {
+            $u = $DB->get_record('user', ['id' => $uid]);
+            $usermenu[$u->id] = fullname($u);
+        }
+        $template->userselect = html_writer::select($usermenu, 'userid', $user->id);
+        $template->sesskey = sesskey();
+        $template->formurl = new moodle_url('/mod/learningtimecheck/deltas.php');
+        $cm = get_coursemodule_from_instance('learningtimecheck', $this->instance->id);
+        $template->cmid = $cm->id;
+        $cmcontext = context_module::instance($cm->id);
+
+        $template->canseeother = has_capability('mod/learningtimecheck:updateother', $cmcontext);
+
+        $items = $this->instance->get_items();
+
+        $maxneg = 0;
+        $maxpos = 0;
+        foreach ($items as $item) {
+
+            if ($item->itemoptional != 2 && empty($item->credittime)) {
+                // Unquantified.
+                $itemtpl = new StdClass;
+                $itemtpl->isitem = true;
+                $itemtpl->isvalid = false;
+                $itemtpl->isunquantified = true;
+                $itemtpl->cmname = format_string($item->displaytext);
+                $template->cms[] = $itemtpl;
+                continue;
+            }
+
+            if ($item->itemoptional == 2) {
+                // Section names.
+                $itemtpl = new StdClass;
+                $itemtpl->isitem = false;
+                $itemtpl->sectionname = format_string($item->displaytext);
+                $template->cms[] = $itemtpl;
+                continue;
+            }
+
+            if (empty($timeaggregate['realmodule'][$item->moduleid]->elapsed)) {
+                $itemtpl = new StdClass;
+                $itemtpl->isitem = true;
+                $itemtpl->isvalid = false;
+                $itemtpl->isunvisited = true;
+                $itemtpl->cmname = format_string($item->displaytext);
+                $template->cms[] = $itemtpl;
+                continue;
+            }
+
+            $itemtpl = new StdClass;
+            $itemtpl->isvalid = true;
+            $itemtpl->isitem = true;
+            $itemtpl->cmname = format_string($item->displaytext);
+            $realtime = $timeaggregate['realmodule'][$item->moduleid]->elapsed;
+            $absdelta = ($item->credittime * 60) - $realtime;
+            $reldelta = (($item->credittime * 60) - $realtime) / ($item->credittime * 60);
+            $itemtpl->credittimestr = get_string('itemcredittime', 'learningtimecheck', $item->credittime);
+            if ($absdelta > 0) {
+                $itemtpl->posrealtimestr = block_use_stats_x_format_time($realtime);
+                $itemtpl->abspositivedev = abs($absdelta); // Real time was better than creditted.
+                $itemtpl->relpositivedev = abs($reldelta) * 100;
+                $itemtpl->absnegativedev = 0;
+                if ($maxpos < $reldelta) {
+                    $maxpos = $reldelta;
+                }
+            } else if ($absdelta < 0) {
+                $itemtpl->abspositivedev = 0;
+                $itemtpl->absnegativedev = abs($absdelta); // Real time was worse than creditted.
+                $itemtpl->negrealtimestr = block_use_stats_x_format_time($realtime);
+                $itemtpl->relnegativedev = abs($reldelta) * 100;
+                if ($maxneg < $reldelta) {
+                    $maxneg = $reldelta;
+                }
+            } else {
+                $itemtpl->absnegativedev = 0;
+                $itemtpl->abspositivedev = 0;
+            }
+
+            $template->cms[] = $itemtpl;
+        }
+
+        foreach ($template->cms as &$cms) {
+            if (!empty($cms->isquantified)) {
+                assert(1);
+                // $cms->relpositivedev = ($maxpos) ? $cms->abspositivedev / $maxpos * 100 : 0;
+                // $cms->relnegativedev = ($maxneg) ? $cms->absnegativedev / $maxneg * 100 : 0;
+            }
+        }
+
+        return $this->output->render_from_template('mod_learningtimecheck/delta_cms', $template);
     }
 }

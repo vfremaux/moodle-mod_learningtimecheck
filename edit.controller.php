@@ -41,7 +41,7 @@ if ($editdates !== false) {
 
 $additemafter = optional_param('additemafter', false, PARAM_INT);
 $removeauto = optional_param('removeauto', false, PARAM_TEXT);
-$update_complete_scores = optional_param('update_complete_score', false, PARAM_TEXT);
+$updatecompletescores = optional_param('update_complete_score', false, PARAM_TEXT);
 $applyenablecredittoall = optional_param('applyenablecredittoall', false, PARAM_TEXT);
 $applycredittimetoall = optional_param('applycredittimetoall', false, PARAM_TEXT);
 $applyisdeclarativetoall = optional_param('applyisdeclarativetoall', false, PARAM_TEXT);
