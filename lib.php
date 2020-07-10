@@ -78,31 +78,41 @@ require_once($CFG->dirroot.'/lib/completionlib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
 function learningtimecheck_supports($feature) {
+
     switch($feature) {
+
         case FEATURE_GROUPS: {
             return true;
         }
+
         case FEATURE_GROUPINGS: {
             return true;
         }
+
         case FEATURE_GROUPMEMBERSONLY: {
             return true;
         }
+
         case FEATURE_MOD_INTRO:  {
             return true;
         }
+
         case FEATURE_GRADE_HAS_GRADE: {
             return true;
         }
+
         case FEATURE_COMPLETION_HAS_RULES: {
             return true;
         }
+
         case FEATURE_BACKUP_MOODLE2: {
             return true;
         }
+
         case FEATURE_SHOW_DESCRIPTION: {
             return true;
         }
+
         default: return null;
     }
 }
@@ -304,10 +314,10 @@ function learningtimecheck_user_outline($course, $user, $mod, $learningtimecheck
     if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
         $groupings = learningtimecheck_class::get_user_groupings($user->id, $learningtimecheck->course);
         $groupings[] = 0;
-        $groupings_sel = ' AND grouping IN ('.implode(',', $groupings).') ';
+        $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
     }
     $sel = 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.LTC_OPTIONAL_NO;
-    $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupings_sel;
+    $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupingssel;
     $items = $DB->get_records_select('learningtimecheck_item', $sel, array($learningtimecheck->id), '', 'id');
     if (!$items) {
         return null;
@@ -403,10 +413,10 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
     $strlearningtimecheck = get_string('modulename', 'learningtimecheck');
 
     foreach ($learningtimechecks as $learningtimecheck) {
-        $show_all = true;
+        $showall = true;
         if ($learningtimecheck->teacheredit == LTC_MARKING_STUDENT) {
             $context = context_module::instance($learningtimecheck->coursemodule);
-            $show_all = !has_capability('mod/learningtimecheck:updateown', $context);
+            $showall = !has_capability('mod/learningtimecheck:updateown', $context);
         }
 
         $progressbar = learningtimecheck_class::print_user_progressbar($learningtimecheck->id, $USER->id,
@@ -420,7 +430,7 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
          * Do not worry about hidden items / groupings as automatic items cannot have dates
          * (and manual items cannot be hidden / have groupings)
          */
-        if ($show_all) {
+        if ($showall) {
             // Show all items whether or not they are checked off (as this user is unable to check them off).
             $dateitems = $DB->get_records_select('learningtimecheck_item',
                                                   'learningtimecheck = ?',
