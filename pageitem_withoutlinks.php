@@ -26,7 +26,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-function learningtimecheck_withoutlinks_set_instance(&$block) {
+function learningtimecheck_withoutlinks_set_instance($block) {
     global $USER, $CFG, $PAGE;
 
     $str = '';

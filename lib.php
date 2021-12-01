@@ -124,11 +124,13 @@ function learningtimecheck_supports($feature) {
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
-function learningtimecheck_supports_feature($feature) {
+function learningtimecheck_supports_feature($feature = null, $getsupported = false) {
     global $CFG;
     static $supports;
 
-    $config = get_config('learningtimecheck');
+    if (!during_initial_install()) {
+        $config = get_config('learningtimecheck');
+    }
 
     if (!isset($supports)) {
         $supports = array(
@@ -144,6 +146,10 @@ function learningtimecheck_supports_feature($feature) {
         );
     }
 
+    if ($getsupported) {
+        return $supports;
+    }
+
     // Check existance of the 'pro' dir in plugin.
     if (is_dir(__DIR__.'/pro')) {
         if ($feature == 'emulate/community') {
@@ -156,6 +162,11 @@ function learningtimecheck_supports_feature($feature) {
         }
     } else {
         $versionkey = 'community';
+    }
+
+    if (empty($feature)) {
+        // Just return version.
+        return $versionkey;
     }
 
     list($feat, $subfeat) = explode('/', $feature);

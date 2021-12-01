@@ -437,7 +437,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if (!$itemtpl->isheading) {
                     if (!$template->showcheckbox) {
                         $mandatorypix = ($item->itemoptional == LTC_OPTIONAL_YES) ? 'optional' : 'mandatory';
+                        $itemtpl->itemalt = get_string($mandatorypix, 'learningtimecheck');
                         $checkedpix = ($item->checked) ? 'marked' : 'unmarked';
+                        $itemtpl->itemalt .= ' '.get_string($checkedpix, 'learningtimecheck');
                         $pixname = 'item_'.$checkedpix.'_'.$mandatorypix;
                         $itemtpl->pixurl = $this->output->image_url($pixname, 'mod_learningtimecheck');
                     }
@@ -1175,7 +1177,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $hideclass = $item->hidden ? 'shadow' : '';
 
                 echo '<tr valign="top">';
-                echo '<td id="ltc-opt-controls-'.$item->id.'">';
+                echo '<td id="ltc-opt-controls-'.$item->id.'" data-cmid="'.$item->moduleid.'">';
                 echo $this->item_optional_controls($item, $autoitem, $optional, $thispage);
                 echo '<input type="hidden" name="items[]" value="'.$item->id.'" /> ';
                 echo '</td>';
@@ -1990,6 +1992,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             in_array(PROGRESSBAR_MANDATORY, $useroptions->elements)) {
                 $bartpl = new StdClass;
                 $bartpl->percentcomplete = $requiredcompletepercent;
+                $a = new StdClass;
+                $a->items = $ccs['allitems'];
+                $a->allitems = $ccs['allcompleteitems'];
+                $bartpl->info = get_string('over', 'learningtimecheck', $a);
                 $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
                 $bartpl->heading = get_string('percentcomplete', 'learningtimecheck');
                 $bartpl->progressurl = $this->output->image_url('progress1_big', 'learningtimecheck');
@@ -1997,7 +2003,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             }
 
             if (in_array($useroptions->progressbars, array(PROGRESSBAR_TIME, PROGRESSBAR_BOTH)) &&
-            in_array(PROGRESSBAR_MANDATORY, $useroptions->elements)) {
+                    in_array(PROGRESSBAR_MANDATORY, $useroptions->elements)) {
                 $bartpl = new StdClass;
                 $bartpl->percentcomplete = $requiredcompletepercenttime;
                 $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
@@ -2008,8 +2014,12 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
 
         if (in_array($useroptions->progressbars, array(PROGRESSBAR_ITEMS, PROGRESSBAR_BOTH)) &&
-            in_array(PROGRESSBAR_OPTIONAL, $useroptions->elements)) {
+                in_array(PROGRESSBAR_OPTIONAL, $useroptions->elements)) {
             $bartpl = new StdClass;
+            $a = new StdClass;
+            $a->items = $ccs['optionalitems'];
+            $a->allitems = $ccs['optionalcompleteitems'];
+            $bartpl->info = get_string('over', 'learningtimecheck', $a);
             $bartpl->percentcomplete = $optionalpercentcomplete;
             $bartpl->formattedpercentcomplete = sprintf('%0d', $bartpl->percentcomplete);
             $bartpl->heading = get_string('optionalpercentcompleteall', 'learningtimecheck');
@@ -2638,6 +2648,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 ltc.id = cm.instance AND
                 cm.module = m.id AND
                 m.name = 'learningtimecheck' AND
+                (cm.deletioninprogress IS NULL OR cm.deletioninprogress = 0) AND
                 cm.course = ?
         ";
         $courseinstances = $DB->count_records_sql($sql, [$COURSE->id]);

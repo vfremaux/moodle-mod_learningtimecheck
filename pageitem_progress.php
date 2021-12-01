@@ -26,7 +26,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-function learningtimecheck_progress_set_instance(&$block, $chooseview = false) {
+function learningtimecheck_progress_set_instance($block, $chooseview = false) {
     global $USER, $CFG, $COURSE, $PAGE, $OUTPUT;
 
     $str = '';

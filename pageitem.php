@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-function learningtimecheck_set_instance(&$block) {
+function learningtimecheck_set_instance($block) {
     global $USER, $CFG, $COURSE, $PAGE, $OUTPUT;
 
     $str = '';
