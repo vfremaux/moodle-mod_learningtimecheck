@@ -440,6 +440,9 @@ table.ltc-timesettings {
 }
 
 .ltc-box {
+    left: 0;
+    position: relative;
+    top: 20px;
     border: 1px solid #d0d0d0;
     padding: 10px;
 }

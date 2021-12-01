@@ -1,6 +1,6 @@
 language: php
 
-sudo: false
+sudo: true
 
 addons:
   firefox: "47.0.1"
@@ -24,23 +24,23 @@ php:
 env:
   global:
     - MOODLE_BRANCH=MOODLE_36_STABLE
-    - PLUGIN_BRANCH=MOODLE_36_WORKING
+    - PLUGINS_BRANCH=MOODLE_36_WORKING
   matrix:
     - DB=mariadb
     - DB=pgsql
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - nvm install 8.9
-  - nvm use 8.9
+  - nvm install 14.0
+  - nvm use 14.0
   - cd ../..
   - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
-  - moodle-plugin-ci add-plugin --branch $PLUGIN_BRANCH vfremaux/moodle-block_learningtimecheck
-  - moodle-plugin-ci add-plugin --branch $PLUGIN_BRANCH vfremaux/moodle-report_learningtimecheck
-  - moodle-plugin-ci add-plugin --branch $PLUGIN_BRANCH vfremaux/moodle-local_vflibs
+  - moodle-plugin-ci add-plugin --branch $PLUGINS_BRANCH vfremaux/moodle-block_learningtimecheck
+  - moodle-plugin-ci add-plugin --branch $PLUGINS_BRANCH vfremaux/moodle-report_learningtimecheck
+  - moodle-plugin-ci add-plugin --branch $PLUGINS_BRANCH vfremaux/moodle-local_vflibs
   - moodle-plugin-ci install
 
 script:
@@ -53,5 +53,5 @@ script:
 #  - moodle-plugin-ci mustache
 #  - moodle-plugin-ci phpdoc
   - moodle-plugin-ci grunt
-  - moodle-plugin-ci phpunit
+#  - moodle-plugin-ci phpunit
 #  - moodle-plugin-ci behat

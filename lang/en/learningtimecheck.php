@@ -126,8 +126,6 @@ $string['eithercheck'] = 'Either';
 $string['emailoncomplete'] = 'Email when learningtimecheck is complete:';
 $string['emailoncompletesubject'] = 'User {$a->user} has completed checklist \'{$a->learningtimecheck}\'';
 $string['emailoncompletesubjectown'] = 'You have completed checklist \'{$a->learningtimecheck}\'';
-$string['emulatecommunity'] = 'Emulate the community version.';
-$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['enablecredit'] = 'Enable credit time report(*)';
 $string['enablecredit_desc'] = ' (*) If enabled, this time will be used in Training Session Report (add-on), in place of the measured time from user logs.';
 $string['errorbadinstance'] = 'The learningtimecheck instance is missing : cmid {$a} ';
@@ -178,16 +176,14 @@ $string['learningtimecheckfor'] = 'Checklist for';
 $string['learningtimecheckintro'] = 'Introduction';
 $string['learningtimechecksettings'] = 'Settings';
 $string['learningvelocities'] = 'Learning Velocity';
-$string['licenseprovider'] = 'Pro License provider';
-$string['licenseprovider_desc'] = 'Input here your provider key';
-$string['licensekey'] = 'Pro license key';
-$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['linktomodule'] = 'Link to this module';
 $string['listpreview'] = 'Preview of the checklist';
 $string['ltc'] = ' (LTC)';
 $string['lockteachermarks'] = 'Lock teacher marks';
 $string['lockstudentinput'] = 'Lock student input';
 $string['lockteachermarkswarning'] = 'Note: Once you have saved these marks, you will be unable to change any \'Yes\' marks';
+$string['marked'] = 'Has been marked';
+$string['unmarked'] = 'Has not yet been marked';
 $string['mandatory'] = 'mandatory';
 $string['mandatories'] = 'mandatories (LTC)';
 $string['marktypes'] = 'Mark types';
@@ -205,12 +201,12 @@ $string['optional'] = 'optional';
 $string['optionalhide'] = 'Hide optional items';
 $string['optionalitem'] = 'This item is optional';
 $string['optionalshow'] = 'Show optional items';
+$string['over'] = '{$a->items} over {$a->allitems}';
 $string['percentcomplete'] = 'Required items';
 $string['percentcompleteall'] = 'All items';
 $string['timepercentcomplete'] = 'Required time';
 $string['timepercentcompleteall'] = 'All time';
 $string['pluginadministration'] = 'Checklist administration';
-$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'Learning Time Check';
 $string['pluginname_desc'] = 'This plugin is based on the checklist plugin and has been transformed to assess the time based contract between teacher and student.';
 $string['preview'] = 'Preview';
@@ -381,9 +377,4 @@ $string['configstrictcredits_desc'] = 'When enabled, credit times will be used i
 If not, credit time will be used only if it is is higher to the effectively measured time. This protects smart students
 justification on assessed training.';
 
-$string['plugindist_desc'] = '
-<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
-core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
-and improvement effort.</p>
-<p>Please contact one of our distributors to get "Pro" version support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';
+include(__DIR__.'/pro_additional_strings.php');

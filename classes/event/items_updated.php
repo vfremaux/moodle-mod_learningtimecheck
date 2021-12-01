@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains an event for when a learningtimcheck activity is updated.
+ * This file contains an event for when a feedback activity is updated.
  *
  * @package    mod_learningtimecheck
  * @copyright  2013 Valery Fremaux
@@ -26,13 +26,14 @@ namespace mod_learningtimecheck\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Event for when a learningtimecheck activity is updated.
+ * Event for when a learningtimecheck activity has item list or settings changed.
+ * Used essentially when time or items learning contract is changed.
  *
  * @package    mod_learningtimecheck
  * @copyright  2015 Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_module_edited extends \core\event\course_module_viewed {
+class items_updated extends \core\event\course_module_viewed {
 
     /**
      * Init method.

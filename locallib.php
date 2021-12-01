@@ -44,7 +44,14 @@ define ('LTC_DECLARATIVE_STUDENTS', 1);
 define ('LTC_DECLARATIVE_TEACHERS', 2);
 define ('LTC_DECLARATIVE_BOTH', 3);
 
-define('LTC_HPAGE_SIZE', 12);
+define('LTC_HPAGE_SIZE', 20);
+
+if (!function_exists('debug_trace')) {
+    // Fake it.
+    function debug_trace($msg, $level = 0) {
+        assert(1);
+    }    
+}
 
 class learningtimecheck_class {
     public $cm;
@@ -64,6 +71,11 @@ class learningtimecheck_class {
 
     /**
      *
+     * @param array $cmid
+     * @param array $userid
+     * @param array $learningtimecheck
+     * @param array $cm
+     * @param array $course
      * @param array $updateusers an array of users ids to update.
      */
     public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null, $updateusers = []) {
@@ -828,6 +840,13 @@ class learningtimecheck_class {
 
         $this->get_items();
         $this->update_all_autoupdate_checks($userlist);
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
     public function removeauto() {
@@ -1514,6 +1533,13 @@ class learningtimecheck_class {
             }
             learningtimecheck_update_grades($this->learningtimecheck);
         }
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
     public function deleteitem($itemid, $forcedelete = false) {
@@ -1539,6 +1565,13 @@ class learningtimecheck_class {
         $DB->delete_records('learningtimecheck_comments', array('itemid' => $itemid));
 
         $this->update_item_positions();
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
     public function moveitemto($itemid, $newposition, $forceupdate=false) {
@@ -1633,6 +1666,13 @@ class learningtimecheck_class {
                 $this->items[$itemid] = $item;
             }
         }
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
     public function hideitem($itemid) {
@@ -1647,6 +1687,13 @@ class learningtimecheck_class {
         if (isset($this->items[$itemid])) {
             $this->items = $item;
         }
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
     public function showitem($itemid) {
@@ -1657,6 +1704,13 @@ class learningtimecheck_class {
         $upditem->id = $itemid;
         $upditem->hidden = 0;
         $DB->update_record('learningtimecheck_item', $upditem);
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
     public function ajaxupdatechecks($changechecks) {
@@ -2135,6 +2189,13 @@ class learningtimecheck_class {
         }
 
         $this->update_all_autoupdate_checks();
+
+        $eventparams = array(
+            'objectid' => $this->learningtimecheck->id,
+            'context' => $this->context,
+        );
+        $event = mod_learningtimecheck\event\items_updated::create($eventparams);
+        $event->trigger();
     }
 
 
