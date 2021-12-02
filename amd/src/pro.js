@@ -21,7 +21,7 @@ define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
 
         component: 'mod_learningtimecheck',
         shortcomponent: 'learningtimecheck',
-        componentpath: '/mod/learningtimecheck',
+        componentpath: 'mod/learningtimecheck',
 
         init: function() {
 
@@ -60,7 +60,7 @@ define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
                 $(licensekeyid).after(waiticon);
 
                 $.get(url, function(data) {
-                    if (data.match(/SET OK/)) {
+                    if (data.match(/(SET|CHECK) OK/)) {
                         if (found = data.match(/-\d+.*$/)) {
                             $(licensekeyid + ' + img').remove();
                             $(licensekeyid).after(cautionicon);
