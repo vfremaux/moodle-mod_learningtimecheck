@@ -2935,7 +2935,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $userfirstletter = substr($userlastname, 0, 1);
                 $params = array('action' => 'grading', 'id' => $modinfo->id, 'thide' => 'email', 'tilast' => $userfirstletter);
                 $assigncheckurl = new moodle_url('/mod/assign/view.php', $params);
-                $pix = $this->output->pix_icon('t/hide');
+                $pix = $this->output->pix_icon('t/hide', '');
                 $str = '<a href="'.$assigncheckurl.'&thide=picture&thide=grade&thide=userid" target="_blank">'.$pix.'</a>';
             }
         }
