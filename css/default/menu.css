@@ -1,0 +1,111 @@
+/* stylelint-disable no-duplicate-properties */
+
+.menu {
+    border-width: 1px;
+    border-style: solid;
+    margin: 0;
+    overflow: hidden;
+    padding: 2px;
+    position: absolute;
+}
+.menu-item {
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    white-space: nowrap;
+}
+.menu-text {
+    float: left;
+    height: 20px;
+    line-height: 20px;
+    padding-left: 28px;
+}
+.menu-icon {
+    height: 16px;
+    left: 2px;
+    margin-top: -8px;
+    position: absolute;
+    top: 50%;
+    width: 16px;
+}
+.menu-rightarrow {
+    height: 16px;
+    margin-top: -8px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 16px;
+}
+.menu-line {
+    height: 2000px;
+    font-size: 1px;
+    left: 26px;
+    position: absolute;
+    top: 0;
+}
+.menu-sep {
+    font-size: 1px;
+    margin: 3px 0 3px 25px;
+}
+.menu-active {
+    border-radius: 5px 5px 5px 5px;
+    -moz-border-radius: 5px 5px 5px 5px;
+    -webkit-border-radius: 5px 5px 5px 5px;
+}
+.menu-item-disabled {
+    cursor: default;
+    filter: alpha(opacity=50);
+    opacity: 0.5;
+}
+.menu-text,
+.menu-text span {
+    font-size: 12px;
+}
+.menu-shadow {
+    background: #ccc;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 2px 2px 3px #ccc;
+    filter: progid:DXImageTransform.Microsoft.Blur(pixelRadius=2, MakeShadow=false, ShadowOpacity=0.2);
+    position: absolute;
+    -moz-border-radius: 5px 5px 5px 5px;
+    -moz-box-shadow: 2px 2px 3px #ccc;
+    -webkit-border-radius: 5px 5px 5px 5px;
+    -webkit-box-shadow: 2px 2px 3px #ccc;
+}
+.menu-rightarrow {
+    background: url('images/menu_arrows.png') no-repeat -32px center;
+}
+.menu-line {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #fff;
+}
+.menu-sep {
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #fff;
+}
+.menu {
+    background-color: #fafafa;
+    border-color: #ddd;
+    color: #444;
+}
+.menu-content {
+    background: #fff;
+}
+.menu-item {
+    border-color: transparent;
+    _border-color: #fafafa;
+}
+.menu-active {
+    background: #eaf2ff;
+    border-color: #b7d2ff;
+    color: #000;
+}
+.menu-active-disabled {
+    background: transparent;
+    border-color: transparent;
+    color: #444;
+}

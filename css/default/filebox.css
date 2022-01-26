@@ -1,0 +1,6 @@
+.filebox .textbox-value {
+    left: -5000px;
+    position: absolute;
+    top: 0;
+    vertical-align: top;
+}
