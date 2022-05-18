@@ -626,7 +626,6 @@ function learningtimecheck_cron_task () {
                 ";
                 $logs = $DB->get_records_sql($sql, array($lastlogtime));
             } else if ($reader instanceof \logstore_legacy\log\store) {
-                echo "Getting old logs";
                 $select = '
                     l.time >= ? AND
                     l.course IN ('.$courseids.') AND

@@ -76,7 +76,7 @@ class learningtimecheck_class {
      * @param array $learningtimecheck
      * @param array $cm
      * @param array $course
-     * @param array $updateusers an array of users ids to update.
+     * @param array $updateusers an array of users ids to update. Unrelated to $userid.
      */
     public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null, $updateusers = []) {
         global $COURSE, $DB, $CFG;
@@ -1078,11 +1078,25 @@ class learningtimecheck_class {
         echo "</div>";
     }
 
-
-    public function get_total_time($isql, $iparams) {
+    public function get_total_time($ltcid) {
         global $DB;
 
-        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " id $isql ", $iparams);
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheckid = ? ", $params);
+    }
+
+    public function get_accessory_time($ltcid) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheck = ? AND itemoptional = ".LTC_OPTIONAL_YES, $params);
+    }
+
+    public function get_mandatory_time($ltcid) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheck = ? AND itemoptional = ".LTC_OPTIONAL_NO, $params);
     }
 
     public function get_acquired_time($sqlconds, $params) {
