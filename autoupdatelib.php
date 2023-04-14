@@ -410,8 +410,8 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
 
     $sql = "
         SELECT
-            c.id checkid,
             i.id itemid,
+            c.id checkid,
             c.usertimestamp,
             i.learningtimecheck
         FROM
@@ -518,7 +518,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
 
         // Trigger a completion update for the learningtimecheck.
         $completioninfo = new completion_info($coursecache[$item->learningtimecheck]);
-        $completioninfo->update_state($cmcache[$item->learningtimecheck], COMPLETION_UNKNOWN, $userid);
+        $completioninfo->update_state($cmcache[$item->learningtimecheck], $newstate, $userid);
     }
 
     if (defined('DEBUG_LTC_AUTOUPDATE')) {

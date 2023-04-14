@@ -47,10 +47,18 @@ define ('LTC_DECLARATIVE_BOTH', 3);
 define('LTC_HPAGE_SIZE', 20);
 
 if (!function_exists('debug_trace')) {
-    // Fake it.
-    function debug_trace($msg, $level = 0) {
-        assert(1);
-    }    
+    @include_once($CFG->dirroot.'/local/advancedperfs/debugtools.php');
+    if (!function_exists('debug_trace')) {
+        function debug_trace($msg, $tracelevel = 0, $label = '', $backtracelevel = 1) {
+            // Fake this function if not existing in the target moodle environment.
+            assert(1);
+        }
+        define('TRACE_ERRORS', 1); // Errors should be always traced when trace is on.
+        define('TRACE_NOTICE', 3); // Notices are important notices in normal execution.
+        define('TRACE_DEBUG', 5); // Debug are debug time notices that should be burried in debug_fine level when debug is ok.
+        define('TRACE_DATA', 8); // Data level is when requiring to see data structures content.
+        define('TRACE_DEBUG_FINE', 10); // Debug fine are control points we want to keep when code is refactored and debug needs to be reactivated.
+    }
 }
 
 class learningtimecheck_class {
@@ -76,7 +84,7 @@ class learningtimecheck_class {
      * @param array $learningtimecheck
      * @param array $cm
      * @param array $course
-     * @param array $updateusers an array of users ids to update.
+     * @param array $updateusers an array of users ids to update. Unrelated to $userid.
      */
     public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null, $updateusers = []) {
         global $COURSE, $DB, $CFG;
@@ -1078,11 +1086,25 @@ class learningtimecheck_class {
         echo "</div>";
     }
 
-
-    public function get_total_time($isql, $iparams) {
+    public function get_total_time($ltcid) {
         global $DB;
 
-        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " id $isql ", $iparams);
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheckid = ? ", $params);
+    }
+
+    public function get_accessory_time($ltcid) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheck = ? AND itemoptional = ".LTC_OPTIONAL_YES, $params);
+    }
+
+    public function get_mandatory_time($ltcid) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheck = ? AND itemoptional = ".LTC_OPTIONAL_NO, $params);
     }
 
     public function get_acquired_time($sqlconds, $params) {

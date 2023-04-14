@@ -532,7 +532,7 @@ function learningtimecheck_cron_task () {
     $completionupdate = 0;
 
     $sql = "
-        SELECT
+        SELECT DISTINCT
             c.id,
             c.coursemoduleid,
             c.userid,
@@ -626,7 +626,6 @@ function learningtimecheck_cron_task () {
                 ";
                 $logs = $DB->get_records_sql($sql, array($lastlogtime));
             } else if ($reader instanceof \logstore_legacy\log\store) {
-                echo "Getting old logs";
                 $select = '
                     l.time >= ? AND
                     l.course IN ('.$courseids.') AND
@@ -838,7 +837,7 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
         }
     }
 
-    return $result;
+    return $result == true;
 }
 
 /**

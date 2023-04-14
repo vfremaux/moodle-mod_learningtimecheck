@@ -17,11 +17,20 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_learningtimecheck_install() {
+    global $CFG;
 
     // Initialise global compilation horizon date at one day before installation if never installed before.
     $config = get_config('learningtimecheck');
     if (empty($config->lastcompiled)) {
         set_config('lastcompiled', time() - HOURSECS, 'learningtimecheck');
+    }
+
+    // Register zabbix indicators if installed.
+    // Note will only work with report_zabbix "pro" version.
+    // This call is only a wrapper.
+    if (is_dir($CFG->dirroot.'/report/zabbix')) {
+        include_once($CFG->dirroot.'/report/zabbix/xlib.php');
+        report_zabbix_register_plugin('local', 'vmoodle');
     }
 
 }
