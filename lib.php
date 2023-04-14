@@ -532,7 +532,7 @@ function learningtimecheck_cron_task () {
     $completionupdate = 0;
 
     $sql = "
-        SELECT
+        SELECT DISTINCT
             c.id,
             c.coursemoduleid,
             c.userid,
@@ -837,7 +837,7 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
         }
     }
 
-    return $result;
+    return $result == true;
 }
 
 /**

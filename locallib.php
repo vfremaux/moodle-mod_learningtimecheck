@@ -47,10 +47,18 @@ define ('LTC_DECLARATIVE_BOTH', 3);
 define('LTC_HPAGE_SIZE', 20);
 
 if (!function_exists('debug_trace')) {
-    // Fake it.
-    function debug_trace($msg, $level = 0) {
-        assert(1);
-    }    
+    @include_once($CFG->dirroot.'/local/advancedperfs/debugtools.php');
+    if (!function_exists('debug_trace')) {
+        function debug_trace($msg, $tracelevel = 0, $label = '', $backtracelevel = 1) {
+            // Fake this function if not existing in the target moodle environment.
+            assert(1);
+        }
+        define('TRACE_ERRORS', 1); // Errors should be always traced when trace is on.
+        define('TRACE_NOTICE', 3); // Notices are important notices in normal execution.
+        define('TRACE_DEBUG', 5); // Debug are debug time notices that should be burried in debug_fine level when debug is ok.
+        define('TRACE_DATA', 8); // Data level is when requiring to see data structures content.
+        define('TRACE_DEBUG_FINE', 10); // Debug fine are control points we want to keep when code is refactored and debug needs to be reactivated.
+    }
 }
 
 class learningtimecheck_class {

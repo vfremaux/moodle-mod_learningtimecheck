@@ -31,6 +31,7 @@ $plugin->requires = 2020060900;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release  = '3.9.0 (Build: 2021102100)';
 $plugin->component = 'mod_learningtimecheck';
+$plugin->supported = [39, 311];
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
 // Non Moodle attributes.
