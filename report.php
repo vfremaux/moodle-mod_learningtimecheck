@@ -84,7 +84,8 @@ if ($action) {
     include($CFG->dirroot.'/mod/learningtimecheck/report.controller.php');
 }
 
-if ($studentid && $chk->only_view_mentee_reports()) {
+$context = context_module::instance($cm->id);
+if ($studentid && learningtimecheck_class::only_view_mentee_reports($context)) {
     // Check this user is a mentee of the logged in user.
     if (!$this->is_mentor($this->userid)) {
         $this->userid = false;
@@ -113,7 +114,7 @@ if ($studentid) {
 }
 
 if ($COURSE->format == 'page') {
-    require_once $CFG->dirroot.'/course/format/page/xlib.php';
+    require_once($CFG->dirroot.'/course/format/page/xlib.php');
     page_print_page_format_navigation($cm);
 }
 

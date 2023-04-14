@@ -1,0 +1,72 @@
+
+
+<!-- mod_learningtimecheck/progressbars -->
+<div class="learningtimecheck-progressbar">
+
+    {{#progressbarrequired}}
+    {{#progressbaritems}}
+    <div style="display:block; float:left; width:150px;" class="ltc-progress-heading">
+        {{#str}}percentcomplete,learningtimecheck{{/str}}:&nbsp;
+    </div>
+
+    <div id="ltc-progress-required">
+        <div class="ltc-progress-outer">
+            <div class="ltc-progress-inner" style="width:{{itemsrequiredpercentcomplete}}%; background-image: url({{{progress1bigurl}}});" >&nbsp;</div>
+            <div class="ltc-progress-anim" style="width:{{itemsrequiredpercentcomplete}}%; background-image: url({{{progressfadeurl}}});" >&nbsp;</div>
+        </div>
+        <span class="ltc-progress-percent">&nbsp;{{itemsrequiredpercentcomplete}}% </span>
+    </div>
+    <br style="clear:both"/>
+    {{/progressbaritems}}
+
+    {{#progressbartime}}
+    <div style="display:block; float:left; width:150px;" class="ltc-progress-heading">
+        {{#str}}timepercentcomplete, learningtimecheck{{/str}}:&nbsp;
+    </div>
+
+    <div id="ltc-progress-required-time">
+        <div class="ltc-progress-outer">
+            <div class="ltc-progress-inner" style="width:{{timerequiredpercentcomplete}}%; background-image: url({{{progress2bigurl}}});" >&nbsp;</div>
+            <div class="ltc-progress-anim" style="width:{{timerequiredpercentcomplete}}%; background-image: url({{{progressfadeurl}}});" >&nbsp;</div>
+        </div>
+
+        <span class="ltc-progress-percent">&nbsp;{{timerequiredpercentcomplete}}% </span>
+    </div>
+    <br style="clear:both"/>
+    {{/progressbartime}}
+    {{/progressbarrequired}}
+
+    {{#progressbaritems}}
+    <div style="display:block; float:left; width:150px;" class="ltc-progress-heading">
+        {{#str}}percentcompleteall, learningtimecheck{{/str}}:&nbsp;
+    </div>
+
+    <div id="ltc-progress-all">
+        <div class="ltc-progress-outer">
+            <div class="ltc-progress-inner" style="width:{{allitemspercentcomplete}}%; background-image: url({{{progress1bigurl}}});" >&nbsp;</div>
+            <div class="ltc-progress-anim" style="width:{{allitemspercentcomplete}}%; background-image: url({{{progressfadeurl}}});" >&nbsp;</div>
+        </div>
+
+        <span class="ltc-progress-percent">&nbsp;{{allitemspercentcomplete}}% </span>
+    </div>
+    <br style="clear:both"/>
+    {{/progressbaritems}}
+
+    {{#progressbartime}}
+    <div style="display:block; float:left; width:150px;" class="ltc-progress-heading">
+    {{#str}}timepercentcompleteall, learningtimecheck{{/str}}:&nbsp;
+    </div>
+
+    <div id="ltc-progress-all-time">
+        <div class="ltc-progress-outer">
+            <div class="ltc-progress-inner" style="width:{{alltimepercentcomplete}}%; background-image: url({{{progress2bigurl}}});" >&nbsp;</div>
+            <div class="ltc-progress-anim" style="width:{{alltimepercentcomplete}}%; background-image: url({{{progressfade}}});" >&nbsp;</div>
+        </div>
+
+        <span class="ltc-progress-percent">&nbsp;{{alltimepercentcomplete}}% </span>
+    </div>
+    <br style="clear:both"/>
+    {{/progressbartime}}
+
+</div>
+<!-- /mod_learningtimecheck/progressbars -->

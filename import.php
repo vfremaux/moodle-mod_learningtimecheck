@@ -58,7 +58,7 @@ require_capability('mod/learningtimecheck:edit', $context);
 $returl = new moodle_url('/mod/learningtimecheck/edit.php', array('id' => $cm->id));
 
 class learningtimecheck_import_form extends moodleform {
-    function definition() {
+    public function definition() {
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'id', 0);

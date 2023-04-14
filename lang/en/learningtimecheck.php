@@ -33,9 +33,15 @@ $string['additemalt'] = 'Add a new item to the list';
 $string['additemhere'] = 'Insert new item after this one';
 $string['addownitems'] = 'Add your own items';
 $string['addownitems-stop'] = 'Stop adding your own items';
+$string['addrule'] = 'Add filter rule';
 $string['allowmodulelinks'] = 'Allow module links';
 $string['allreports'] = 'Reports';
 $string['anygrade'] = 'Any';
+$string['applytoall'] = 'Apply to all';
+$string['applynever'] = 'Do NOT apply credit times';
+$string['applyifcredithigher'] = 'Apply if credit is over real time';
+$string['applyifcreditlower'] = 'Apply if credit is under real time';
+$string['applyalways'] = 'Apply credit in any case';
 $string['applytoall'] = 'Apply to all';
 $string['autopopulate'] = 'Show course modules in checklist';
 $string['autoupdate'] = 'Check-off when modules complete';
@@ -83,6 +89,8 @@ $string['configinitialcredittimeon'] = 'Credit time initially on';
 $string['configinitialcredittimeon_desc'] = 'If checked, credit time are initially enabled when creating a new learningtimecheck';
 $string['configinitiallymandatory'] = 'Items initially mandatory';
 $string['configinitiallymandatory_desc'] = 'If checked, all the automatically generated items will have optionality off. If not checked all items discovered in sections will be marked as optional';
+$string['configinitialdeclaredoverridepolicy'] = 'Initial declared time override policy';
+$string['configinitialdeclaredoverridepolicy_desc'] = 'Gives the policy setup for any new learningtimecheck instance';
 $string['configintegrateusestats'] = 'Integrate use_stats results';
 $string['configintegrateusestats_desc'] = 'If enabled, use stats tracking measurements will be integrated into learningtimecheck reports';
 $string['configlastcompiled'] = 'Last cron compilation date';
@@ -103,8 +111,10 @@ $string['coursetotalitems'] = 'total items for course';
 $string['coursetotaltime'] = 'Course time';
 $string['credit'] = 'Credit';
 $string['credittime'] = 'Credit time: ';
-$string['days'] = 'Days';
+$string['days'] = 'd';
 $string['deleteitem'] = 'Delete this item';
+$string['deltas'] = 'Deviations';
+$string['declaredoverridepolicy'] = 'Declared override policy';
 $string['disabled'] = 'Disabled';
 $string['edit'] = 'Edit learningtimecheck';
 $string['editchecks'] = 'Edit checks';
@@ -116,8 +126,6 @@ $string['eithercheck'] = 'Either';
 $string['emailoncomplete'] = 'Email when learningtimecheck is complete:';
 $string['emailoncompletesubject'] = 'User {$a->user} has completed checklist \'{$a->learningtimecheck}\'';
 $string['emailoncompletesubjectown'] = 'You have completed checklist \'{$a->learningtimecheck}\'';
-$string['emulatecommunity'] = 'Emulate the community version.';
-$string['emulatecommunity_desc'] = 'Switches the code to the community version. The result will be more compatible, but some features will not be available anymore.';
 $string['enablecredit'] = 'Enable credit time report(*)';
 $string['enablecredit_desc'] = ' (*) If enabled, this time will be used in Training Session Report (add-on), in place of the measured time from user logs.';
 $string['errorbadinstance'] = 'The learningtimecheck instance is missing : cmid {$a} ';
@@ -139,7 +147,7 @@ $string['gradetocomplete'] = 'Grade to complete:';
 $string['guestsno'] = 'You do not have permission to view this checklist';
 $string['headingitem'] = 'This item is a heading - it will not have a checkbox beside it';
 $string['hiddenbymodule'] = 'This item is hidden because the course module it refers is not visible';
-$string['hours'] = 'Hours';
+$string['hours'] = 'h';
 $string['import'] = 'Import items';
 $string['importfile'] = 'Choose file to import';
 $string['importfromcourse'] = 'Whole course';
@@ -159,6 +167,7 @@ $string['items'] = 'Items';
 $string['time'] = 'Time';
 $string['itemsdone'] = 'Items done';
 $string['itemstodo'] = 'Items to do';
+$string['largeuseramountsignal'] = 'WARNING: there are a significant number of students in the course. This may significantly impact some reporting function or report generation.';
 $string['lastcompiledtime'] = 'Last compiled time';
 $string['learningtimecheck'] = 'Learning Time Check';
 $string['learningtimecheck_autoupdate_use_cron'] = 'Enable autoupdate by cron';
@@ -167,19 +176,20 @@ $string['learningtimecheckfor'] = 'Checklist for';
 $string['learningtimecheckintro'] = 'Introduction';
 $string['learningtimechecksettings'] = 'Settings';
 $string['learningvelocities'] = 'Learning Velocity';
-$string['licenseprovider'] = 'Pro License provider';
-$string['licenseprovider_desc'] = 'Input here your provider key';
-$string['licensekey'] = 'Pro license key';
-$string['licensekey_desc'] = 'Input here the product license key you got from your provider';
 $string['linktomodule'] = 'Link to this module';
 $string['listpreview'] = 'Preview of the checklist';
+$string['ltc'] = ' (LTC)';
 $string['lockteachermarks'] = 'Lock teacher marks';
+$string['lockstudentinput'] = 'Lock student input';
 $string['lockteachermarkswarning'] = 'Note: Once you have saved these marks, you will be unable to change any \'Yes\' marks';
+$string['marked'] = 'Has been marked';
+$string['unmarked'] = 'Has not yet been marked';
 $string['mandatory'] = 'mandatory';
+$string['mandatories'] = 'mandatories (LTC)';
 $string['marktypes'] = 'Mark types';
 $string['modulename'] = 'Learning Time Check';
 $string['modulenameplural'] = 'Learning Time Checks';
-$string['moduletotaltime'] = 'Module time';
+$string['instancetotaltime'] = 'LTC Instance time';
 $string['moveitemdown'] = 'Move item down';
 $string['moveitemup'] = 'Move item up';
 $string['myprogress'] = 'My progress';
@@ -191,12 +201,12 @@ $string['optional'] = 'optional';
 $string['optionalhide'] = 'Hide optional items';
 $string['optionalitem'] = 'This item is optional';
 $string['optionalshow'] = 'Show optional items';
+$string['over'] = '{$a->items} over {$a->allitems}';
 $string['percentcomplete'] = 'Required items';
 $string['percentcompleteall'] = 'All items';
 $string['timepercentcomplete'] = 'Required time';
 $string['timepercentcompleteall'] = 'All time';
 $string['pluginadministration'] = 'Checklist administration';
-$string['plugindist'] = 'Plugin distribution';
 $string['pluginname'] = 'Learning Time Check';
 $string['pluginname_desc'] = 'This plugin is based on the checklist plugin and has been transformed to assess the time based contract between teacher and student.';
 $string['preview'] = 'Preview';
@@ -244,7 +254,6 @@ $string['timeduefromcompletion'] = 'This due date is forced by the activity comp
 $string['timeleft'] = 'Time remaining';
 $string['timesource'] = 'Time source';
 $string['timetodeclare'] = 'Work Time ';
-$string['toggledates'] = 'Toggle dates';
 $string['toggledates'] = 'Toggle names & dates';
 $string['totalcourse'] = 'Course total';
 $string['totalcourseratio'] = 'Ratio upon all course';
@@ -252,10 +261,13 @@ $string['totalcoursetime'] = 'Total course time';
 $string['totalestimatedtime'] = 'Total estimated time';
 $string['totalized'] = '(TOT)';
 $string['totalteacherestimatedtime'] = 'Total teacher estimated time';
+$string['trainingsessionscoupling'] = ' => Report TS';
 $string['tutorboard'] = 'Tutor board';
 $string['uncheckoptional'] = 'Uncheck to make it optional';
 $string['unindentitem'] = 'Unindent item';
 $string['unvalidate'] = 'Unvalidate';
+$string['unqualified'] = 'Unquantified';
+$string['unvisited'] = 'Unvisited';
 $string['updatecompletescore'] = 'Save completion grades';
 $string['updateitem'] = 'Update';
 $string['userdate'] = 'Date the user last updated this item';
@@ -276,6 +288,11 @@ $string['viewwithoutlinks'] = 'without activity links';
 $string['yesnooverride'] = 'Yes, cannot override';
 $string['yesoverride'] = 'Yes, can override';
 
+$string['declared'] = 'Declared only';
+$string['declaredovercreditifhigher'] = 'Declared if higher than credit, elsewhere credit';
+$string['declaredcapedbycredit'] = 'Declared if lower than credit, elsewhere credit';
+$string['credit'] = 'Credit only';
+
 $string['and'] = 'AND';
 $string['or'] = 'OR';
 $string['xor'] = 'EXCLUSIVE OR';
@@ -288,7 +305,7 @@ $string['coursestarted'] = 'Course started (first effective track)';
 $string['coursecompleted'] = 'Course completed';
 $string['lastcoursetrack'] = 'Last course track time ';
 $string['onecertificateissued'] = 'One of certificates issue time ';
-$string['allcertificatesissued'] = 'All certificate finished'; 
+$string['allcertificatesissued'] = 'All certificate finished';
 $string['usercreationdate'] = 'User creation date';
 $string['sitefirstevent'] = 'First event for user';
 $string['sitelastevent'] = 'Last event for user';
@@ -303,7 +320,8 @@ $string['privacy:metadata:check:teacherid'] = 'Teacher identifier for assessment
 $string['privacy:metadata:check:teachermark'] = 'Teacher counter mark state';
 $string['privacy:metadata:check:teachertimestamp'] = 'Date of the teacher assessment';
 $string['privacy:metadata:check:teacherdeclaredtime'] = 'teacher coaching self-declared time';
-$string['privacy:metadata:check'] = 'Information about tracking checkmarks';
+$string['privacy:metadata:check'] = 'Information about tracking checkmark';
+$string['privacy:metadata:checks'] = 'Information about tracking checkmarks';
 
 $string['privacy:metadata:comment:userid'] = 'Marked item owner identifier';
 $string['privacy:metadata:comment:itemid'] = 'Item identifier';
@@ -337,6 +355,9 @@ $string['lockteachermarks_help'] = 'When this setting is enabled, once a teacher
 to change it. Users with the capability \'mod/learningtimecheck:updatelocked\' will still be able to change the mark.
 ';
 
+$string['lockstudentinput_help'] = 'When this setting is enabled, students will not be able to change the declared time any more.
+';
+
 $string['autopopulate_help'] = 'This will automatically add a list of all the resources and activities in the current course
 into the LT Checklist.<br /> This list will be updated with any changes in the course, whenever you visit the \'Edit\'
 page for the checklist.<br /> Items can be hidden from the list, by clicking on the \'hide\' icon beside them.<br />
@@ -356,10 +377,4 @@ $string['configstrictcredits_desc'] = 'When enabled, credit times will be used i
 If not, credit time will be used only if it is is higher to the effectively measured time. This protects smart students
 justification on assessed training.';
 
-$string['plugindist_desc'] = '
-<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
-core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
-and improvement effort.</p>
-<p>Note that both components local_sharedresources and mod_sharedresource must work using the same distribution level.</p>
-<p>Please contact one of our distributors to get "Pro" version support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';
+include(__DIR__.'/pro_additional_strings.php');

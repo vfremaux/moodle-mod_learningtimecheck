@@ -348,7 +348,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                 $check->id = $item->checkid;
                 $check->userid = $userid;
                 $check->usertimestamp = $logtime;
-                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                if (report_learningtimecheck::is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
                          !$config->applyfiltering) {
                     // Checks eventual working day and workingtime rules.
                     $DB->update_record('learningtimecheck_check', $check);
@@ -366,7 +366,7 @@ function learningtimecheck_autoupdate($courseid, $module, $action, $cmid, $useri
                  * to reduce overhead
                  */
 
-                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                if (report_learningtimecheck::is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
                         !$config->applyfiltering) {
                     // Checks eventual working day and workingtime rules.
                     $check->id = $DB->insert_record('learningtimecheck_check', $check);
@@ -475,7 +475,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
                 $check->id = $item->checkid;
                 $check->userid = $userid;
                 $check->usertimestamp = $completiontime;
-                if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+                if (report_learningtimecheck::is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
                         !$config->applyfiltering) {
                     $DB->update_record('learningtimecheck_check', $check);
                     $updatelearningtimechecks[] = $item->learningtimecheck;
@@ -483,7 +483,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
                 }
             } else {
                 /*
-                 * Completion has been unmarked for any reason, so checklist should also 
+                 * Completion has been unmarked for any reason, so checklist should also
                  * reflect this, whatever the time is valid or not.
                  */
                 if (!$item->usertimestamp) {
@@ -508,7 +508,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
             $check->teachermark = 0;
             // LTC_TEACHERMARK_UNDECIDED - not loading from mod/learningtimecheck/lib.php to reduce overhead.
 
-            if (report_learningtimecheck_is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
+            if (report_learningtimecheck::is_valid($check, $reportconfig, $ltccontext[$item->learningtimecheck]) ||
                     !@$config->applyfiltering) {
                 $check->id = $DB->insert_record('learningtimecheck_check', $check);
                 $updatelearningtimechecks[] = $item->learningtimecheck;

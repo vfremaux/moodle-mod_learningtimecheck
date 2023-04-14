@@ -16,7 +16,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
+/*
  * @package mod_learningtimecheck
  * @category mod
  * @author  David Smith <moodle@davosmith.co.uk> as checklist
@@ -28,12 +28,12 @@ defined('MOODLE_INTERNAL') || die();
 $chk->useredit = optional_param('useredit', false, PARAM_BOOL);
 
 if (!confirm_sesskey()) {
-    error('Invalid sesskey');
+    print_error('Invalid sesskey');
 }
 
 $itemid = optional_param('itemid', 0, PARAM_INT);
 
-switch($action) {
+switch ($action) {
     case 'updatechecks':
         $newchecks = optional_param_array('items', array(), PARAM_INT);
         $chk->updatechecks($newchecks);
@@ -42,6 +42,15 @@ switch($action) {
     case 'teacherupdatechecks':
         $newchecks = optional_param_array('items', array(), PARAM_INT);
         $jumpnext = false;
+        $jumpprev = false;
+
+        if (optional_param('viewprev', '', PARAM_TEXT)) {
+            // Do not save but direct jump to next.
+            $prevuser = learningtimecheck_get_prev_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
+            $params = array('id' => $id, 'view' => 'view', 'studentid' => $prevuser->id, 'sesskey' => sesskey());
+            redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
+        }
+
         if (optional_param('viewnext', '', PARAM_TEXT)) {
             $jumpnext = true;
         } else {
@@ -94,6 +103,12 @@ switch($action) {
     case 'seeknext':
         $nextuser = learningtimecheck_get_next_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
         $params = array('id' => $id, 'view' => 'view', 'studentid' => $nextuser->id, 'sesskey' => sesskey());
+        redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
+
+    case 'viewprev':
+    case 'seekprev':
+        $prevuser = learningtimecheck_get_prev_user($chk, $context, required_param('studentid', PARAM_INT), 'u.lastname, u.firstname');
+        $params = array('id' => $id, 'view' => 'view', 'studentid' => $prevuser->id, 'sesskey' => sesskey());
         redirect(new moodle_url('/mod/learningtimecheck/view.php', $params));
 
     default:

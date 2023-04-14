@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains an event for when a feedback activity is viewed.
+ * This file contains an event for when a learningtimcheck activity is updated.
  *
  * @package    mod_learningtimecheck
- * @copyright  2013 Ankit Agarwal
+ * @copyright  2013 Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') || die();
  * Event for when a learningtimecheck activity is updated.
  *
  * @package    mod_learningtimecheck
- * @since      Moodle 2.7
  * @copyright  2015 Valery Fremaux
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

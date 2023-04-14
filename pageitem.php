@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-function learningtimecheck_set_instance(&$block) {
+function learningtimecheck_set_instance($block) {
     global $USER, $CFG, $COURSE, $PAGE, $OUTPUT;
 
     $str = '';
@@ -58,7 +58,7 @@ function learningtimecheck_set_instance(&$block) {
         } else {
             $completeviewstr = get_string('fullview', 'learningtimecheck');
         }
-        $page = course_page::get_current_page($COURSE->id, false);
+        $page = \format\page\course_page::get_current_page($COURSE->id, false);
         $str .= '<center>';
         $buttonurl = new moodle_url('/mod/learningtimecheck/view.php', array('id' => $block->cm->id, 'page' => $page->id));
         $str .= $OUTPUT->single_button($buttonurl, $completeviewstr);

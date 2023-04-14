@@ -19,7 +19,6 @@
  *
  * @package     mod_learningtimecheck
  * @category    mod
- * @author      Davo Smith <moodle@davosmith.co.uk>
  * @author      Valery Fremaux (valery.fremaux@gmail.com)
  * @copyright   2015 onwards Valery Fremaux (valery.fremaux@gmail.com)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,13 +26,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2017081001;  // The current module version (Date: YYYYMMDDXX).
-$plugin->requires = 2018112800;
+$plugin->version  = 2021102100;  // The current module version (Date: YYYYMMDDXX).
+$plugin->requires = 2020060900;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release  = '3.6.0 (Build: 2017081001)';
+$plugin->release  = '3.9.0 (Build: 2021102100)';
 $plugin->component = 'mod_learningtimecheck';
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
 // Non Moodle attributes.
-$plugin->codeincrement = '3.6.0008';
+$plugin->codeincrement = '3.9.0011';
 $plugin->privacy = "dualrelease";

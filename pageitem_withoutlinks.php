@@ -1,4 +1,4 @@
- <?php
+<?php
 // This file is part of the learningtimecheck plugin for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-function learningtimecheck_withoutlinks_set_instance(&$block) {
+function learningtimecheck_withoutlinks_set_instance($block) {
     global $USER, $CFG, $PAGE;
 
     $str = '';
