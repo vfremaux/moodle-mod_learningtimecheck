@@ -40,6 +40,12 @@ use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\writer;
 
+if (interface_exists('\core_privacy\local\request\userlist')) {
+    interface my_userlist extends \core_privacy\local\request\userlist{}
+} else {
+    interface my_userlist {};
+}
+
 /**
  * Data provider class.
  *
@@ -50,7 +56,8 @@ use core_privacy\local\request\writer;
  */
 class provider implements
     \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider {
+    \core_privacy\local\request\plugin\provider,
+    my_userlist {
 
     /**
      * Returns metadata.
@@ -380,7 +387,7 @@ class provider implements
             WHERE
                 cm.module = m.id AND
                 m.name = 'learningtimecheck' AND
-                cm.instance = mg.id AND
+                cm.instance = ltc.id AND
                 ctx.contextlevel = ? AND
                 ctx.instanceid = cm.id AND
                 ctx.id = ?
@@ -397,7 +404,7 @@ class provider implements
     }
 
     protected static function get_fields() {
-        return " ltc.name, ltc.intro, maxgrade, emailoncomplete, lockteachermarks, usetimecounterpart ";
+        return " ltc.name, ltc.intro, ltc.maxgrade, ltc.emailoncomplete, ltc.lockteachermarks, ltc.usetimecounterpart ";
     }
 
     /**
@@ -473,5 +480,103 @@ class provider implements
                 $DB->execute($sql, $params);
             }
         }
+    }
+
+    public static function get_users_in_context(userlist $userlist) {
+        $context = $userlist->get_context();
+
+        if (!is_a($context, \context_module::class)) {
+            return;
+        }
+
+        $params = [
+            'instanceid'    => $context->instanceid,
+            'modulename'    => 'learningtimecheck',
+        ];
+
+        // Users owning items.
+        $sql = "SELECT ltci.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {learningtimecheck} ltc ON ltc.id = cm.instance
+                  JOIN {learningtimecheck_item} ltci ON ltci.learningtimecheck = ltc.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Students having marks.
+        $sql = "SELECT ltcc.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {learningtimecheck} ltc ON ltc.id = cm.instance
+                  JOIN {learningtimecheck_item} ltci ON ltci.learningtimecheck = ltc.id
+                  JOIN {learningtimecheck_check} ltcc ON ltcc.itemid = ltci.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Teachers owning marks.
+        $sql = "SELECT ltcc.teacherid as userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {learningtimecheck} ltc ON ltc.id = cm.instance
+                  JOIN {learningtimecheck_item} ltci ON ltci.learningtimecheck = ltc.id
+                  JOIN {learningtimecheck_check} ltcc ON ltcc.itemid = ltci.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Users being commented on.
+        $sql = "SELECT ltcc.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {learningtimecheck} ltc ON ltc.id = cm.instance
+                  JOIN {learningtimecheck_item} ltci ON ltci.learningtimecheck = ltc.id
+                  JOIN {learningtimecheck_comment} ltcc ON ltcc.itemid = ltci.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Users having commented.
+        $sql = "SELECT ltcc.commentby as userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {learningtimecheck} ltc ON ltc.id = cm.instance
+                  JOIN {learningtimecheck_item} ltci ON ltci.learningtimecheck = ltc.id
+                  JOIN {learningtimecheck_comment} ltcc ON ltcc.itemid = ltci.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+    }
+
+    public static function delete_data_for_users(approved_userlist $userlist) {
+        global $DB;
+
+        $context = $userlist->get_context();
+        $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
+        $learningtimecheck = $DB->get_record('learningtimecheck', ['id' => $cm->instance]);
+
+        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        $params = array_merge(['learningtimecheckid' => $learningtimecheck->id], $userinparams);
+
+        // get item ids from users to be deleted.
+        $deleteditems = $DB->get_records_select('learningtimecheck_item', "learningtimecheck = :learningtimecheckid AND userid {$userinsql}", $params, 'id', 'id,id');
+        list($iteminsql, $iteminparams) = $DB->get_in_or_equal(array_keys($deleteditems), SQL_PARAMS_NAMED);
+
+        $DB->delete_records_select('learningtimecheck_item', "learningtimecheck = :learningtimecheckid AND userid {$userinsql}", $params);
+
+        // Delete all checks and comments for those items
+        $DB->delete_records_select('learningtimecheck_check', "itemid ($iteminsql)", $iteminparams);
+        $DB->delete_records_select('learningtimecheck_comment', "itemid ($iteminsql)", $iteminparams);
+
+        // Get non owned items.
+        $params = ['learningtimecheckid' => $learningtimecheck->id];
+        $unowneditems = $DB->get_records_select('learningtimecheck_item', "learningtimecheck = :learningtimecheckid AND userid = 0", $params, 'id', 'id,id');
+        list($iteminsql, $iteminparams) = $DB->get_in_or_equal(array_keys($unowneditems), SQL_PARAMS_NAMED);
+
+        // Delete data in those items for those users.
+        $params = array_merge($iteminparams, $userinparams);
+        $DB->delete_records_select('learningtimecheck_check', "itemid ($iteminsql) AND userid {$userinsql}", $params);
+        $DB->delete_records_select('learningtimecheck_comment', "itemid ($iteminsql) AND userid {$userinsql}", $params);
+        $DB->delete_records_select('learningtimecheck_comment', "itemid ($iteminsql) AND commentby {$userinsql}", $params);
+
+        // TOOD : examine what to do with teacher marks...should they be reset, changing checking results ? my opinion is "no".
+        // Marking is historical, not related to ownership.
     }
 }

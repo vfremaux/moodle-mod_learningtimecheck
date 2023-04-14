@@ -78,32 +78,44 @@ require_once($CFG->dirroot.'/lib/completionlib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
 function learningtimecheck_supports($feature) {
+
     switch($feature) {
+
         case FEATURE_GROUPS: {
             return true;
         }
+
         case FEATURE_GROUPINGS: {
             return true;
         }
+
         case FEATURE_GROUPMEMBERSONLY: {
             return true;
         }
+
         case FEATURE_MOD_INTRO:  {
             return true;
         }
+
         case FEATURE_GRADE_HAS_GRADE: {
             return true;
         }
+
         case FEATURE_COMPLETION_HAS_RULES: {
             return true;
         }
+
         case FEATURE_BACKUP_MOODLE2: {
             return true;
         }
+
         case FEATURE_SHOW_DESCRIPTION: {
             return true;
         }
-        default: return null;
+
+        default: {
+            return null;
+        }
     }
 }
 
@@ -112,11 +124,13 @@ function learningtimecheck_supports($feature) {
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
  */
-function learningtimecheck_supports_feature($feature) {
+function learningtimecheck_supports_feature($feature = null, $getsupported = false) {
     global $CFG;
     static $supports;
 
-    $config = get_config('learningtimecheck');
+    if (!during_initial_install()) {
+        $config = get_config('learningtimecheck');
+    }
 
     if (!isset($supports)) {
         $supports = array(
@@ -132,6 +146,10 @@ function learningtimecheck_supports_feature($feature) {
         );
     }
 
+    if ($getsupported) {
+        return $supports;
+    }
+
     // Check existance of the 'pro' dir in plugin.
     if (is_dir(__DIR__.'/pro')) {
         if ($feature == 'emulate/community') {
@@ -144,6 +162,11 @@ function learningtimecheck_supports_feature($feature) {
         }
     } else {
         $versionkey = 'community';
+    }
+
+    if (empty($feature)) {
+        // Just return version.
+        return $versionkey;
     }
 
     list($feat, $subfeat) = explode('/', $feature);
@@ -300,14 +323,14 @@ function learningtimecheck_cm_info_dynamic(&$cminfo) {
 function learningtimecheck_user_outline($course, $user, $mod, $learningtimecheck) {
     global $DB, $CFG;
 
-    $groupins_sel = '';
+    $groupinssel = '';
     if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
         $groupings = learningtimecheck_class::get_user_groupings($user->id, $learningtimecheck->course);
         $groupings[] = 0;
-        $groupings_sel = ' AND grouping IN ('.implode(',', $groupings).') ';
+        $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
     }
     $sel = 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.LTC_OPTIONAL_NO;
-    $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupings_sel;
+    $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupingssel;
     $items = $DB->get_records_select('learningtimecheck_item', $sel, array($learningtimecheck->id), '', 'id');
     if (!$items) {
         return null;
@@ -403,10 +426,10 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
     $strlearningtimecheck = get_string('modulename', 'learningtimecheck');
 
     foreach ($learningtimechecks as $learningtimecheck) {
-        $show_all = true;
+        $showall = true;
         if ($learningtimecheck->teacheredit == LTC_MARKING_STUDENT) {
             $context = context_module::instance($learningtimecheck->coursemodule);
-            $show_all = !has_capability('mod/learningtimecheck:updateown', $context);
+            $showall = !has_capability('mod/learningtimecheck:updateown', $context);
         }
 
         $progressbar = learningtimecheck_class::print_user_progressbar($learningtimecheck->id, $USER->id,
@@ -420,7 +443,7 @@ function learningtimecheck_print_overview($courses, &$htmlarray) {
          * Do not worry about hidden items / groupings as automatic items cannot have dates
          * (and manual items cannot be hidden / have groupings)
          */
-        if ($show_all) {
+        if ($showall) {
             // Show all items whether or not they are checked off (as this user is unable to check them off).
             $dateitems = $DB->get_records_select('learningtimecheck_item',
                                                   'learningtimecheck = ?',

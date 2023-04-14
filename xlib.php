@@ -22,14 +22,30 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
     global $DB;
 
     if ($usecredit) {
-        $creditclause = ' AND usetimecounterpart = 1 ';
+        $creditclause = ' AND ltc.usetimecounterpart = 1 ';
     } else if ($usecredit === false) {
-        $creditclause = ' AND usetimecounterpart = 0 ';
+        $creditclause = ' AND ltc.usetimecounterpart = 0 ';
     } else {
         $creditclause = '';
     }
 
-    if ($learningtimechecks = $DB->get_records_select('learningtimecheck', " course = ? $creditclause ", array($courseid))) {
+    $sql = "
+        SELECT
+            ltc.*
+        FROM
+            {learningtimecheck} ltc,
+            {course_modules} cm,
+            {modules} m
+        WHERE
+            ltc.id = cm.instance AND
+            cm.module = m.id AND
+            (cm.deletioninprogress IS NULL OR cm.deletioninprogress = 0) AND
+            m.name = 'learningtimecheck' AND
+            ltc.course = ?
+            $creditclause
+    ";
+
+    if ($learningtimechecks = $DB->get_records_sql($sql, array($courseid))) {
         return $learningtimechecks;
     }
     return array();
@@ -215,14 +231,14 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
 /**
  * Get concerned checklists for a user or a course
  */
-function learningtimecheck_get_checklists($uid, $courseid = 0, $userlist = []) {
+function learningtimecheck_get_checklists($userid, $courseid = 0, $userlist = []) {
     global $DB;
 
     if ($courseid) {
         if ($records = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
             foreach ($records as $r) {
                 $cm = get_coursemodule_from_instance('learningtimecheck', $r->id);
-                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r, $cm, null, $userlist);
+                $checklists[] = new learningtimecheck_class($cm->id, $userid, $r, $cm, null, $userlist);
             }
             return $checklists;
         }
@@ -274,6 +290,57 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
     }
 
     return $marks;
+}
+
+/**
+ * Gets the completion ratio of checked items for all checklists in the course.
+ * @param int $courseid the course id
+ * @param int $userid the user id
+ * @param bool $mandatory true if only mandatory items are required.
+ */
+function learningtimecheck_get_course_ltc_completion($courseid, $userid, $mandatory = false) {
+
+    $marks = learningtimecheck_get_course_marks($courseid, $userid, $mandatory);
+
+    $items = count($marks);
+    if ($items == 0){
+        return 0;
+    }
+    $checked = 0;
+    foreach ($marks as $m) {
+        if ($m->checked) {
+            $checked++;
+        }
+    }
+    $completion = round($checked / $items * 100);
+}
+
+/**
+ * Gets the completion ratio of checked items for all checklists in the course.
+ * @param int $courseid the course id
+ * @param int $userid the user id
+ * @param bool $mandatory true if only mandatory items are required.
+ * @param string $format 'h' for hours, 'm' for minutes.
+ */
+function learningtimecheck_get_course_acquired_time($courseid, $userid, $mandatory = false, $format = 'h') {
+
+    $marks = learningtimecheck_get_course_marks($courseid, $userid, $mandatory);
+
+    $items = count($marks);
+    if ($items == 0){
+        return 0;
+    }
+    $earnedtime = 0;
+    foreach ($marks as $m) {
+        if ($m->checked) {
+            $earnedtime += $m->credittime;
+        }
+    }
+
+    if ($format == 'h') {
+        $earnedtime = $earnedtime / 60;
+    }
+    return $earnedtime;
 }
 
 /**
