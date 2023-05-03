@@ -803,12 +803,12 @@ class learningtimecheck_class {
 
                     $groupingid = $mods->get_cm($cmid)->groupingid;
                     if ($groupmembersonly && $groupingid && $mods->get_cm($cmid)->groupmembersonly) {
-                        if ($cmitem->grouping != $groupingid) {
-                            $cmitem->grouping = $groupingid;
+                        if ($cmitem->groupingid != $groupingid) {
+                            $cmitem->groupingid = $groupingid;
                         }
                     } else {
-                        if (@$cmitem->grouping) {
-                            $cmitem->grouping = 0;
+                        if (@$cmitem->groupingid) {
+                            $cmitem->groupingid = 0;
                         }
                     }
 
@@ -821,7 +821,7 @@ class learningtimecheck_class {
                     $changes = true;
                     $existingitems[$itemid] = true;
                     $grouping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
-                    $DB->set_field('learningtimecheck_item', 'grouping', $grouping, array('id' => $itemid));
+                    $DB->set_field('learningtimecheck_item', 'groupingid', $grouping, array('id' => $itemid));
                 }
                 $nextpos++;
                 $params = array('learningtimecheck' => $this->learningtimecheck->id, 'position' => $nextpos);
@@ -2557,7 +2557,7 @@ class learningtimecheck_class {
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
             $groupings = self::get_user_groupings($userid, $learningtimecheck->course);
             $groupings[] = 0;
-            $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
+            $groupingssel = ' AND groupingid IN ('.implode(',', $groupings).') ';
         }
         $select = '
             learningtimecheck = ? AND
@@ -2729,8 +2729,8 @@ class learningtimecheck_class {
                 continue;
             }
 
-            if ($checkgroupings && !empty($item->grouping)) {
-                if (!in_array($item->grouping, $this->groupings)) {
+            if ($checkgroupings && !empty($item->groupingid)) {
+                if (!in_array($item->groupingid, $this->groupings)) {
                     // Current user is not a member of this item's grouping.
                     continue;
                 }
