@@ -292,6 +292,7 @@ $string['declared'] = 'Declared only';
 $string['declaredovercreditifhigher'] = 'Declared if higher than credit, elsewhere credit';
 $string['declaredcapedbycredit'] = 'Declared if lower than credit, elsewhere credit';
 $string['credit'] = 'Credit only';
+$string['yourprogress'] = 'Your progression';
 
 $string['and'] = 'AND';
 $string['or'] = 'OR';

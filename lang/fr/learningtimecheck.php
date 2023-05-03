@@ -283,6 +283,8 @@ $string['errornologop'] = 'Erreur : un filtre doit avoir un opérateur logique';
 $string['itemenable'] = 'Prendre en compte';
 $string['itemdisable'] = 'Ignorer cet élément';
 $string['itemdeclaredtime'] = 'Temps déclaré : {$a} min.';
+$string['yourprogress'] = 'Votre progression';
+
 
 $string['declared'] = 'Temps déclarés seulement';
 $string['declaredovercreditifhigher'] = 'Déclaré si supérieur au crédit, le crédit sinon.';

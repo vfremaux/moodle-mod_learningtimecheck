@@ -578,3 +578,7 @@ table.ltc-timesettings {
     display: inline-block;
     padding: 3px;
 }
+
+.ltc-progress-page-view .ltc-progressthin-outer {
+    height: 32px;
+}

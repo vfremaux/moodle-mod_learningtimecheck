@@ -2060,7 +2060,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         return $this->output->render_from_template('mod_learningtimecheck/progressbar', $template);
     }
 
-    public static function progressbar_thin($percentcomplete1, $percentcomplete2) {
+    public static function progressbar_thin($percentcomplete1, $percentcomplete2 = null) {
         global $OUTPUT;
 
         $template = new StdClass;
