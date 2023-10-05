@@ -59,6 +59,9 @@ class restore_learningtimecheck_activity_structure_step extends restore_activity
         if ($data->userid > 0) {
             $data->userid = $this->get_mappingid('user', $data->userid);
         }
+        if ($data->groupingid > 0) {
+            $data->groupingid = $this->get_mappingid('groupings', $data->groupingid);
+        }
         // Update to new data structure, where 'hidden' status is stored in separate field
         if ($data->itemoptional == 3) {
             $data->itemoptional = 0;

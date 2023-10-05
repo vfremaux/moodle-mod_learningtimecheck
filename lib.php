@@ -327,7 +327,7 @@ function learningtimecheck_user_outline($course, $user, $mod, $learningtimecheck
     if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
         $groupings = learningtimecheck_class::get_user_groupings($user->id, $learningtimecheck->course);
         $groupings[] = 0;
-        $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
+        $groupingssel = ' AND groupingid IN ('.implode(',', $groupings).') ';
     }
     $sel = 'learningtimecheck = ? AND userid = 0 AND itemoptional = '.LTC_OPTIONAL_NO;
     $sel .= ' AND hidden = '.LTC_HIDDEN_NO.$groupingssel;
@@ -532,7 +532,7 @@ function learningtimecheck_cron_task () {
     $completionupdate = 0;
 
     $sql = "
-        SELECT
+        SELECT DISTINCT
             c.id,
             c.coursemoduleid,
             c.userid,
@@ -626,7 +626,6 @@ function learningtimecheck_cron_task () {
                 ";
                 $logs = $DB->get_records_sql($sql, array($lastlogtime));
             } else if ($reader instanceof \logstore_legacy\log\store) {
-                echo "Getting old logs";
                 $select = '
                     l.time >= ? AND
                     l.course IN ('.$courseids.') AND
@@ -838,7 +837,7 @@ function learningtimecheck_get_completion_state($course, $cm, $userid, $type) {
         }
     }
 
-    return $result;
+    return $result == true;
 }
 
 /**

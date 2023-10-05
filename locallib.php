@@ -47,10 +47,18 @@ define ('LTC_DECLARATIVE_BOTH', 3);
 define('LTC_HPAGE_SIZE', 20);
 
 if (!function_exists('debug_trace')) {
-    // Fake it.
-    function debug_trace($msg, $level = 0) {
-        assert(1);
-    }    
+    @include_once($CFG->dirroot.'/local/advancedperfs/debugtools.php');
+    if (!function_exists('debug_trace')) {
+        function debug_trace($msg, $tracelevel = 0, $label = '', $backtracelevel = 1) {
+            // Fake this function if not existing in the target moodle environment.
+            assert(1);
+        }
+        define('TRACE_ERRORS', 1); // Errors should be always traced when trace is on.
+        define('TRACE_NOTICE', 3); // Notices are important notices in normal execution.
+        define('TRACE_DEBUG', 5); // Debug are debug time notices that should be burried in debug_fine level when debug is ok.
+        define('TRACE_DATA', 8); // Data level is when requiring to see data structures content.
+        define('TRACE_DEBUG_FINE', 10); // Debug fine are control points we want to keep when code is refactored and debug needs to be reactivated.
+    }
 }
 
 class learningtimecheck_class {
@@ -76,7 +84,7 @@ class learningtimecheck_class {
      * @param array $learningtimecheck
      * @param array $cm
      * @param array $course
-     * @param array $updateusers an array of users ids to update.
+     * @param array $updateusers an array of users ids to update. Unrelated to $userid.
      */
     public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null, $updateusers = []) {
         global $COURSE, $DB, $CFG;
@@ -795,12 +803,12 @@ class learningtimecheck_class {
 
                     $groupingid = $mods->get_cm($cmid)->groupingid;
                     if ($groupmembersonly && $groupingid && $mods->get_cm($cmid)->groupmembersonly) {
-                        if ($cmitem->grouping != $groupingid) {
-                            $cmitem->grouping = $groupingid;
+                        if ($cmitem->groupingid != $groupingid) {
+                            $cmitem->groupingid = $groupingid;
                         }
                     } else {
-                        if (@$cmitem->grouping) {
-                            $cmitem->grouping = 0;
+                        if (@$cmitem->groupingid) {
+                            $cmitem->groupingid = 0;
                         }
                     }
 
@@ -813,7 +821,7 @@ class learningtimecheck_class {
                     $changes = true;
                     $existingitems[$itemid] = true;
                     $grouping = ($groupmembersonly && $mods->get_cm($cmid)->groupmembersonly) ? $mods->get_cm($cmid)->groupingid : 0;
-                    $DB->set_field('learningtimecheck_item', 'grouping', $grouping, array('id' => $itemid));
+                    $DB->set_field('learningtimecheck_item', 'groupingid', $grouping, array('id' => $itemid));
                 }
                 $nextpos++;
                 $params = array('learningtimecheck' => $this->learningtimecheck->id, 'position' => $nextpos);
@@ -1078,11 +1086,25 @@ class learningtimecheck_class {
         echo "</div>";
     }
 
-
-    public function get_total_time($isql, $iparams) {
+    public function get_total_time($ltcid) {
         global $DB;
 
-        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " id $isql ", $iparams);
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheckid = ? ", $params);
+    }
+
+    public function get_accessory_time($ltcid) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheck = ? AND itemoptional = ".LTC_OPTIONAL_YES, $params);
+    }
+
+    public function get_mandatory_time($ltcid) {
+        global $DB;
+
+        $params = ['learningtimecheckid' => $ltcid];
+        return $DB->get_field_select('learningtimecheck_item', 'SUM(credittime)', " learningtimecheck = ? AND itemoptional = ".LTC_OPTIONAL_NO, $params);
     }
 
     public function get_acquired_time($sqlconds, $params) {
@@ -2218,7 +2240,9 @@ class learningtimecheck_class {
             $userids = implode(',', array_keys($userlist));
             $users = $DB->get_records_list('user', 'id', array_keys($userlist));
         } else {
-            $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
+            // $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
+            // Restrict to active users only.
+            $users = get_enrolled_users($this->context, $cap, 0, 'u.*', null, 0, 0, true);
             if (!$users) {
                 return;
             }
@@ -2256,17 +2280,30 @@ class learningtimecheck_class {
         $context = context_module::instance($this->cm->id);
 
         $items = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
+
         if ($items) {
+
+            // Prepare uid list
+            list($insql, $inparams) = $DB->get_in_or_equal(array_keys($users));
+
             foreach ($items as $itemid => $item) {
                 if ($usingcompletion && $item->completion) {
-                    $fakecm = new stdClass;
-                    $fakecm->id = $item->cmid;
+                    // $fakecm = new stdClass;
+                    // $fakecm->id = $item->cmid;
+
+                    $select = " userid $insql AND coursemoduleid = ? ";
+                    $uinparams = $inparams;
+                    $uinparams[] = $item->cmid;
+                    $compstates = $DB->get_records_select('course_modules_completion', $select, $uinparams, 'userid', 'userid, completionstate');
 
                     foreach ($users as $user) {
-                        $compdata = $completion->get_data($fakecm, false, $user->id);
-
-                        if ($compdata->completionstate == COMPLETION_COMPLETE ||
-                                $compdata->completionstate == COMPLETION_COMPLETE_PASS) {
+                        if (array_key_exists($user->id, $compstates)) {
+                            $cstate = $compstates[$user->id]->completionstate;
+                        } else {
+                            $cstate = 0;
+                        }
+                        if ($cstate == COMPLETION_COMPLETE ||
+                                $cstate == COMPLETION_COMPLETE_PASS) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
                             $check = $DB->get_record('learningtimecheck_check', $params);
                             if ($check) {
@@ -2535,7 +2572,7 @@ class learningtimecheck_class {
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
             $groupings = self::get_user_groupings($userid, $learningtimecheck->course);
             $groupings[] = 0;
-            $groupingssel = ' AND grouping IN ('.implode(',', $groupings).') ';
+            $groupingssel = ' AND groupingid IN ('.implode(',', $groupings).') ';
         }
         $select = '
             learningtimecheck = ? AND
@@ -2707,8 +2744,8 @@ class learningtimecheck_class {
                 continue;
             }
 
-            if ($checkgroupings && !empty($item->grouping)) {
-                if (!in_array($item->grouping, $this->groupings)) {
+            if ($checkgroupings && !empty($item->groupingid)) {
+                if (!in_array($item->groupingid, $this->groupings)) {
                     // Current user is not a member of this item's grouping.
                     continue;
                 }

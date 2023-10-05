@@ -21,11 +21,11 @@ define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
 
         component: 'mod_learningtimecheck',
         shortcomponent: 'learningtimecheck',
-        componentpath: '/mod/learningtimecheck',
+        componentpath: 'mod/learningtimecheck',
 
         init: function() {
 
-            var licensekeyid = '#id_s_' + ltcpro.component + '_licensekey';
+            var licensekeyid = '#id_s_' + ltcpro.shortcomponent + '_licensekey';
             $(licensekeyid).bind('change', this.check_product_key);
             $(licensekeyid).trigger('change');
             log.debug('AMD Pro js initialized for ' + ltcpro.component + ' system');
@@ -33,7 +33,7 @@ define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
 
         check_product_key: function() {
 
-            var licensekeyid = '#id_s_' + ltcpro.component + '_licensekey';
+            var licensekeyid = '#id_s_' + ltcpro.shortcomponent + '_licensekey';
 
             var that = $(this);
 
@@ -54,13 +54,13 @@ define(['jquery', 'core/log', 'core/config'], function($, log, cfg) {
                 url += 'what=license';
                 url += '&service=check';
                 url += '&customerkey=' + that.val();
-                url += '&provider=' + $('#id_s_' + ltcpro.component + '_licenseprovider').val();
+                url += '&provider=' + $('#id_s_' + ltcpro.shortcomponent + '_licenseprovider').val();
 
                 $(licensekeyid + ' + img').remove();
                 $(licensekeyid).after(waiticon);
 
                 $.get(url, function(data) {
-                    if (data.match(/SET OK/)) {
+                    if (data.match(/(SET|CHECK) OK/)) {
                         if (found = data.match(/-\d+.*$/)) {
                             $(licensekeyid + ' + img').remove();
                             $(licensekeyid).after(cautionicon);

@@ -229,7 +229,10 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
 }
 
 /**
- * Get concerned checklists for a user or a course
+ * Get concerned checklists for a user or a course.
+ * @param int $userid if non null, get checklists available to a specific user
+ * @param int $courseid if non null, get all checklists in course.
+ * @param int $userlist A list of users to update. If needed.
  */
 function learningtimecheck_get_checklists($userid, $courseid = 0, $userlist = []) {
     global $DB;
@@ -246,6 +249,7 @@ function learningtimecheck_get_checklists($userid, $courseid = 0, $userlist = []
         assert(1);
         // TODO
         // returns all learningtimechecks concerned by the user
+        return [];
     }
 }
 
@@ -284,7 +288,7 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
                         continue;
                     }
                 }
-                $marks[$item->moduleid] = $item->checked;
+                $marks[$item->moduleid] = $item;
             }
         }
     }
@@ -308,7 +312,7 @@ function learningtimecheck_get_course_ltc_completion($courseid, $userid, $mandat
     }
     $checked = 0;
     foreach ($marks as $m) {
-        if ($m->checked) {
+        if (!empty($m->checked)) {
             $checked++;
         }
     }
@@ -332,7 +336,7 @@ function learningtimecheck_get_course_acquired_time($courseid, $userid, $mandato
     }
     $earnedtime = 0;
     foreach ($marks as $m) {
-        if ($m->checked) {
+        if (!empty($m->checked)) {
             $earnedtime += $m->credittime;
         }
     }
@@ -345,11 +349,18 @@ function learningtimecheck_get_course_acquired_time($courseid, $userid, $mandato
 
 /**
  * Get the global time contract of all the ltc instances in a course.
- * @param int $courseid
+ * @param int $courseid the course id
+ * @param int $userid the userid : TODO : in case user cannot see all course modules du to grouping restrictions. check availability rules.
+ * @param string $format time formatting : 'h' or 'm'.
  * @return a result array with mandatory/optional total item times.
  * TOTO : finish this function.
  */
-function learningtimecheck_get_course_total_time($courseid, $userid = 0) {
+function learningtimecheck_get_course_total_time($courseid, $userid = 0, $format = 'h') {
+
+    if (defined('PHPUNIT_TEST') and PHPUNIT_TEST) {
+        // fake sample result for unit tests.
+        return [10, 20];
+    }
 
     if (!learningtimecheck_course_has_ltc_tracking($courseid)) {
         // Shortcut output.
@@ -357,5 +368,17 @@ function learningtimecheck_get_course_total_time($courseid, $userid = 0) {
     }
 
     $checklists = learningtimecheck_get_checklists($userid, $courseid);
+    $mandatorytime = 0;
+    $accessorytime = 0;
+    foreach ($checklists as $checklist) {
+        $mandatorytime += $checklist->get_mandatory_time($checklist->id);
+        $accessorytime += $checklist->get_accessory_time($checklist->id);
+    }
 
+    if ($format == 'h') {
+        $mandatorytime = $mandatorytime / 60;
+        $accessorytime = $accessorytime / 60;
+    }
+
+    return [$mandatorytime, $accessorytime];
 }

@@ -47,7 +47,8 @@ function learningtimecheck_progress_set_instance($block, $chooseview = false) {
         $renderer->set_instance($chk);
         $checkinfo = $chk->get_items_for_user($USER, array());
         $percentcomplete = 0 + $checkinfo['mandatory']['percentcomplete'] * 100;
-        $str .= '<div style="text-align:center;margin-left:auto;margin-right:auto">';
+        $str .= '<div class="ltc-progress-page-view" style="text-align:center;margin-left:auto;margin-right:auto;width:fit-content">';
+        $str .= '<div class="ltc-your-progress"><h3>'.get_string('yourprogress', 'learningtimecheck').'</h3></div>';
         $str .= $renderer->progressbar_thin($percentcomplete);
         $str .= '</div>';
 
