@@ -72,6 +72,8 @@ if ($id) {
 
 $context = context_module::instance($cm->id);
 
+$PAGE->set_cm($cm);
+$PAGE->set_activity_record($learningtimecheck);
 $PAGE->set_url($url);
 $PAGE->navbar->add(get_string('learningvelocities', 'learningtimecheck'));
 
@@ -101,7 +103,9 @@ $renderer = $PAGE->get_renderer('learningtimecheck');
 $renderer->set_instance($chk);
 
 $allusers = get_enrolled_users($context, '', 0, 'u.id');
-$users = get_enrolled_users($context, '', 0, 'u.*', get_all_user_name_fields(true, 'u'), $page, $perpage);
+// M4.
+$fields = \core_user\fields::for_name()->excluding('id')->get_required_fields();
+$users = get_enrolled_users($context, '', 0, 'u.*', 'u.id'.implode(',', $fields), $page, $perpage);
 
 $lowesttime = learningtimecheck_get_lowest_track_time($learningtimecheck);
 

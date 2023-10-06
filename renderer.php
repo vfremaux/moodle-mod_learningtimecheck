@@ -37,6 +37,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     public $groupid;
     public $groupingid;
 
+    protected $userfields; // Usual fields used when printing a user.
+
     public function __construct() {
         global $OUTPUT;
 
@@ -45,6 +47,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $this->groupid = 0;
         $this->groupingid = 0;
         $this->instance = null;
+
+        // M4.
+        $this->userfields =  \core_user\fields::for_name()->with_userpic()->excluding('id');
     }
 
     public function set_instance($learningtimecheck) {
@@ -266,7 +271,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $teacherids[$item->teacherid] = $item->teacherid;
                     }
                 }
-                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', 'id,'.get_all_user_name_fields(true, ''));
+                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', implode(',', $this->userfields->get_required_fields()));
                 foreach ($this->instance->items as $item) {
                     if (isset($teachers[$item->teacherid])) {
                         $item->teachername = fullname($teachers[$item->teacherid]);
@@ -733,6 +738,11 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $group = groups_get_activity_groupmode($this->instance->cm);
         $targetusers = get_enrolled_users($context, '', $group, 'u.id, firstname, lastname, email, institution', 'lastname');
 
+        $fields = $this->userfields->get_required_fields();
+        foreach ($fields as &$f) {
+            $f = 'u.'.$f;
+        }
+
         $sql = "
             SELECT
                 CONCAT(chck.userid, '_',chl.id) as markid,
@@ -741,7 +751,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 chl.name,
                 SUM(chi.teachercredittime) as expected,
                 SUM(chck.teacherdeclaredtime) as realexpense,
-                ".get_all_user_name_fields(true, 'u')."
+                ".implode(',', $fields)."
             FROM
                 {learningtimecheck_check} chck,
                 {learningtimecheck_item} chi,
@@ -759,8 +769,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 u.lastname,u.firstname ASC
         ";
         $tutoredusers = array();
-
-        $fields = get_all_user_name_fields(false, '');
 
         if ($tutoredtimes = $DB->get_records_sql($sql, array($COURSE->id, $USER->id))) {
             foreach ($tutoredtimes as $tt) {
@@ -922,8 +930,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
                     $str .= '<div class="comment">';
                     foreach ($comments as $comment) {
-                        $fields = 'id,'.get_all_user_name_fields(true, '');
-                        $commenter = $DB->get_record('user', array('id' => $comment->commentby), $fields);
+                        $commenter = $DB->get_record('user', array('id' => $comment->commentby), implode(',', $this->userfields->get_required_fields()));
                         $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                         $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                     }
@@ -1060,8 +1067,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
                         $str .= '<div class="comment">';
                         foreach ($comments as $comment) {
-                            $fields = 'id,'.get_all_user_name_fields(true, '');
-                            $commenter = $DB->get_record('user', array('id' => $comment->commentby), $fields);
+                            $commenter = $DB->get_record('user', array('id' => $comment->commentby), implode(',', $this->userfields->get_required_fields()));
                             $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                             $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                         }

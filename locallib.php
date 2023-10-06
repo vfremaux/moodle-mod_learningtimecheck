@@ -3061,7 +3061,9 @@ function learningtimecheck_get_next_user($ltc, $context, $userid, $orderby) {
     $activegroup = groups_get_activity_group($cm);
 
     $cap = 'mod/learningtimecheck:updateown';
-    $fields = 'u.id,'.get_all_user_name_fields(true, 'u');
+    // M4.
+    $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
+    $fields = 'u.id,'.implode(',', $fields);
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
@@ -3093,7 +3095,9 @@ function learningtimecheck_get_prev_user($ltc, $context, $userid, $orderby) {
     $activegroup = groups_get_activity_group($cm);
 
     $cap = 'mod/learningtimecheck:updateown';
-    $fields = 'u.id,'.get_all_user_name_fields(true, 'u');
+    // M4.
+    $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
+    $fields = 'u.id,'.implode(',', $fields);
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
@@ -3126,11 +3130,12 @@ function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$to
 
     $context = context_module::instance($cm->id);
     $activegroup = groups_get_activity_group($cm);
+    // M4.
+    $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
 
     $ausers = false;
     $cap = 'mod/learningtimecheck:updateown';
-    $fields = 'u.id,'.get_all_user_name_fields(true, 'u');
-    if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
+    if ($fullusers = get_users_by_capability($context, $cap, 'u.id,'.implode(',', $fields), $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
         if (learningtimecheck_class::only_view_mentee_reports($context)) {
@@ -3150,10 +3155,7 @@ function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$to
         $sql = "
             SELECT
                 u.id,
-                ".get_all_user_name_fields(true, 'u').",
-                u.picture,
-                u.imagealt,
-                u.email
+                ".implode(',', $fields)."
             FROM
                 {user} u
             WHERE

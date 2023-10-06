@@ -113,6 +113,10 @@ function learningtimecheck_supports($feature) {
             return true;
         }
 
+        case FEATURE_MOD_PURPOSE: {
+            return MOD_PURPOSE_ASSESSMENT;
+        }
+
         default: {
             return null;
         }
@@ -881,3 +885,16 @@ function learningtimecheck_pluginfile($course, $cm, $context, $filearea, $args, 
     return false;
 }
 
+function learningtimecheck_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $ltcnode) {
+    global $USER, $DB;
+
+    $ltcrec = $DB->get_record('learningtimecheck', ['id' => $settingsnav->get_page()->cm->instance]);
+    $learningtimecheck = new learningtimecheck_class($settingsnav->get_page()->cm->id, $USER->id, $ltcrec, $settingsnav->get_page()->cm);
+
+    if ($learningtimecheck->canedit()) {
+        $params = ['id' => $settingsnav->get_page()->cm->id];
+        $tablink = new moodle_url('/mod/learningtimecheck/edit.php', $params);
+        $ltcnode->add(get_string('editchecks', 'learningtimecheck'), $tablink, navigation_node::TYPE_SETTING);
+    }
+
+}

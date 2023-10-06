@@ -64,7 +64,10 @@ if ($id) {
 
 require_login($course, true, $cm);
 
+$PAGE->set_cm($cm);
+$PAGE->set_activity_record($learningtimecheck);
 $PAGE->set_title($course->fullname);
+$PAGE->set_pagelayout('incourse');
 $PAGE->set_heading(format_string($learningtimecheck->name));
 
 $context = context_module::instance($cm->id);
