@@ -21,7 +21,6 @@
     <version>v3</version>
     <licenseversion>v3</licenseversion>
   </library>
-<<<<<<< HEAD
   <library>
     <location>cli</location>
     <name>Cli tools</name>
@@ -29,6 +28,4 @@
     <version>v3</version>
     <licenseversion>v3</licenseversion>
   </library>
-=======
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 </libraries>

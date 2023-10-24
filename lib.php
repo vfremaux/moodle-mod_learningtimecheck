@@ -80,7 +80,6 @@ require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 function learningtimecheck_supports($feature) {
 
     switch($feature) {
-<<<<<<< HEAD
 
         case FEATURE_GROUPS: {
             return true;
@@ -121,33 +120,6 @@ function learningtimecheck_supports($feature) {
         default: {
             return null;
         }
-=======
-        case FEATURE_GROUPS: {
-            return true;
-        }
-        case FEATURE_GROUPINGS: {
-            return true;
-        }
-        case FEATURE_GROUPMEMBERSONLY: {
-            return true;
-        }
-        case FEATURE_MOD_INTRO:  {
-            return true;
-        }
-        case FEATURE_GRADE_HAS_GRADE: {
-            return true;
-        }
-        case FEATURE_COMPLETION_HAS_RULES: {
-            return true;
-        }
-        case FEATURE_BACKUP_MOODLE2: {
-            return true;
-        }
-        case FEATURE_SHOW_DESCRIPTION: {
-            return true;
-        }
-        default: return null;
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     }
 }
 

@@ -113,10 +113,7 @@ $string['credit'] = 'Credit';
 $string['credittime'] = 'Credit time: ';
 $string['days'] = 'd';
 $string['deleteitem'] = 'Delete this item';
-<<<<<<< HEAD
 $string['deltas'] = 'Deviations';
-=======
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 $string['declaredoverridepolicy'] = 'Declared override policy';
 $string['disabled'] = 'Disabled';
 $string['edit'] = 'Edit learningtimecheck';
@@ -295,10 +292,7 @@ $string['declared'] = 'Declared only';
 $string['declaredovercreditifhigher'] = 'Declared if higher than credit, elsewhere credit';
 $string['declaredcapedbycredit'] = 'Declared if lower than credit, elsewhere credit';
 $string['credit'] = 'Credit only';
-<<<<<<< HEAD
 $string['yourprogress'] = 'Your progression';
-=======
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 
 $string['and'] = 'AND';
 $string['or'] = 'OR';
@@ -384,13 +378,4 @@ $string['configstrictcredits_desc'] = 'When enabled, credit times will be used i
 If not, credit time will be used only if it is is higher to the effectively measured time. This protects smart students
 justification on assessed training.';
 
-<<<<<<< HEAD
 include(__DIR__.'/pro_additional_strings.php');
-=======
-$string['plugindist_desc'] = '
-<p>This plugin is the community version and is published for anyone to use as is and check the plugin\'s
-core application. A "pro" version of this plugin exists and is distributed under conditions to feed the life cycle, upgrade, documentation
-and improvement effort.</p>
-<p>Please contact one of our distributors to get "Pro" version support.</p>
-<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=en_utf8">MyLF Distributors</a></p>';
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3

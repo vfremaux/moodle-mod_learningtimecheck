@@ -212,7 +212,6 @@ ol.ltc li .itemteachername {
     display: inline;
     font-size: 0.8em;
     padding: 2px;
-<<<<<<< HEAD
 }
 
 .ltc-tscoupling {
@@ -225,20 +224,6 @@ ol.ltc li .itemteachername {
     padding: 2px;
 }
 
-=======
-}
-
-.ltc-tscoupling {
-    background-color: #c58b36;
-    border: 1px solid #808080;
-    border-radius: 3px;
-    color: #fff;
-    display: inline;
-    font-size: 0.8em;
-    padding: 2px;
-}
-
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 .ltc-progress-inner {
     background-color: #229b15;
     background-position: top;
@@ -343,7 +328,6 @@ p.ltc-warning {
 
 #ltc-outer {
     margin-bottom: 10px;
-<<<<<<< HEAD
 }
 
 li.ltc-item {
@@ -358,22 +342,6 @@ div.ltc-data-desc {
     width: 70%;
 }
 
-=======
-}
-
-li.ltc-item {
-    display: table-row;
-    margin-bottom: 5px;
-    width: 100%;
-}
-
-div.ltc-data-desc {
-    display: table-cell;
-    padding-right: 15px;
-    width: 70%;
-}
-
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 .ltc-item-desc {
     display: table-cell;
     vertical-align: top;
@@ -472,12 +440,9 @@ table.ltc-timesettings {
 }
 
 .ltc-box {
-<<<<<<< HEAD
     left: 0;
     position: relative;
     top: 20px;
-=======
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     border: 1px solid #d0d0d0;
     padding: 10px;
 }
@@ -580,7 +545,6 @@ table.ltc-timesettings {
 
 #ltc-savechecks {
     margin: 4px auto;
-<<<<<<< HEAD
 }
 
 .ltc-item-pix {
@@ -617,38 +581,4 @@ table.ltc-timesettings {
 
 .ltc-progress-page-view .ltc-progressthin-outer {
     height: 32px;
-=======
-}
-
-.ltc-item-pix {
-    height: 40px;
-    width: 20px;
-}
-
-.ltc-report .activityicon {
-    margin: auto;
-    margin-bottom: 10px;
-}
-
-.ltc-icon-medium {
-    max-height: 40px;
-    max-width: 400px;
-}
-
-.cltc-header .vertical-text {
-    writing-mode: vertical-rl;
-}
-
-.cltc-header:first-child .vertical-text {
-    writing-mode: initial;
-}
-
-#ltc-name-filter .firstname-selected,
-#ltc-name-filter .name-selected {
-    background-color: #888;
-    border-radius: 10px;
-    color: white;
-    display: inline-block;
-    padding: 3px;
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 }

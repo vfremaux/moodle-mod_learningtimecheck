@@ -44,7 +44,6 @@ define ('LTC_DECLARATIVE_STUDENTS', 1);
 define ('LTC_DECLARATIVE_TEACHERS', 2);
 define ('LTC_DECLARATIVE_BOTH', 3);
 
-<<<<<<< HEAD
 define('LTC_HPAGE_SIZE', 20);
 
 if (!function_exists('debug_trace')) {
@@ -61,9 +60,6 @@ if (!function_exists('debug_trace')) {
         define('TRACE_DEBUG_FINE', 10); // Debug fine are control points we want to keep when code is refactored and debug needs to be reactivated.
     }
 }
-=======
-define('LTC_HPAGE_SIZE', 12);
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 
 class learningtimecheck_class {
     public $cm;
@@ -83,16 +79,12 @@ class learningtimecheck_class {
 
     /**
      *
-<<<<<<< HEAD
      * @param array $cmid
      * @param array $userid
      * @param array $learningtimecheck
      * @param array $cm
      * @param array $course
      * @param array $updateusers an array of users ids to update. Unrelated to $userid.
-=======
-     * @param array $updateusers an array of users ids to update.
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
      */
     public function __construct($cmid = 'staticonly', $userid = 0, $learningtimecheck = null, $cm = null, $course = null, $updateusers = []) {
         global $COURSE, $DB, $CFG;
@@ -171,7 +163,6 @@ class learningtimecheck_class {
      * Get an array of the items in a learningtimecheck
      *
      */
-<<<<<<< HEAD
     public function get_items_from_db($showoptionals = true, $hideheadings = true) {
         global $DB;
 
@@ -189,13 +180,6 @@ class learningtimecheck_class {
                 learningtimecheck = :learningtimecheckid AND
                 (cm.deletioninprogress IS NULL OR cm.deletioninprogress = 0)
         ';
-=======
-    public function get_items_from_db($showoptionals = true, $hideheading = true) {
-        global $DB;
-
-        $params = ['learningtimecheckid' => $this->id];
-        $select = ' learningtimecheck = :learningtimecheckid ';
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 
         $optionalclause = '';
         $optionals[] = ' itemoptional = 0 ';
@@ -203,24 +187,16 @@ class learningtimecheck_class {
             $optionals[] = ' itemoptional = 1 ';
         }
 
-<<<<<<< HEAD
         if (!$hideheadings) {
-=======
-        if (empty($hideheadings)) {
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
             $optionals[] = ' itemoptional = 2 ';
         }
         $optionalclause = ' AND ('.implode(' OR ', $optionals).')';
 
-<<<<<<< HEAD
         $orderby = " ORDER BY
                 li.position
         ";
 
         $items = $DB->get_records_sql($sql.$optionalclause.$orderby, $params);
-=======
-        $items = $DB->get_records_select('learningtimecheck_item', $select.$optionalclause, $params);
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
         return $items;
     }
 
@@ -605,11 +581,7 @@ class learningtimecheck_class {
             WHERE
                 ltci.learningtimecheck = ? AND
                 ltci.itemoptional <> ".LTC_OPTIONAL_HEADING." AND
-<<<<<<< HEAD
                 ((ltci.moduleid != 0 AND cm.id IS NULL) OR cm.deletioninprogress = 1)
-=======
-                (cm.id IS NULL OR cm.deletioninprogress != 0)
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
         ";
         $lostcms = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
         if (!empty($lostcms)) {
@@ -876,7 +848,6 @@ class learningtimecheck_class {
 
         $this->get_items();
         $this->update_all_autoupdate_checks($userlist);
-<<<<<<< HEAD
 
         $eventparams = array(
             'objectid' => $this->learningtimecheck->id,
@@ -884,8 +855,6 @@ class learningtimecheck_class {
         );
         $event = mod_learningtimecheck\event\items_updated::create($eventparams);
         $event->trigger();
-=======
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     }
 
     public function removeauto() {
@@ -2342,22 +2311,14 @@ class learningtimecheck_class {
                                     continue;
                                 }
                                 if (report_learningtimecheck::is_valid($check, $reportconfig, $context)) {
-<<<<<<< HEAD
                                     $check->usertimestamp = (empty($compdata->timemodified)) ? time() : $compdata->timemodified;
-=======
-                                    $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified;
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
                                     $DB->update_record('learningtimecheck_check', $check);
                                 }
                             } else {
                                 $check = new stdClass;
                                 $check->item = $item->itemid;
                                 $check->userid = $user->id;
-<<<<<<< HEAD
                                 $check->usertimestamp = (empty($compdata->timemodified)) ? time() : $compdata->timemodified;
-=======
-                                $check->usertimestamp = (empty($comp_data->timemodified)) ? time() : $comp_data->timemodified;
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
                                 $check->teachertimestamp = 0;
                                 $check->teachermark = LTC_TEACHERMARK_UNDECIDED;
 
@@ -2459,11 +2420,7 @@ class learningtimecheck_class {
                 if ($reader instanceof \logstore_standard\log\store) {
                     $courseparm = 'courseid';
                     $select = "timecreated >= ? AND courseid = {$item->course} AND objectid > 0 AND component = 'mod_{$item->mod_name}' ";
-<<<<<<< HEAD
                     $logentries = $DB->get_records_select('logstore_standard_log', $select, array($item->lastcompiled));
-=======
-                    $log_entries = $DB->get_records_select('logstore_standard_log', $select, array($item->lastcompiled));
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
                 } else if ($reader instanceof \logstore_legacy\log\store) {
                     $params = array($item->lastcompiled, $logaction);
                     if (!empty($logaction2)) {
@@ -2615,11 +2572,7 @@ class learningtimecheck_class {
         if (isset($CFG->enablegroupmembersonly) && $CFG->enablegroupmembersonly && $learningtimecheck->autopopulate) {
             $groupings = self::get_user_groupings($userid, $learningtimecheck->course);
             $groupings[] = 0;
-<<<<<<< HEAD
             $groupingssel = ' AND groupingid IN ('.implode(',', $groupings).') ';
-=======
-            $groupings_sel = ' AND grouping IN ('.implode(',', $groupings).') ';
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
         }
         $select = '
             learningtimecheck = ? AND
@@ -2791,13 +2744,8 @@ class learningtimecheck_class {
                 continue;
             }
 
-<<<<<<< HEAD
             if ($checkgroupings && !empty($item->groupingid)) {
                 if (!in_array($item->groupingid, $this->groupings)) {
-=======
-            if ($checkgroupings && !empty($item->grouping)) {
-                if (!in_array($item->grouping, $this->groupings)) {
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
                     // Current user is not a member of this item's grouping.
                     continue;
                 }
@@ -3033,14 +2981,8 @@ function learningtimecheck_count_total_items($courseid = 0, $userid = 0, $hidehi
             {course_modules} cm
         WHERE
             l.id = li.learningtimecheck AND
-<<<<<<< HEAD
             cm.id = li.moduleid AND
             (cm.deletioninprogress IS NULL or cm.deletioninprogress = 0) AND
-=======
-            cm.instance = l.id AND
-            cm.module = ? AND
-            cm.deletioninprogress = 0 AND
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
             l.course = ? AND
             li.itemoptional <> ".LTC_OPTIONAL_HEADING."
             $showhiddenclause
@@ -3153,13 +3095,9 @@ function learningtimecheck_get_prev_user($ltc, $context, $userid, $orderby) {
     $activegroup = groups_get_activity_group($cm);
 
     $cap = 'mod/learningtimecheck:updateown';
-<<<<<<< HEAD
     // M4.
     $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
     $fields = 'u.id,'.implode(',', $fields);
-=======
-    $fields = 'u.id,'.get_all_user_name_fields(true, 'u');
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
@@ -3192,11 +3130,8 @@ function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$to
 
     $context = context_module::instance($cm->id);
     $activegroup = groups_get_activity_group($cm);
-<<<<<<< HEAD
     // M4.
     $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
-=======
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 
     $ausers = false;
     $cap = 'mod/learningtimecheck:updateown';

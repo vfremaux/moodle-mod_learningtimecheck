@@ -63,13 +63,8 @@ if ($ADMIN->fulltree) {
         LTC_OVERRIDE_DECLARED => get_string('declared', 'learningtimecheck')
     );
     $key = 'learningtimecheck/declaredoverridepolicy';
-<<<<<<< HEAD
     $label = get_string('configinitialdeclaredoverridepolicy', 'learningtimecheck');
     $desc = get_string('configinitialdeclaredoverridepolicy_desc', 'learningtimecheck');
-=======
-    $label = get_string('configinitialdeclaredoverridepolicy', 'mod_learningtimecheck');
-    $desc = get_string('configinitialdeclaredoverridepolicy_desc', 'mod_learningtimecheck');
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     $settings->add(new admin_setting_configselect($key, $label, $desc, LTC_OVERRIDE_CREDIT, $overrideoptions));
 
     $key = 'learningtimecheck/lastcompiled';
@@ -104,13 +99,8 @@ if ($ADMIN->fulltree) {
                                   'CR' => 'CR',
                                   'CRLF' => 'CRLF');
     $key = 'learningtimecheck/csvlineseparator';
-<<<<<<< HEAD
     $label = get_string('configcsvlineseparator', 'learningtimecheck');
     $desc = get_string('configcsvlineseparator_desc', 'learningtimecheck');
-=======
-    $label = get_string('configcsvlineseparator', 'mod_learningtimecheck');
-    $desc = get_string('configcsvlineseparator_desc', 'mod_learningtimecheck');
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     $settings->add(new admin_setting_configselect($key, $label, $desc, '\n', $csvlineseparatoroptions));
 
     $csvencodingoptions = array ('ISO-8859-1' => 'ISO-8859-1',
@@ -135,7 +125,6 @@ if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
 
         $options = array(
-<<<<<<< HEAD
             0 => get_string('applynever', 'learningtimecheck'),
             1 => get_string('applyifcredithigher', 'learningtimecheck'),
             2 => get_string('applyifcreditlower', 'learningtimecheck'),
@@ -144,16 +133,6 @@ if ($ADMIN->fulltree) {
         $key = 'learningtimecheck/strictcredits';
         $label = get_string('configstrictcredits', 'learningtimecheck');
         $desc = get_string('configstrictcredits_desc', 'learningtimecheck');
-=======
-            0 => get_string('applynever', 'mod_learningtimecheck'),
-            1 => get_string('applyifcredithigher', 'mod_learningtimecheck'),
-            2 => get_string('applyifcreditlower', 'mod_learningtimecheck'),
-            3 => get_string('applyalways', 'mod_learningtimecheck'),
-        );
-        $key = 'learningtimecheck/strictcredits';
-        $label = get_string('configstrictcredits', 'mod_learningtimecheck');
-        $desc = get_string('configstrictcredits_desc', 'mod_learningtimecheck');
->>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
         $settings->add(new admin_setting_configselect($key, $label, $desc, 0, $options));
     }
 
