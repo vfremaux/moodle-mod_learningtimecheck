@@ -410,8 +410,8 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
 
     $sql = "
         SELECT
-            i.id itemid,
             c.id checkid,
+            i.id itemid,
             c.usertimestamp,
             i.learningtimecheck
         FROM

@@ -2240,7 +2240,9 @@ class learningtimecheck_class {
             $userids = implode(',', array_keys($userlist));
             $users = $DB->get_records_list('user', 'id', array_keys($userlist));
         } else {
-            $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
+            // $users = get_users_by_capability($this->context, $cap, 'u.id, u.username', '', '', '', '', '', false);
+            // Restrict to active users only.
+            $users = get_enrolled_users($this->context, $cap, 0, 'u.*', null, 0, 0, true);
             if (!$users) {
                 return;
             }
@@ -2278,17 +2280,30 @@ class learningtimecheck_class {
         $context = context_module::instance($this->cm->id);
 
         $items = $DB->get_records_sql($sql, array($this->learningtimecheck->id));
+
         if ($items) {
+
+            // Prepare uid list
+            list($insql, $inparams) = $DB->get_in_or_equal(array_keys($users));
+
             foreach ($items as $itemid => $item) {
                 if ($usingcompletion && $item->completion) {
-                    $fakecm = new stdClass;
-                    $fakecm->id = $item->cmid;
+                    // $fakecm = new stdClass;
+                    // $fakecm->id = $item->cmid;
+
+                    $select = " userid $insql AND coursemoduleid = ? ";
+                    $uinparams = $inparams;
+                    $uinparams[] = $item->cmid;
+                    $compstates = $DB->get_records_select('course_modules_completion', $select, $uinparams, 'userid', 'userid, completionstate');
 
                     foreach ($users as $user) {
-                        $compdata = $completion->get_data($fakecm, false, $user->id);
-
-                        if ($compdata->completionstate == COMPLETION_COMPLETE ||
-                                $compdata->completionstate == COMPLETION_COMPLETE_PASS) {
+                        if (array_key_exists($user->id, $compstates)) {
+                            $cstate = $compstates[$user->id]->completionstate;
+                        } else {
+                            $cstate = 0;
+                        }
+                        if ($cstate == COMPLETION_COMPLETE ||
+                                $cstate == COMPLETION_COMPLETE_PASS) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
                             $check = $DB->get_record('learningtimecheck_check', $params);
                             if ($check) {

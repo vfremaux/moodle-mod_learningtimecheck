@@ -2745,7 +2745,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $strgroup = get_string('group', 'group');
 
-        $groups = groups_get_all_groups($COURSE->id, 0, 0 + @$this->grouping);
+        $groups = groups_get_all_groups($COURSE->id, 0, 0 + @$this->groupingid);
 
         $options = array();
         $options[0] = get_string('all');
@@ -2764,7 +2764,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $strgrouping = get_string('grouping', 'group');
 
-        $this->grouping = optional_param('grouping', 0, PARAM_INT);
+        $this->groupingid = optional_param('grouping', 0, PARAM_INT);
         $groupings = groups_get_all_groupings($COURSE->id);
 
         $options = array();
@@ -2773,7 +2773,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $options[$grouping->id] = strip_tags(format_string($grouping->name));
         }
         $popupurl = new moodle_url($rooturl.'&group='.$this->groupid);
-        $select = new single_select($popupurl, 'grouping', $options, $this->grouping, array());
+        $select = new single_select($popupurl, 'grouping', $options, $this->groupingid, array());
         $select->label = $strgrouping;
         $select->formid = 'selectgrouping';
         return $this->output->render($select);
@@ -2995,7 +2995,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * Renders a name filter for filtering on first or last name.
      * @param moodle_url ref &$thispageurl the current url of the page with all quiery string params.
      */
-    public function namefilter(&$thispageurl) {
+    public function namefilter(&$thispageurl, &$states = null) {
 
         $localthispageurl = clone($thispageurl);
         $localthispageurl->params(['page' => 0]);
@@ -3003,7 +3003,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-        $template->firstnamefilter = optional_param('filterfirstname', false, PARAM_TEXT);
+        $states['filterfirstname'] = optional_param('filterfirstname', false, PARAM_TEXT);
+        $template->firstnamefilter = $states['filterfirstname'];
 
         for ($i = 0; $i < strlen($letters); $i++) {
             $lettertpl = new StdClass;
@@ -3018,7 +3019,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
         $template->allfnurl = $localthispageurl.'&filterfirstname=';
 
-        $template->lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
+        $states['lastnamefilter'] = optional_param('filterlastname', false, PARAM_TEXT);
+        $template->lastnamefilter = $states['lastnamefilter'];
 
         for ($i = 0; $i < strlen($letters); $i++) {
             $lettertpl = new StdClass;

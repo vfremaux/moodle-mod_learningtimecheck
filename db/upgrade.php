@@ -387,6 +387,18 @@ function xmldb_learningtimecheck_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2019040600, 'learningtimecheck');
     }
 
+    if ($oldversion < 2023063000) {
+
+        $table = new xmldb_table('learningtimecheck_item');
+
+        $field = new xmldb_field('grouping', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, '0', 'hidden');
+
+        if ($dbman->field_exists($table, $field)) {
+            // Launch rename field groupingid.
+            $dbman->rename_field($table, $field, 'groupingid');
+        }
+    }
+
     return $result;
 
 }

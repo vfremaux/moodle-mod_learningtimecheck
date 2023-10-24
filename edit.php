@@ -29,7 +29,7 @@ require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or.
 $learningtimecheckid  = optional_param('learningtimecheck', 0, PARAM_INT);  // Learningtimecheck instance ID.
 
-$url = new moodle_url('/mod/learningtimecheck/view.php');
+$url = new moodle_url('/mod/learningtimecheck/edit.php', ['id' => $id]);
 if ($id) {
     if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
         print_error('Course Module ID was incorrect');
