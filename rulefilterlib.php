@@ -60,7 +60,11 @@ function learningtimecheck_apply_rules(&$users, $rulefiltersdesc = null) {
         foreach ($filterrules as $rid => $filterrule) {
             $inputs = [];
             $inputs['ruleres'] = learningtimecheck_execute_rule($filterrule, $user->id);
+<<<<<<< HEAD
             $inputs['op'] = $logicalops[$filterrule->logop];
+=======
+            $inputs['op'] = $LOGICALOPS[$filterrule->logop];
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
             $expr = (empty($filterrule->logop)) ? " \$result = \$ruleres; " : " \$result = \$result [op] \$ruleres; ";
             $result = mod_learningtimecheck_eval($expr, $inputs);
         }

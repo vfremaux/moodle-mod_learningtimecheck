@@ -21,6 +21,10 @@
  * @copyright  2020 onwards Valery Fremaux (http://www.activeprolearn.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+<<<<<<< HEAD
+=======
+defined('MOODLE_INTERNAL') || die;
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 
 global $CLI_VMOODLE_PRECHECK;
 

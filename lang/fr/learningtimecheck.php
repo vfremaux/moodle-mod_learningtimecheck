@@ -103,7 +103,10 @@ $string['credit'] = 'Crédit';
 $string['credittime'] = 'Temps forfaitaire apprenant ';
 $string['itemcredittime'] = 'Crédit temps : {$a} min.';
 $string['deleteitem'] = 'Supprimer cet élément';
+<<<<<<< HEAD
 $string['deltas'] = 'Ecarts';
+=======
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 $string['declaredoverridepolicy'] = 'Combinaison des temps déclarés';
 $string['disabled'] = 'Désactivé';
 $string['itemsdone'] = 'Activités réalisées';
@@ -170,8 +173,11 @@ $string['myprogress'] = 'Ma progression';
 $string['lockteachermarks'] = 'Verrouiler les marques de l\'enseignant';
 $string['lockteachermarkswarning'] = 'Note: une fois mémorisées, vous ne pouvez plus modifier des marques positives';
 $string['lockstudentinput'] = 'Verrouiler les saisies étudiantes';
+<<<<<<< HEAD
 $string['marked'] = 'Est validé';
 $string['unmarked'] = 'Non encore validé';
+=======
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 $string['marktypes'] = 'Types de marques';
 $string['mandatory'] = 'obligatoires ';
 $string['mandatories'] = 'obligatoires (LTC)';
@@ -285,6 +291,11 @@ $string['itemdisable'] = 'Ignorer cet élément';
 $string['itemdeclaredtime'] = 'Temps déclaré : {$a} min.';
 $string['yourprogress'] = 'Votre progression';
 
+
+$string['declared'] = 'Temps déclarés seulement';
+$string['declaredovercreditifhigher'] = 'Déclaré si supérieur au crédit, le crédit sinon.';
+$string['declaredcapedbycredit'] = 'Le déclaré jusqu\'à obtention du crédit (si le crédit est défini).';
+$string['credit'] = 'Temps crédités seulement';
 
 $string['declared'] = 'Temps déclarés seulement';
 $string['declaredovercreditifhigher'] = 'Déclaré si supérieur au crédit, le crédit sinon.';
@@ -413,4 +424,13 @@ Voir la liste ici :';
 $string['configstrictcredits_desc'] = 'Si actif, les temps crédités sont utilisés dans tous les cas à la place. Sinon, le crédit temps ne sera affecté que
  si il est supérieur au temps mesuré réel.';
 
+<<<<<<< HEAD
 include(__DIR__.'/pro_additional_strings.php');
+=======
+$string['plugindist_desc'] = '
+<p>Ce plugin est distribué dans la communauté Moodle pour l\'évaluation de ses fonctions centrales
+correspondant à une utilisation courante du plugin. Une version "professionnelle" de ce plugin existe et est distribuée
+sous certaines conditions, afin de soutenir l\'effort de développement, amélioration; documentation et suivi des versions.</p>
+<p>Contactez un distributeur pour obtenir la version "Pro" et son support.</p>
+<p><a href="http://www.mylearningfactory.com/index.php/documentation/Distributeurs?lang=fr_utf8">Distributeurs MyLF</a></p>';
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3

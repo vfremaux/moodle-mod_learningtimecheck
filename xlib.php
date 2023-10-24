@@ -22,9 +22,15 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
     global $DB;
 
     if ($usecredit) {
+<<<<<<< HEAD
         $creditclause = ' AND ltc.usetimecounterpart = 1 ';
     } else if ($usecredit === false) {
         $creditclause = ' AND ltc.usetimecounterpart = 0 ';
+=======
+        $creditclause = ' AND usetimecounterpart = 1 ';
+    } else if ($usecredit === false) {
+        $creditclause = ' AND usetimecounterpart = 0 ';
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     } else {
         $creditclause = '';
     }
@@ -234,14 +240,22 @@ function learningtimecheck_get_declaredtimes($learningtimecheckid, $cmid = 0, $u
  * @param int $courseid if non null, get all checklists in course.
  * @param int $userlist A list of users to update. If needed.
  */
+<<<<<<< HEAD
 function learningtimecheck_get_checklists($userid, $courseid = 0, $userlist = []) {
+=======
+function learningtimecheck_get_checklists($uid, $courseid = 0, $userlist = []) {
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
     global $DB;
 
     if ($courseid) {
         if ($records = $DB->get_records('learningtimecheck', array('course' => $courseid))) {
             foreach ($records as $r) {
                 $cm = get_coursemodule_from_instance('learningtimecheck', $r->id);
+<<<<<<< HEAD
                 $checklists[] = new learningtimecheck_class($cm->id, $userid, $r, $cm, null, $userlist);
+=======
+                $checklists[] = new learningtimecheck_class($cm->id, $uid, $r, $cm, null, $userlist);
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
             }
             return $checklists;
         }
@@ -297,6 +311,7 @@ function learningtimecheck_get_course_marks($courseid, $userid, $mandatory = fal
 }
 
 /**
+<<<<<<< HEAD
  * Gets the completion ratio of checked items for all checklists in the course.
  * @param int $courseid the course id
  * @param int $userid the user id
@@ -361,6 +376,14 @@ function learningtimecheck_get_course_total_time($courseid, $userid = 0, $format
         // fake sample result for unit tests.
         return [10, 20];
     }
+=======
+ * Get the global time contract of all the ltc instances in a course.
+ * @param int $courseid
+ * @return a result array with mandatory/optional total item times.
+ * TOTO : finish this function.
+ */
+function learningtimecheck_get_course_total_time($courseid, $userid = 0) {
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 
     if (!learningtimecheck_course_has_ltc_tracking($courseid)) {
         // Shortcut output.
@@ -368,6 +391,7 @@ function learningtimecheck_get_course_total_time($courseid, $userid = 0, $format
     }
 
     $checklists = learningtimecheck_get_checklists($userid, $courseid);
+<<<<<<< HEAD
     $mandatorytime = 0;
     $accessorytime = 0;
     foreach ($checklists as $checklist) {
@@ -381,4 +405,7 @@ function learningtimecheck_get_course_total_time($courseid, $userid = 0, $format
     }
 
     return [$mandatorytime, $accessorytime];
+=======
+
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 }

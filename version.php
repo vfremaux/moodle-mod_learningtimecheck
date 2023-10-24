@@ -26,14 +26,25 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+<<<<<<< HEAD
 $plugin->version  = 2023063000;  // The current module version (Date: YYYYMMDDXX).
 $plugin->requires = 2022112801;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release  = '4.1.0 (Build: 2023063000)';
+=======
+$plugin->version  = 2019040600;  // The current module version (Date: YYYYMMDDXX).
+$plugin->requires = 2019111200;
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release  = '3.8.0 (Build: 2019040600)';
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 $plugin->component = 'mod_learningtimecheck';
 $plugin->supported = [401, 402];
 $plugin->dependencies = array('report_learningtimecheck' => '2015042302', 'local_vflibs' => '2015101800');
 
 // Non Moodle attributes.
+<<<<<<< HEAD
 $plugin->codeincrement = '4.1.0012';
+=======
+$plugin->codeincrement = '3.8.0009';
+>>>>>>> b46bc5a448b7a6dc2f38e2b4e62ae9b2933a11e3
 $plugin->privacy = "dualrelease";
