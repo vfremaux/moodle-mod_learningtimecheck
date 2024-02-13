@@ -2302,8 +2302,12 @@ class learningtimecheck_class {
                         } else {
                             $cstate = 0;
                         }
-                        if ($cstate == COMPLETION_COMPLETE ||
-                                $cstate == COMPLETION_COMPLETE_PASS) {
+                        $ltcstate = ($cstate == COMPLETION_COMPLETE ||
+                                $cstate == COMPLETION_COMPLETE_PASS);
+                        if (!empty($reportconfig->admitcompletedwithfailure)) {
+                            $ltcstate = ($ltcstate || ($cstate == COMPLETION_COMPLETE_FAIL));
+                        }
+                        if ($ltcstate) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
                             $check = $DB->get_record('learningtimecheck_check', $params);
                             if ($check) {
