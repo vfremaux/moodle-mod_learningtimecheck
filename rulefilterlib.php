@@ -24,6 +24,9 @@
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/extralib/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
+
+use mod_learningtimecheck\compat;
 
 /**
  * Computes a ruleset for all users and filter non matching users. Rules are usually
@@ -87,7 +90,7 @@ function learningtimecheck_execute_rule($filterrule, $userid) {
     $ruleops = learningtimecheck_class::get_ruleop_options();
 
     $logmanager = get_log_manager();
-    $readers = $logmanager->get_readers(ltc_get_logreader_name());
+    $readers = $logmanager->get_readers(compat::get_logreader_name());
     $reader = reset($readers);
 
     switch ($filterrule->rule) {

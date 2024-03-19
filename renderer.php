@@ -26,6 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/rulefilterlib.php');
 require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
+
+use \mod_learningtimecheck\compat;
 
 define('LTC_MAX_CHK_MODS_PER_ROW', 4);
 
@@ -37,7 +40,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     public $groupid;
     public $groupingid;
 
-    protected $userfields; // Usual fields used when printing a user.
+    protected $ufields; // Usual fields used when printing a user.
+    protected $uufields; // Usual fields used when printing a user with u prefix.
 
     public function __construct() {
         global $OUTPUT;
@@ -48,8 +52,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $this->groupingid = 0;
         $this->instance = null;
 
-        // M4.
-        $this->userfields =  \core_user\fields::for_name()->with_userpic()->excluding('id');
+        $this->ufields =  compat::get_user_fields('');
+        $this->uufields =  compat::get_user_fields('u');
     }
 
     public function set_instance($learningtimecheck) {
@@ -271,7 +275,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $teacherids[$item->teacherid] = $item->teacherid;
                     }
                 }
-                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', implode(',', $this->userfields->get_required_fields()));
+                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', $this->ufields);
                 foreach ($this->instance->items as $item) {
                     if (isset($teachers[$item->teacherid])) {
                         $item->teachername = fullname($teachers[$item->teacherid]);
@@ -738,10 +742,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $group = groups_get_activity_groupmode($this->instance->cm);
         $targetusers = get_enrolled_users($context, '', $group, 'u.id, firstname, lastname, email, institution', 'lastname');
 
-        $fields = $this->userfields->get_required_fields();
-        foreach ($fields as &$f) {
-            $f = 'u.'.$f;
-        }
+        $fields = $this->uufields;
 
         $sql = "
             SELECT
@@ -751,7 +752,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 chl.name,
                 SUM(chi.teachercredittime) as expected,
                 SUM(chck.teacherdeclaredtime) as realexpense,
-                ".implode(',', $fields)."
+                ".$fields."
             FROM
                 {learningtimecheck_check} chck,
                 {learningtimecheck_item} chi,
@@ -927,10 +928,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     userid = ? AND
                     itemid = ?
                 ';
-                if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
+                if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, [$USER->id, $checkid])) {
                     $str .= '<div class="comment">';
                     foreach ($comments as $comment) {
-                        $commenter = $DB->get_record('user', array('id' => $comment->commentby), implode(',', $this->userfields->get_required_fields()));
+                        $commenter = $DB->get_record('user', ['id' => $comment->commentby], $this->ufields);
                         $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                         $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                     }
@@ -1064,10 +1065,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         userid = ? AND
                         itemid = ?
                     ';
-                    if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
+                    if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, [$USER->id, $checkid])) {
                         $str .= '<div class="comment">';
                         foreach ($comments as $comment) {
-                            $commenter = $DB->get_record('user', array('id' => $comment->commentby), implode(',', $this->userfields->get_required_fields()));
+                            $commenter = $DB->get_record('user', array('id' => $comment->commentby), $this->userfields));
                             $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                             $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                         }
@@ -1270,17 +1271,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         global $SESSION;
 
         // Toggle due data editing.
-        echo '<div class="ltc-globalsetting-cell">';
-        echo '<form type="hidden" name="editdates" value="on" />';
-        if (!empty($SESSION->learningtimecheck_editdates)) {
-            echo '<input type="hidden" name="editdates" value="1" />';
-            echo '<input type="submit" value="'.get_string('editdatesstart', 'learningtimecheck').'" />';
-        } else {
-            echo '<input type="hidden" name="editdates" value="0" />';
-            echo '<input type="submit" value="'.get_string('editdatesstop', 'learningtimecheck').'" />';
-        }
-        echo '</form>';
-        echo '</div>';
+        $template = new Stdclass;
+        $template->editdates = $SESSION->learningtimecheck_editdates;
+
+        return $this->output->render_from_template('mod_learningtimecheck/toggle_date_form', $template);
     }
 
     /**

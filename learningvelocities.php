@@ -25,7 +25,10 @@
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 require_once($CFG->dirroot.'/local/vflibs/jqplotlib.php');
+
+use mod_learningtimecheck\compat;
 
 $PAGE->requires->jquery();
 $PAGE->requires->jquery_plugin('jqplot', 'local_vflibs');
@@ -72,8 +75,7 @@ if ($id) {
 
 $context = context_module::instance($cm->id);
 
-$PAGE->set_cm($cm);
-$PAGE->set_activity_record($learningtimecheck);
+compat::init_page($cm, $learningtimecheck);
 $PAGE->set_url($url);
 $PAGE->navbar->add(get_string('learningvelocities', 'learningtimecheck'));
 
@@ -103,9 +105,8 @@ $renderer = $PAGE->get_renderer('learningtimecheck');
 $renderer->set_instance($chk);
 
 $allusers = get_enrolled_users($context, '', 0, 'u.id');
-// M4.
-$fields = \core_user\fields::for_name()->excluding('id')->get_required_fields();
-$users = get_enrolled_users($context, '', 0, 'u.*', 'u.id'.implode(',', $fields), $page, $perpage);
+$fields = compat::get_user_fields('u');
+$users = get_enrolled_users($context, '', 0, 'u.*', $fields, $page, $perpage);
 
 $lowesttime = learningtimecheck_get_lowest_track_time($learningtimecheck);
 

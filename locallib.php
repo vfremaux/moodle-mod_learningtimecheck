@@ -23,6 +23,9 @@
 defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
+
+use \mod_learningtimecheck\compat;
 
 // Valid even if format page not installed and not included.
 use \format\page\course_page;
@@ -2302,8 +2305,12 @@ class learningtimecheck_class {
                         } else {
                             $cstate = 0;
                         }
-                        if ($cstate == COMPLETION_COMPLETE ||
-                                $cstate == COMPLETION_COMPLETE_PASS) {
+                        $ltcstate = ($cstate == COMPLETION_COMPLETE ||
+                                $cstate == COMPLETION_COMPLETE_PASS);
+                        if (!empty($reportconfig->admitcompletedwithfailure)) {
+                            $ltcstate = ($ltcstate || ($cstate == COMPLETION_COMPLETE_FAIL));
+                        }
+                        if ($ltcstate) {
                             $params = array('item' => $item->itemid, 'userid' => $user->id);
                             $check = $DB->get_record('learningtimecheck_check', $params);
                             if ($check) {
@@ -3061,9 +3068,9 @@ function learningtimecheck_get_next_user($ltc, $context, $userid, $orderby) {
     $activegroup = groups_get_activity_group($cm);
 
     $cap = 'mod/learningtimecheck:updateown';
-    // M4.
-    $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
-    $fields = 'u.id,'.implode(',', $fields);
+
+    $fields = compat::get_user_fields('u');
+
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
@@ -3095,9 +3102,9 @@ function learningtimecheck_get_prev_user($ltc, $context, $userid, $orderby) {
     $activegroup = groups_get_activity_group($cm);
 
     $cap = 'mod/learningtimecheck:updateown';
-    // M4.
-    $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
-    $fields = 'u.id,'.implode(',', $fields);
+
+    $fields = compat::get_user_fields('u');
+
     if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
@@ -3130,12 +3137,12 @@ function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$to
 
     $context = context_module::instance($cm->id);
     $activegroup = groups_get_activity_group($cm);
-    // M4.
-    $fields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
+
+    $fields = compat::get_user_fields('u');
 
     $ausers = false;
     $cap = 'mod/learningtimecheck:updateown';
-    if ($fullusers = get_users_by_capability($context, $cap, 'u.id,'.implode(',', $fields), $orderby, '', '', $activegroup, '', false)) {
+    if ($fullusers = get_users_by_capability($context, $cap, $fields, $orderby, '', '', $activegroup, '', false)) {
         learningtimecheck_apply_rules($fullusers);
         learningtimecheck_apply_namefilters($fullusers);
         if (learningtimecheck_class::only_view_mentee_reports($context)) {
@@ -3155,7 +3162,7 @@ function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$to
         $sql = "
             SELECT
                 u.id,
-                ".implode(',', $fields)."
+                ".$fields."
             FROM
                 {user} u
             WHERE

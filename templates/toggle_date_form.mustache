@@ -1,0 +1,15 @@
+
+<!-- mod_learningtimecheck/toggle_date_form -->
+<div class="ltc-globalsetting-cell">
+<form type="hidden" name="editdates" value="on" />
+    {{#editdates}}
+    <input type="hidden" name="editdates" value="1" />
+    <input type="submit" value="{{#str}}editdatesstart, learningtimecheck{{/str}}" />
+    {{/editdates}}
+    {{^editdates}}
+    <input type="hidden" name="editdates" value="0" />';
+    <input type="submit" value="{{#str}}editdatesstop, learningtimecheck{{/str}}" />
+    {{/editdates}}
+</form>
+</div>
+<!-- /mod_learningtimecheck/toggle_date_form -->

@@ -42,7 +42,8 @@ $help =
 Options:
    -H, --host                Host to play on.
    -c, --course              Process in a course. All courses if not given
-   -m, --moduleinstance      Process a single course module (course is optional in this case).
+   -m, --module              Process a single ltc instance by cmid (course is optional in this case).
+   -i, --instance            Process a single ltc instance by ltcid (course is optional in this case).
    -f, --fromdate            forces the last compiled starting date.
    -h, --help                Print out this help.
 
@@ -55,14 +56,16 @@ list($options, $unrecognized) = cli_get_params(
     array(
         'host' => false,
         'course' => false,
-        'moduleinstance' => false,
+        'module' => false,
+        'instance' => false,
         'fromdate' => false,
         'help'    => false,
     ),
     array(
         'h' => 'help',
         'c' => 'course',
-        'm' => 'moduleinstance',
+        'm' => 'module',
+        'i' => 'instance',
         'f' => 'fromdate',
         'H' => 'host',
     )
@@ -92,8 +95,11 @@ require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 
-if (!empty($options['moduleinstance'])) {
-    $ltcid = $options['moduleinstance'];
+if (!empty($options['instance'])) {
+    $ltcid = $options['instance'];
+} else if (!empty($options['module'])) {
+    $cmid = $options['module'];
+    $ltcid = $DB->get_field('course_modules', 'instance', ['id' => $cmid]);
 } else {
     if (!empty($options['course'])) {
         $courseid = $options['course'];
@@ -102,7 +108,7 @@ if (!empty($options['moduleinstance'])) {
 
 $ltcids = array();
 if (!empty($ltcid)) {
-    echo "Processing by module instance\n";
+    echo "Processing by ltc instance\n";
     $ltcids[] = $ltcid;
 } else {
 

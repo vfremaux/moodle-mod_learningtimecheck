@@ -56,6 +56,11 @@ if ($ADMIN->fulltree) {
     $desc = get_string('configinitialautocapture_desc', 'learningtimecheck');
     $settings->add(new admin_setting_configselect($key, $label, $desc, LTC_AUTOPOPULATE_COURSE, $autopopulateoptions));
 
+    $key = 'learningtimecheck/defaultconsidergrades';
+    $label = get_string('configdefaultconsidergrades', 'learningtimecheck');
+    $desc = get_string('configdefaultconsidergrades_desc', 'learningtimecheck');
+    $settings->add(new admin_setting_configcheckbox($key, $label, $desc, 0));
+
     $overrideoptions = array(
         LTC_OVERRIDE_CREDIT => get_string('credit', 'learningtimecheck'),
         LTC_OVERRIDE_DECLAREDOVERCREDITIFHIGHER => get_string('declaredovercreditifhigher', 'learningtimecheck'),

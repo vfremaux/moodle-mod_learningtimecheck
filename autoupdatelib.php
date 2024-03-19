@@ -442,8 +442,11 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
 
     $reportconfig = get_config('report_learningtimecheck');
 
-    // Not complete if failed.
-    $newstate = ($newstate == COMPLETION_COMPLETE || $newstate == COMPLETION_COMPLETE_PASS);
+    // Not complete if failed. Admit failed completions.
+    $newstate = (($newstate == COMPLETION_COMPLETE) || ($newstate == COMPLETION_COMPLETE_PASS));
+    if (!empty($reportconfig->admitcompletedwithfailure)) {
+        $newstate = ($newstate || ($newstate == COMPLETION_COMPLETE_FAIL));
+    }
     $updatecount = 0;
     $createcount = 0;
     $updatelearningtimechecks = array();
@@ -518,7 +521,7 @@ function learningtimecheck_completion_autoupdate($cmid, $userid, $newstate, $com
 
         // Trigger a completion update for the learningtimecheck.
         $completioninfo = new completion_info($coursecache[$item->learningtimecheck]);
-        $completioninfo->update_state($cmcache[$item->learningtimecheck], $newstate, $userid);
+        $completioninfo->update_state($cmcache[$item->learningtimecheck], COMPLETION_UNKNOWN, $userid);
     }
 
     if (defined('DEBUG_LTC_AUTOUPDATE')) {
