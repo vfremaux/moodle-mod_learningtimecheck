@@ -22,8 +22,44 @@
  * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+namespace mod_learningtimecheck;
+
 defined('MOODLE_INTERNAL') || die();
 
-function ltc_get_logreader_name() {
-    return '\core\log\sql_reader';
+class compat {
+
+    public static function init_page($cm, $instance) {
+        global $PAGE;
+
+        if ($CFG->branch >= 400) {
+	        $PAGE->set_cm($cm);
+	        $PAGE->set_activity_record($instance);
+	        $PAGE->set_pagelayout('incourse');
+	     }
+    }
+
+    public static function get_logreader_name() {
+        return '\core\log\sql_reader';
+    }
+
+    public static function get_user_fields($prefix = 'u') {
+
+        global $CFG;
+
+        if (!empty($prefix)) {
+            $prefix = $prefix.'.';
+        }
+
+        if ($CFG->branch < 400) {
+            return $prefix.'id,'.get_all_user_name_fields(true, $prefix);
+        } else {
+            $fields = $prefix.'id';
+            $morefields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
+            foreach ($morefields as &$f) {
+                $f = $prefix.$f;
+            }
+            $fields .= ','.implode(',', $morefields);
+            return $fields;
+        }
+    }
 }

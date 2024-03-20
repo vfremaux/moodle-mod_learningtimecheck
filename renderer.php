@@ -26,6 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/learningtimecheck/rulefilterlib.php');
 require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
+
+use \mod_learningtimecheck\compat;
 
 define('LTC_MAX_CHK_MODS_PER_ROW', 4);
 
@@ -37,6 +40,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
     public $groupid;
     public $groupingid;
 
+    protected $ufields; // Usual fields used when printing a user.
+    protected $uufields; // Usual fields used when printing a user with u prefix.
+
     public function __construct() {
         global $OUTPUT;
 
@@ -45,6 +51,9 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $this->groupid = 0;
         $this->groupingid = 0;
         $this->instance = null;
+
+        $this->ufields =  compat::get_user_fields('');
+        $this->uufields =  compat::get_user_fields('u');
     }
 
     public function set_instance($learningtimecheck) {
@@ -266,7 +275,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         $teacherids[$item->teacherid] = $item->teacherid;
                     }
                 }
-                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', 'id,'.get_all_user_name_fields(true, ''));
+                $teachers = $DB->get_records_list('user', 'id', $teacherids, '', $this->ufields);
                 foreach ($this->instance->items as $item) {
                     if (isset($teachers[$item->teacherid])) {
                         $item->teachername = fullname($teachers[$item->teacherid]);
@@ -733,6 +742,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         $group = groups_get_activity_groupmode($this->instance->cm);
         $targetusers = get_enrolled_users($context, '', $group, 'u.id, firstname, lastname, email, institution', 'lastname');
 
+        $fields = $this->uufields;
+
         $sql = "
             SELECT
                 CONCAT(chck.userid, '_',chl.id) as markid,
@@ -741,7 +752,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 chl.name,
                 SUM(chi.teachercredittime) as expected,
                 SUM(chck.teacherdeclaredtime) as realexpense,
-                ".get_all_user_name_fields(true, 'u')."
+                ".$fields."
             FROM
                 {learningtimecheck_check} chck,
                 {learningtimecheck_item} chi,
@@ -759,8 +770,6 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 u.lastname,u.firstname ASC
         ";
         $tutoredusers = array();
-
-        $fields = get_all_user_name_fields(false, '');
 
         if ($tutoredtimes = $DB->get_records_sql($sql, array($COURSE->id, $USER->id))) {
             foreach ($tutoredtimes as $tt) {
@@ -919,11 +928,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     userid = ? AND
                     itemid = ?
                 ';
-                if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
+                if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, [$USER->id, $checkid])) {
                     $str .= '<div class="comment">';
                     foreach ($comments as $comment) {
-                        $fields = 'id,'.get_all_user_name_fields(true, '');
-                        $commenter = $DB->get_record('user', array('id' => $comment->commentby), $fields);
+                        $commenter = $DB->get_record('user', ['id' => $comment->commentby], $this->ufields);
                         $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                         $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                     }
@@ -1057,11 +1065,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                         userid = ? AND
                         itemid = ?
                     ';
-                    if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, array($USER->id, $checkid))) {
+                    if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, [$USER->id, $checkid])) {
                         $str .= '<div class="comment">';
                         foreach ($comments as $comment) {
-                            $fields = 'id,'.get_all_user_name_fields(true, '');
-                            $commenter = $DB->get_record('user', array('id' => $comment->commentby), $fields);
+                            $commenter = $DB->get_record('user', ['id' => $comment->commentby], $this->ufields);
                             $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                             $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                         }
@@ -1264,17 +1271,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         global $SESSION;
 
         // Toggle due data editing.
-        echo '<div class="ltc-globalsetting-cell">';
-        echo '<form type="hidden" name="editdates" value="on" />';
-        if (!empty($SESSION->learningtimecheck_editdates)) {
-            echo '<input type="hidden" name="editdates" value="1" />';
-            echo '<input type="submit" value="'.get_string('editdatesstart', 'learningtimecheck').'" />';
-        } else {
-            echo '<input type="hidden" name="editdates" value="0" />';
-            echo '<input type="submit" value="'.get_string('editdatesstop', 'learningtimecheck').'" />';
-        }
-        echo '</form>';
-        echo '</div>';
+        $template = new Stdclass;
+        $template->editdates = $SESSION->learningtimecheck_editdates;
+
+        return $this->output->render_from_template('mod_learningtimecheck/toggle_date_form', $template);
     }
 
     /**
@@ -2745,7 +2745,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $strgroup = get_string('group', 'group');
 
-        $groups = groups_get_all_groups($COURSE->id, 0, 0 + @$this->grouping);
+        $groups = groups_get_all_groups($COURSE->id, 0, 0 + @$this->groupingid);
 
         $options = array();
         $options[0] = get_string('all');
@@ -2764,7 +2764,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $strgrouping = get_string('grouping', 'group');
 
-        $this->grouping = optional_param('grouping', 0, PARAM_INT);
+        $this->groupingid = optional_param('grouping', 0, PARAM_INT);
         $groupings = groups_get_all_groupings($COURSE->id);
 
         $options = array();
@@ -2773,7 +2773,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $options[$grouping->id] = strip_tags(format_string($grouping->name));
         }
         $popupurl = new moodle_url($rooturl.'&group='.$this->groupid);
-        $select = new single_select($popupurl, 'grouping', $options, $this->grouping, array());
+        $select = new single_select($popupurl, 'grouping', $options, $this->groupingid, array());
         $select->label = $strgrouping;
         $select->formid = 'selectgrouping';
         return $this->output->render($select);
@@ -2995,7 +2995,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * Renders a name filter for filtering on first or last name.
      * @param moodle_url ref &$thispageurl the current url of the page with all quiery string params.
      */
-    public function namefilter(&$thispageurl) {
+    public function namefilter(&$thispageurl, &$states = null) {
 
         $localthispageurl = clone($thispageurl);
         $localthispageurl->params(['page' => 0]);
@@ -3003,7 +3003,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-        $template->firstnamefilter = optional_param('filterfirstname', false, PARAM_TEXT);
+        $states['filterfirstname'] = optional_param('filterfirstname', false, PARAM_TEXT);
+        $template->firstnamefilter = $states['filterfirstname'];
 
         for ($i = 0; $i < strlen($letters); $i++) {
             $lettertpl = new StdClass;
@@ -3018,7 +3019,8 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         }
         $template->allfnurl = $localthispageurl.'&filterfirstname=';
 
-        $template->lastnamefilter = optional_param('filterlastname', false, PARAM_TEXT);
+        $states['lastnamefilter'] = optional_param('filterlastname', false, PARAM_TEXT);
+        $template->lastnamefilter = $states['lastnamefilter'];
 
         for ($i = 0; $i < strlen($letters); $i++) {
             $lettertpl = new StdClass;

@@ -17,14 +17,15 @@
 /**
  * @package mod_learningtimecheck
  * @category mod
- * @author  David Smith <moodle@davosmith.co.uk> as checklist
  * @author Valery Fremaux
- * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 require('../../config.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
+require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
+
+use \mod_learningtimecheck\compat;
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
 $learningtimecheckid = optional_param('learningtimecheck', 0, PARAM_INT);  // learningtimecheck instance ID
@@ -37,33 +38,20 @@ $PAGE->requires->js('/mod/learningtimecheck/js/locale/easyui-lang-'.current_lang
 $PAGE->requires->css('/mod/learningtimecheck/css/default/easyui.css');
 
 if ($id) {
-    if (!$cm = get_coursemodule_from_id('learningtimecheck', $id)) {
-        print_error('invalidcoursemodule');
-    }
-
-    if (!$course = $DB->get_record('course', array('id' => $cm->course) )) {
-        print_error('coursemisconf');
-    }
-
-    if (!$learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $cm->instance) )) {
-        print_error('badlearningtimecheckid', 'learningtimecheck');
-    }
+    $cm = get_coursemodule_from_id('learningtimecheck', $id, 0, false, MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+    $learningtimecheck = $DB->get_record('learningtimecheck', ['id' => $cm->instance], '*', MUST_EXIST);
 } else if ($learningtimecheckid) {
-    if (! $learningtimecheck = $DB->get_record('learningtimecheck', array('id' => $learningtimecheckid) )) {
-        print_error('Course module is incorrect');
-    }
-    if (! $course = $DB->get_record('course', array('id' => $learningtimecheck->course) )) {
-        print_error('coursemisconf');
-    }
-    if (! $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id)) {
-        print_error('Course Module ID was incorrect');
-    }
+    $learningtimecheck = $DB->get_record('learningtimecheck', ['id' => $learningtimecheckid], '*', MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $learningtimecheck->course], '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('learningtimecheck', $learningtimecheck->id, $course->id);
 } else {
-    print_error('You must specify a course_module ID or an instance ID');
+    throw new moodle_exception('You must specify either a course_module ID or an instance ID');
 }
 
 require_login($course, true, $cm);
 
+compat::init_page($cm, $learningtimecheck);
 $PAGE->set_title($course->fullname);
 $PAGE->set_heading(format_string($learningtimecheck->name));
 
