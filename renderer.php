@@ -1068,7 +1068,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                     if ($comments = $DB->get_records_select('learningtimecheck_comment', $select, [$USER->id, $checkid])) {
                         $str .= '<div class="comment">';
                         foreach ($comments as $comment) {
-                            $commenter = $DB->get_record('user', array('id' => $comment->commentby), $this->userfields));
+                            $commenter = $DB->get_record('user', ['id' => $comment->commentby], $this->ufields);
                             $commentername = get_string('reportedby', 'learningtimecheck', fullname($commenter));
                             $str .= '<span title="'.$commentername.'">'.$comment->text.'</span>';
                         }
