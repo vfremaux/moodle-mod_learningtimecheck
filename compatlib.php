@@ -19,7 +19,6 @@
  * @package mod_learningtimecheck
  * @category mod
  * @author Valery Fremaux
- * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 namespace mod_learningtimecheck;
@@ -29,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 class compat {
 
     public static function init_page($cm, $instance) {
-        global $PAGE;
+        global $PAGE, $CFG;
 
         if ($CFG->branch >= 400) {
 	        $PAGE->set_cm($cm);
@@ -46,13 +45,12 @@ class compat {
 
         global $CFG;
 
-        if (!empty($prefix)) {
-            $prefix = $prefix.'.';
-        }
-
         if ($CFG->branch < 400) {
-            return $prefix.'id,'.get_all_user_name_fields(true, $prefix);
+            return $prefix.'.id,'.get_all_user_name_fields(true, $prefix);
         } else {
+            if (!empty($prefix)) {
+                $prefix = $prefix.'.';
+            }
             $fields = $prefix.'id';
             $morefields = \core_user\fields::for_name()->with_userpic()->excluding('id')->get_required_fields();
             foreach ($morefields as &$f) {
