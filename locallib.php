@@ -25,10 +25,10 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot.'/report/learningtimecheck/lib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
-use \mod_learningtimecheck\compat;
+use mod_learningtimecheck\compat;
 
 // Valid even if format page not installed and not included.
-use \format\page\course_page;
+use format_page\course_page;
 
 /**
  * Stores all the functions for manipulating a learningtimecheck

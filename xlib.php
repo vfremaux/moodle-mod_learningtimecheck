@@ -18,6 +18,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/lib.php');
 
+/**
+ * Return array of LTC instances in course.
+ */
 function learningtimecheck_get_instances($courseid, $usecredit = null) {
     global $DB;
 
@@ -48,7 +51,95 @@ function learningtimecheck_get_instances($courseid, $usecredit = null) {
     if ($learningtimechecks = $DB->get_records_sql($sql, array($courseid))) {
         return $learningtimechecks;
     }
-    return array();
+    return [];
+}
+
+/**
+ * Return array of LTC instances from their course module ids.
+ * @param array $cmids
+ * @param bool $usecredit
+ */
+function learningtimecheck_get_instances_from_cmids($cmids, $usecredit = null) {
+    global $DB;
+
+    if (empty($cmids)) {
+        return [];
+    }
+
+    if ($usecredit) {
+        $creditclause = ' AND ltc.usetimecounterpart = 1 ';
+    } else if ($usecredit === false) {
+        $creditclause = ' AND ltc.usetimecounterpart = 0 ';
+    } else {
+        $creditclause = '';
+    }
+
+    list($insql, $inparams) = $DB->get_in_or_equal($cmids);
+
+    $sql = "
+        SELECT
+            ltc.*
+        FROM
+            {learningtimecheck} ltc,
+            {course_modules} cm,
+            {modules} m
+        WHERE
+            ltc.id = cm.instance AND
+            cm.id $insql AND
+            cm.module = m.id AND
+            (cm.deletioninprogress IS NULL OR cm.deletioninprogress = 0) AND
+            m.name = 'learningtimecheck'
+            $creditclause
+    ";
+
+    if ($learningtimechecks = $DB->get_records_sql($sql, $inparams)) {
+        return $learningtimechecks;
+    }
+    return [];
+}
+
+/**
+ * Return array of LTC instances from their course module ids.
+ * @param array $cmids
+ * @param bool $usecredit
+ */
+function learningtimecheck_get_instances_for_courses($courseids, $usecredit = null) {
+    global $DB;
+
+    if (empty($courseids)) {
+        return [];
+    }
+
+    if ($usecredit) {
+        $creditclause = ' AND ltc.usetimecounterpart = 1 ';
+    } else if ($usecredit === false) {
+        $creditclause = ' AND ltc.usetimecounterpart = 0 ';
+    } else {
+        $creditclause = '';
+    }
+
+    list($insql, $inparams) = $DB->get_in_or_equal($courseids);
+
+    $sql = "
+        SELECT
+            ltc.*
+        FROM
+            {learningtimecheck} ltc,
+            {course_modules} cm,
+            {modules} m
+        WHERE
+            ltc.id = cm.instance AND
+            cm.course $insql AND
+            cm.module = m.id AND
+            (cm.deletioninprogress IS NULL OR cm.deletioninprogress = 0) AND
+            m.name = 'learningtimecheck'
+            $creditclause
+    ";
+
+    if ($learningtimechecks = $DB->get_records_sql($sql, $inparams)) {
+        return $learningtimechecks;
+    }
+    return [];
 }
 
 /**

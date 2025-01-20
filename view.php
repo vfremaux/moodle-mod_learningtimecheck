@@ -80,7 +80,7 @@ if ($view == 'preview') {
         include($CFG->dirroot.'/mod/learningtimecheck/view.controller.php');
     }
 
-} else if ($view == 'view' or empty($view)) {
+} else if ($view == 'view' || empty($view)) {
 
     $view = 'view';
 

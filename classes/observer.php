@@ -39,14 +39,14 @@ class mod_learningtimecheck_observer {
 
         $config = get_config('learningtimecheck');
 
-        $completion = $DB->get_record('course_module_completion', ['id' => $event->objectid]);
+        $completion = $DB->get_record('course_modules_completion', ['id' => $event->objectid]);
 
         // find some LTC items concerned. Might have several in distinct LTC instances.
         $sql = "
             SELECT
                 ltci.*
             FROM
-                {learningtimecheck_items} ltci,
+                {learningtimecheck_item} ltci,
                 {learningtimecheck} ltc
             WHERE
                 ltci.learningtimecheck = ltc.id AND
@@ -122,5 +122,4 @@ class mod_learningtimecheck_observer {
             }
         }
     }
-
 }

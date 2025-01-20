@@ -3053,7 +3053,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
      * @param string $scale
      * @param int $timeorigin
      */
-    public function learning_curves(&$users, $scale = 'days', $timeorigin) {
+    public function learning_curves(&$users, $scale = 'days', $timeorigin = 0) {
         global $USER;
 
         $scalediv = ($scale == 'days') ? DAYSECS : HOURSECS;

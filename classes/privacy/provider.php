@@ -202,7 +202,7 @@ class provider implements
                     ltci.credittime,
                     ltcc.teachertimestamp as assessedon,
                     m.name as modname,
-                    cm.instanceid
+                    cm.instance
                 FROM
                     {learningtimecheck_check} ltcc,
                     {learningtimecheck_item} ltci,
@@ -231,7 +231,7 @@ class provider implements
                     ltci.displaytext as itemname,
                     ltcm.userid as userid,
                     m.name as modname,
-                    cm.instanceid
+                    cm.instance
                 FROM
                     {learningtimecheck_item} ltci,
                     {learningtimecheck_comment} ltcm,
@@ -268,7 +268,7 @@ class provider implements
                     ltci.credittime,
                     ltcc.teachertimestamp as assessedon,
                     m.name as modname,
-                    cm.instanceid
+                    cm.instance
                 FROM
                     {learningtimecheck_check} ltcc,
                     {learningtimecheck_item} ltci,
@@ -297,7 +297,7 @@ class provider implements
                     ltci.id as itemid,
                     ltci.displaytext as itemname,
                     m.name as modname,
-                    cm.instanceid
+                    cm.instance
                 FROM
                     {learningtimecheck_item} ltci,
                     {learningtimecheck_comment} ltcm,

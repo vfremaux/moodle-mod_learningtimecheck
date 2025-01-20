@@ -15,16 +15,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Library of functions and constants for module learningtimecheck
+ *
  * @package mod_learningtimecheck
  * @category mod
  * @author  David Smith <moodle@davosmith.co.uk> as checklist
  * @author Valery Fremaux
- * @version Moodle 2.7
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
 /*
- * Library of functions and constants for module learningtimecheck
  * This file should have two well differenced parts:
  *   - All the core Moodle functions, neeeded to allow
  *     the module to work integrated in Moodle.
@@ -77,6 +77,9 @@ require_once($CFG->dirroot.'/mod/learningtimecheck/locallib.php');
 require_once($CFG->dirroot.'/lib/completionlib.php');
 require_once($CFG->dirroot.'/mod/learningtimecheck/compatlib.php');
 
+/**
+ * Standard feature declaration
+ */
 function learningtimecheck_supports($feature) {
 
     switch($feature) {
@@ -127,6 +130,7 @@ function learningtimecheck_supports($feature) {
  * Tells wether a feature is supported or not. Gives back the
  * implementation path where to fetch resources.
  * @param string $feature a feature key to be tested.
+ * @param string $getsupported if true, returns the list of supported features.
  */
 function learningtimecheck_supports_feature($feature = null, $getsupported = false) {
     global $CFG;
