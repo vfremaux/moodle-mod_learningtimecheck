@@ -36,28 +36,28 @@ use stdClass;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\writer;
+use core_privacy\local\request\core_userlist_provider;
+use core_privacy\local\metadata\provider as metadata_provider;
+use core_privacy\local\request\plugin\provider as plugin_provider;
 
-if (interface_exists('\core_privacy\local\request\userlist')) {
-    interface my_userlist extends \core_privacy\local\request\userlist{}
-} else {
-    interface my_userlist {};
-}
 
 /**
  * Data provider class.
  *
- * @package    mod_chat
- * @copyright  2018 Frédéric Massart
- * @author     Frédéric Massart <fred@branchup.tech>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_learningtimecheck
+ * @copyright 2018 - valery fremaux <mylearningfactory.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author    Valery Fremaux
  */
 class provider implements
-    \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider,
-    my_userlist {
+    metadata_provider,
+    plugin_provider,
+    core_userlist_provider {
 
     /**
      * Returns metadata.
@@ -239,7 +239,7 @@ class provider implements
                     {modules} m
                 WHERE
                     ltcm.itemid = ltci.id AND
-                    ltcm.userid = :userid
+                    ltcm.userid = :userid AND
                     ltci.moduleid = cm.id AND
                     cm.module = m.id AND
                     ltci.learningtimecheck = :ltcid
@@ -305,7 +305,7 @@ class provider implements
                     {modules} m
                 WHERE
                     ltcm.itemid = ltci.id AND
-                    ltcm.commentby = :userid
+                    ltcm.commentby = :userid AND
                     ltci.moduleid = cm.id AND
                     cm.module = m.id AND
                     ltci.learningtimecheck = :ltcid
