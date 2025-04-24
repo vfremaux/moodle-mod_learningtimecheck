@@ -67,10 +67,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             throw new CodingException('Misuse of an uninitialized renderer. Please review the code');
         }
 
-        $tabs = array();
-        $row = array();
-        $inactive = array();
-        $activated = array();
+        $tabs = [];
+        $row = [];
+        $inactive = [];
+        $activated = [];
 
         $params = array();
         $params['id'] = $this->instance->cm->id;
@@ -154,11 +154,13 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
                 $coursecontext = context_course::instance($COURSE->id);
                 if (has_capability('report/learningtimecheck:view', $coursecontext)) {
                     if ($canviewr) {
-                        $globalparams = array('id' => $COURSE->id);
+                        $globalparams = ['id' => $COURSE->id];
                     } else {
-                        $globalparams = array('id' => $COURSE->id,
-                                        'itemid' => $USER->id,
-                                        'view' => 'user');
+                        $globalparams = [
+                            'id' => $COURSE->id,
+                            'itemid' => $USER->id,
+                            'view' => 'user',
+                        ];
                     }
                     $taburl = new moodle_url('/report/learningtimecheck/index.php', $globalparams);
                     $tabs[1][] = new tabobject('globalreports', $taburl, get_string('reports', 'learningtimecheck'));
@@ -240,7 +242,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
             $params = array('view' => 'view', 'id' => $this->instance->cm->id, 'studentid' => $this->instance->userid);
             $thispage = new moodle_url('/mod/learningtimecheck/view.php', $params);
 
-            if (!$student = $DB->get_record('user', array('id' => $this->instance->userid) )) {
+            if (!$student = $DB->get_record('user', ['id' => $this->instance->userid] )) {
                 print_error('errornosuchuser', 'learningtimecheck');
             }
 
@@ -321,7 +323,7 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
         // $updateform = true;
 
         if (!$this->instance->items) {
-            print_string('noitems', 'learningtimecheck');
+            throw new moodle_exception('noitems', 'learningtimecheck');
         } else {
 
             $focusitem = false;
@@ -335,10 +337,10 @@ class mod_learningtimecheck_renderer extends plugin_renderer_base {
 
                 if (!$viewother) {
                     // Load the Javascript required to send changes back to the server (without clicking 'save').
-                    $jsmodule = array(
+                    $jsmodule = [
                         'name' => 'mod_learningtimecheck',
                         'fullpath' => new moodle_url('/mod/learningtimecheck/updatechecks.js')
-                    );
+                    ];
                     $updatechecksurl = new moodle_url('/mod/learningtimecheck/updatechecks.php');
                     // Progress bars should only be updated with 'student only' learningtimechecks:
                     $updateprogress = $showteachermark ? 0 : 1;

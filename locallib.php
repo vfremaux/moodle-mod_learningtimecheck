@@ -3133,9 +3133,14 @@ function learningtimecheck_get_prev_user($ltc, $context, $userid, $orderby) {
  * Fetch all required users for a report screen
  */
 function learningtimecheck_get_report_users($cm, $page, $perpage, $orderby, &$totalusers) {
-    global $DB;
+    global $DB, $USER;
 
     $context = context_module::instance($cm->id);
+    if (!has_capability('mod/learningtimecheck:viewreports', $context)) {
+        $users[$USER->id] = $USER;
+        return $users;
+    }
+
     $activegroup = groups_get_activity_group($cm);
 
     $fields = compat::get_user_fields('u');

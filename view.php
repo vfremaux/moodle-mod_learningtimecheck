@@ -175,11 +175,11 @@ $event->trigger();
 
 switch ($view) {
     case 'view':
-        $seeother = ($USER->id != $userid);
-        if (!$seeother) {
+        $seeingother = ($USER->id != $userid);
+        if (!$seeingother) {
             echo $OUTPUT->heading(get_string('myprogress', 'learningtimecheck'));
         }
-        echo $renderer->view_items($seeother, true);
+        echo $renderer->view_items($seeingother, true);
         break;
 
     case 'preview':
